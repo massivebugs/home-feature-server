@@ -1,0 +1,6 @@
+# Dev environment
+.vscode/
+.env
+
+# Miscellaneous
+project_notes.md
