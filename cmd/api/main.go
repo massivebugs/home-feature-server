@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/massivebugs/home-server/api/route"
+	"github.com/massivebugs/home-feature-server/api/route"
 )
 
 type CustomValidator struct{}
@@ -26,7 +26,12 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	port := os.Getenv("PORT")
+	env := os.Getenv("ENV")
+	if env == "" {
+		log.Fatalf("ENV has not been specified, exiting")
+	}
+
+	port := os.Getenv("API_PORT")
 
 	e := echo.New()
 	e.Validator = &CustomValidator{}

@@ -1,0 +1,37 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: ./ci/docker/Dockerfile.local.db
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${MYSQL_TZ}
+    ports:
+      - ${MYSQL_PORT}:3306
+    volumes:
+      - db-data:/var/lib/mysql
+
+  api:
+    build:
+      context: .
+      dockerfile: ./ci/docker/Dockerfile.local.api
+    ports:
+      - ${API_PORT}:1323
+    volumes:
+      - ./:/app
+
+  web:
+    build:
+      context: .
+      dockerfile: ./ci/docker/Dockerfile.local.web
+    ports:
+      - ${WEB_PORT}:5173
+    volumes:
+      - ./web:/app
+
+volumes:
+  db-data:
+    driver: local

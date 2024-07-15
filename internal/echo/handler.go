@@ -2,8 +2,8 @@ package echo
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/massivebugs/home-server/internal/api"
-	"github.com/massivebugs/home-server/internal/echo/dto"
+	"github.com/massivebugs/home-feature-server/internal/api"
+	"github.com/massivebugs/home-feature-server/internal/echo/dto"
 )
 
 type EchoHandler struct{}

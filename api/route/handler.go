@@ -1,8 +1,8 @@
 package route
 
 import (
-	"github.com/massivebugs/home-server/internal/echo"
-	"github.com/massivebugs/home-server/internal/ping"
+	"github.com/massivebugs/home-feature-server/internal/echo"
+	"github.com/massivebugs/home-feature-server/internal/ping"
 )
 
 type Handlers struct {
