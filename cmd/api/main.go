@@ -4,21 +4,12 @@ import (
 	"log"
 	"os"
 
-	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/massivebugs/home-feature-server/api/route"
+	"github.com/massivebugs/home-feature-server/internal/api"
 )
-
-type CustomValidator struct{}
-
-func (*CustomValidator) Validate(i interface{}) error {
-	if v, ok := i.(validation.Validatable); ok {
-		return v.Validate()
-	}
-	return nil
-}
 
 func main() {
 	err := godotenv.Load(".env")
@@ -34,7 +25,7 @@ func main() {
 	port := os.Getenv("API_PORT")
 
 	e := echo.New()
-	e.Validator = &CustomValidator{}
+	e.Validator = &api.RequestValidator{}
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())

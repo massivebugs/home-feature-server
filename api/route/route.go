@@ -16,4 +16,8 @@ func registerV1Routes(e *echo.Group, h *Handlers) {
 
 	// Echo
 	v1.POST("/echo", h.Echohandler.Echo)
+
+	// Auth
+	v1.POST("/auth", h.AuthHandler.CreateUser)
+	v1.POST("/auth/login", h.AuthHandler.LogIn)
 }

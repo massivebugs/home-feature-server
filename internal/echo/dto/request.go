@@ -7,7 +7,12 @@ type EchoRequestDTO struct {
 }
 
 func (r *EchoRequestDTO) Validate() error {
-	return validation.ValidateStruct(r,
-		validation.Field(&r.Message, validation.Required, validation.Length(1, 20)),
+	return validation.ValidateStruct(
+		r,
+		validation.Field(
+			&r.Message,
+			validation.Required,
+			validation.Length(1, 20),
+		),
 	)
 }

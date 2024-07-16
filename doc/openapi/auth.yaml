@@ -1,0 +1,40 @@
+openapi: "3.0.3"
+
+info:
+  title: Auth
+  version: 1.0.0
+servers:
+- url: "http://{host}:{port}"
+  description: Local development server
+  variables:
+    host:
+      default: localhost
+    port:
+      default: '1323'
+paths:
+  /api/v1/auth:
+    post:
+      tags: 
+        - v1
+      operationId: auth/createUser
+      description: Creates a new user using username and password
+      summary: Creates a new user using username and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: testuser
+                password:
+                  type: string
+                  example: Somepassword12#
+              required:
+                - username
+                - password
+      responses:
+        200:
+          description: OK
