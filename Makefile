@@ -6,6 +6,10 @@ start:
 stop:
 	docker compose -f ./compose.local.yaml down
 
+.PHONY: restart
+restart:
+	docker compose -f ./compose.local.yaml restart
+
 .PHONY: db-migrate
 db-migrate:
 	docker build -f ci/docker/Dockerfile.local.migrate -t migrate .

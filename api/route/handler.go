@@ -1,18 +1,17 @@
 package route
 
-import (
-	"github.com/massivebugs/home-feature-server/internal/echo"
-	"github.com/massivebugs/home-feature-server/internal/ping"
-)
+import "github.com/massivebugs/home-feature-server/api/handler"
 
 type Handlers struct {
-	PingHandler *ping.PingHandler
-	Echohandler *echo.EchoHandler
+	PingHandler   *handler.PingHandler
+	RepeatHandler *handler.RepeatHandler
+	AuthHandler   *handler.AuthHandler
 }
 
 func NewAPIHandlers() *Handlers {
 	return &Handlers{
-		PingHandler: ping.NewPingHandler(),
-		Echohandler: echo.NewEchoHandler(),
+		PingHandler:   handler.NewPingHandler(),
+		RepeatHandler: handler.NewRepeatHandler(),
+		AuthHandler:   handler.NewAuthHandler(),
 	}
 }

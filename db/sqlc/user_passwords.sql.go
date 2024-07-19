@@ -3,7 +3,7 @@
 //   sqlc v1.25.0
 // source: user_passwords.sql
 
-package db
+package queries
 
 import (
 	"context"

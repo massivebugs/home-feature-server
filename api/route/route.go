@@ -14,6 +14,10 @@ func registerV1Routes(e *echo.Group, h *Handlers) {
 	// Ping
 	v1.GET("/ping", h.PingHandler.Ping)
 
-	// Echo
-	v1.POST("/echo", h.Echohandler.Echo)
+	// Repeat
+	v1.POST("/repeat", h.RepeatHandler.Repeat)
+
+	// Auth
+	v1.POST("/auth", h.AuthHandler.CreateUser)
+	v1.POST("/auth/login", h.AuthHandler.LogIn)
 }

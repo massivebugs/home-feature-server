@@ -2,23 +2,14 @@ package main
 
 import (
 	"log"
-	"os"
 
-	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/massivebugs/home-feature-server/api/config"
 	"github.com/massivebugs/home-feature-server/api/route"
+	"github.com/massivebugs/home-feature-server/internal/api"
 )
-
-type CustomValidator struct{}
-
-func (*CustomValidator) Validate(i interface{}) error {
-	if v, ok := i.(validation.Validatable); ok {
-		return v.Validate()
-	}
-	return nil
-}
 
 func main() {
 	err := godotenv.Load(".env")
@@ -26,15 +17,18 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	env := os.Getenv("ENV")
-	if env == "" {
-		log.Fatalf("ENV has not been specified, exiting")
+	cfg := config.NewConfig()
+	if err := cfg.Load(); err != nil {
+		log.Fatal(err)
 	}
 
-	port := os.Getenv("API_PORT")
+	db, err := config.CreateDatabaseConnection(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	e := echo.New()
-	e.Validator = &CustomValidator{}
+	e.Validator = &api.RequestValidator{}
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -43,5 +37,5 @@ func main() {
 
 	route.RegisterRoutes(e)
 
-	e.Logger.Fatal(e.Start(":" + port))
+	e.Logger.Fatal(e.Start(":" + cfg.APIPort))
 }

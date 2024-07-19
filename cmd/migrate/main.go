@@ -25,9 +25,9 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	env := os.Getenv("ENV")
+	env := os.Getenv("ENVIRONMENT")
 	if env == "" {
-		log.Fatalf("ENV has not been specified, exiting")
+		log.Fatalf("ENVIRONMENT has not been specified, exiting")
 	}
 
 	wd, err := os.Getwd()

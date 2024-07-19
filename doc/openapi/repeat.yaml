@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 
 info:
-  title: Ping
+  title: Repeat
   version: 1.0.0
 servers:
 - url: "http://{host}:{port}"
@@ -12,11 +12,11 @@ servers:
     port:
       default: '1323'
 paths:
-  /api/v1/echo:
+  /api/v1/repeat:
     post:
       tags: 
         - v1
-      operationId: echo
+      operationId: repeat
       description: Returns the sent message, for testing purposes
       summary: Returns the sent message, for testing purposes
       requestBody:
