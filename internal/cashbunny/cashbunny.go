@@ -1,13 +1,38 @@
 package cashbunny
 
-import "context"
+import (
+	"context"
+	"database/sql"
 
-type Cashbunny struct{}
+	"github.com/massivebugs/home-feature-server/db/service/cashbunny_account"
+)
 
-func NewCashbunny() *Cashbunny {
-	return &Cashbunny{}
+type Cashbunny struct {
+	db          *sql.DB
+	accountRepo cashbunny_account.Querier
 }
 
-func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) error {
-	return nil
+func NewCashbunny(db *sql.DB, accountRepo cashbunny_account.Querier) *Cashbunny {
+	return &Cashbunny{
+		db:          db,
+		accountRepo: accountRepo,
+	}
+}
+
+func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]Account, error) {
+	allAccountData, err := s.accountRepo.ListAccounts(ctx, s.db, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts := make([]Account, len(allAccountData))
+	for idx, d := range allAccountData {
+		a, err := NewAccount(d)
+		if err != nil {
+			return nil, err
+		}
+		accounts[idx] = a
+	}
+
+	return accounts, nil
 }

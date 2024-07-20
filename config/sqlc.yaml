@@ -30,3 +30,15 @@ sql:
         emit_result_struct_pointers: true
         omit_unused_structs: true
         emit_empty_slices: true
+  - engine: "mysql"
+    queries: "../db/service/cashbunny_account/query.sql"
+    schema: "../db/migration"
+    gen:
+      go:
+        sql_package: "database/sql"
+        out: "../db/service/cashbunny_account"
+        emit_methods_with_db_argument: true
+        emit_interface: true
+        emit_result_struct_pointers: true
+        omit_unused_structs: true
+        emit_empty_slices: true
