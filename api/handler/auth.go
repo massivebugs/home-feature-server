@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"database/sql"
+
 	"github.com/labstack/echo/v4"
 	"github.com/massivebugs/home-feature-server/api/dto"
+	"github.com/massivebugs/home-feature-server/db/service/user"
+	"github.com/massivebugs/home-feature-server/db/service/user_password"
 	"github.com/massivebugs/home-feature-server/internal/api"
 	"github.com/massivebugs/home-feature-server/internal/auth"
 )
@@ -11,9 +15,13 @@ type AuthHandler struct {
 	auth *auth.Auth
 }
 
-func NewAuthHandler() *AuthHandler {
+func NewAuthHandler(db *sql.DB) *AuthHandler {
 	return &AuthHandler{
-		auth: auth.NewAuth(),
+		auth: auth.NewAuth(
+			db,
+			user.New(),
+			user_password.New(),
+		),
 	}
 }
 
@@ -28,9 +36,9 @@ func (h *AuthHandler) CreateUser(ctx echo.Context) error {
 		return api.NewAPIResponse(ctx, err, "")
 	}
 
-	result := h.auth.CreateUser(ctx.Request().Context(), req)
+	err := h.auth.CreateAuthUser(ctx.Request().Context(), req)
 
-	return api.NewAPIResponse(ctx, nil, result)
+	return api.NewAPIResponse(ctx, err, "")
 }
 
 func (*AuthHandler) LogIn(ctx echo.Context) error {

@@ -47,7 +47,7 @@ func (c *Config) validate() error {
 		validation.Field(
 			&c.Environment,
 			validation.Required,
-			validation.In([]EnvironmentType{EnvironmentLocal, EnvironmentProduction}),
+			validation.In(string(EnvironmentLocal), string(EnvironmentProduction)),
 		),
 		validation.Field(
 			&c.APIPort,

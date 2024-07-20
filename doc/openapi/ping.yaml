@@ -28,7 +28,7 @@ paths:
                 type: object
                 properties:
                   err:
-                    $ref: './api.yaml#/components/schemas/err'
+                    $ref: './api.yaml#/components/schemas/error'
                   data:
                     type: string
                     description: Pong!

@@ -3,25 +3,29 @@ services:
     build:
       context: .
       dockerfile: ./ci/docker/Dockerfile.local.db
-    environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - TZ=${MYSQL_TZ}
+    env_file:
+      - .env
     ports:
       - ${MYSQL_PORT}:3306
     volumes:
       - db-data:/var/lib/mysql
+    networks:
+      - default
 
   api:
     build:
       context: .
       dockerfile: ./ci/docker/Dockerfile.local.api
+    env_file:
+      - .env
     ports:
       - ${API_PORT}:1323
     volumes:
       - ./:/app
+    networks:
+      - default
+    depends_on:
+      - db
 
   web:
     build:

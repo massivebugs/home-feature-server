@@ -1,14 +1,19 @@
 package route
 
-import "github.com/labstack/echo/v4"
+import (
+	"database/sql"
 
-func RegisterRoutes(e *echo.Echo) {
+	"github.com/labstack/echo/v4"
+	"github.com/massivebugs/home-feature-server/api/handler"
+)
+
+func RegisterRoutes(e *echo.Echo, db *sql.DB) {
 	api := e.Group("/api")
-	h := NewAPIHandlers()
+	h := handler.NewAPIHandlers(db)
 	registerV1Routes(api, h)
 }
 
-func registerV1Routes(e *echo.Group, h *Handlers) {
+func registerV1Routes(e *echo.Group, h *handler.Handlers) {
 	v1 := e.Group("/v1")
 
 	// Ping

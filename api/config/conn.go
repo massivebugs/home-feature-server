@@ -3,6 +3,8 @@ package config
 import (
 	"database/sql"
 	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func CreateDatabaseConnection(cfg *Config) (*sql.DB, error) {

@@ -13,12 +13,12 @@ restart:
 .PHONY: db-migrate
 db-migrate:
 	docker build -f ci/docker/Dockerfile.local.migrate -t migrate .
-	docker run --rm -t --network=host -v ./db:/app/db migrate:latest ./main
+	docker run --rm -t --network=home-feature-server_default -v ./db:/app/db migrate:latest ./main
 
 .PHONY: db-rollback
 db-rollback:
 	docker build -f ci/docker/Dockerfile.local.migrate -t migrate .
-	docker run --rm -t --network=host -v ./db:/app/db migrate:latest ./main --rollback=1
+	docker run --rm -t --network=home-feature-server_default -v ./db:/app/db migrate:latest ./main --rollback=1
 
 .PHONY: sqlc-generate
 sqlc-generate:
