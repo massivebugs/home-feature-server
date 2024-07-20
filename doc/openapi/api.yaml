@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 
 info:
-  title: Ping
+  title: API Components
   version: 1.0.0
 servers:
 - url: "http://{host}:{port}"
@@ -13,6 +13,11 @@ servers:
       default: '1323'
 paths: {}
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     error:
       type: object

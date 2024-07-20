@@ -11,6 +11,10 @@ servers:
       default: localhost
     port:
       default: '1323'
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: './api.yaml#/components/securitySchemes/bearerAuth'
 paths:
   /api/v1/auth:
     post:
@@ -40,3 +44,72 @@ paths:
       responses:
         200:
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: './api.yaml#/components/schemas/error'
+                  data:
+                    example: ""
+  /api/v1/auth/token:
+    post:
+      tags: 
+        - v1
+      operationId: auth/createJWTToken
+      description: Returns a new JWT Token for a user
+      summary: Returns a new JWT Token for a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: must be between 3 to 100 alphanumerical characters
+                  example: testuser
+                password:
+                  type: string
+                  description: must be between 8 to 72 characters, and contain a letter, number and a special character
+                  example: Somepassword12#
+              required:
+                - username
+                - password
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: './api.yaml#/components/schemas/error'
+                  data:
+                    type: string
+                    example: ""
+  /api/v1/secure/auth:
+    post:
+      tags: 
+        - v1
+      operationId: secure/auth
+      description: Returns the authenticated user info
+      summary: Returns the authenticated user info
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: './api.yaml#/components/schemas/error'
+                  data:
+                    type: string
+                    example: ""

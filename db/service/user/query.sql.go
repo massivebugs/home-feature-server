@@ -58,6 +58,30 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, id uint32) (*User, error
 	return &i, err
 }
 
+const getUserByName = `-- name: GetUserByName :one
+SELECT
+  id, name, created_at, updated_at, deleted_at
+FROM
+  users
+WHERE
+  name = ?
+LIMIT
+  1
+`
+
+func (q *Queries) GetUserByName(ctx context.Context, db DBTX, name string) (*User, error) {
+	row := db.QueryRowContext(ctx, getUserByName, name)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return &i, err
+}
+
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET

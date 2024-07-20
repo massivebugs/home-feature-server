@@ -4,14 +4,22 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/massivebugs/home-feature-server/api/config"
+	apiMiddleware "github.com/massivebugs/home-feature-server/api/middleware"
 	"github.com/massivebugs/home-feature-server/api/route"
 	"github.com/massivebugs/home-feature-server/internal/api"
 )
 
 func main() {
+	// TODO: Only in local?
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	fmt.Println("Checking config...")
 	cfg := config.NewConfig()
 	if err := cfg.Load(); err != nil {
@@ -34,7 +42,8 @@ func main() {
 	e.Use(middleware.CORS())
 
 	fmt.Println("Registering routes...")
-	route.RegisterRoutes(e, db)
+	jwtMiddleware := apiMiddleware.GetEchoJWTMiddleware(cfg)
+	route.RegisterRoutes(e, cfg, jwtMiddleware, db)
 
 	e.Logger.Fatal(e.Start(":" + cfg.APIPort))
 }
