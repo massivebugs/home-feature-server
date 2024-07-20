@@ -19,5 +19,5 @@ func NewPingHandler() *PingHandler {
 func (h *PingHandler) Ping(ctx echo.Context) *api.APIResponse {
 	result := h.ping.Run(ctx.Request().Context())
 
-	return api.NewAPIResponse(ctx, nil, result)
+	return api.NewAPIResponse(nil, result)
 }

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/massivebugs/home-feature-server/api/dto"
 	"github.com/massivebugs/home-feature-server/internal/api"
 	"github.com/massivebugs/home-feature-server/internal/repeat"
 )
@@ -18,17 +17,17 @@ func NewRepeatHandler() *RepeatHandler {
 }
 
 func (h *RepeatHandler) Repeat(ctx echo.Context) *api.APIResponse {
-	req := new(dto.RepeatRequestDTO)
+	req := new(repeat.RepeatRequestDTO)
 
 	if err := ctx.Bind(req); err != nil {
-		return api.NewAPIResponse(ctx, err, "")
+		return api.NewAPIResponse(err, "")
 	}
 
 	if err := ctx.Validate(req); err != nil {
-		return api.NewAPIResponse(ctx, err, "")
+		return api.NewAPIResponse(err, "")
 	}
 
 	result := h.repeat.Run(ctx.Request().Context(), req)
 
-	return api.NewAPIResponse(ctx, nil, result)
+	return api.NewAPIResponse(nil, result)
 }

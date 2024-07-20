@@ -2,7 +2,6 @@ package api
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/labstack/echo/v4"
 )
 
 type APIResponse struct {
@@ -10,7 +9,7 @@ type APIResponse struct {
 	Data  interface{} `json:"data"`
 }
 
-func NewAPIResponse[T any](c echo.Context, err error, data T) *APIResponse {
+func NewAPIResponse(err error, data interface{}) *APIResponse {
 	apiErr, ok := err.(*APIError)
 	if !ok {
 		if valErrs, ok := err.(validation.Errors); ok {

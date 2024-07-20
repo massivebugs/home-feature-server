@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-
-	"github.com/massivebugs/home-feature-server/api/dto"
 	"github.com/massivebugs/home-feature-server/db/service/user"
 	"github.com/massivebugs/home-feature-server/db/service/user_password"
 	"github.com/massivebugs/home-feature-server/internal/api"
@@ -32,7 +30,7 @@ func NewAuth(
 	}
 }
 
-func (s *Auth) CreateAuthUser(ctx context.Context, req *dto.UserAuthRequestDTO) error {
+func (s *Auth) CreateAuthUser(ctx context.Context, req *UserAuthRequestDTO) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -79,7 +77,7 @@ func (s *Auth) CreateAuthUser(ctx context.Context, req *dto.UserAuthRequestDTO) 
 	return tx.Commit()
 }
 
-func (s *Auth) CreateJWTToken(ctx context.Context, jwtSecret string, req *dto.UserAuthRequestDTO) (string, error) {
+func (s *Auth) CreateJWTToken(ctx context.Context, jwtSecret string, req *UserAuthRequestDTO) (string, error) {
 	// Retrieve user
 	u, err := s.userRepo.GetUserByName(ctx, s.db, req.Username)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
@@ -103,16 +101,24 @@ func (s *Auth) CreateJWTToken(ctx context.Context, jwtSecret string, req *dto.Us
 	}
 
 	// Set custom claims
-	claims := NewJWTClaims(time.Now(), 72, u.ID)
-
-	// Create token with claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jb := NewJWTBuilder(time.Now(), 72, u.ID)
 
 	// Generate encoded token and send it as response.
-	tokenStr, err := token.SignedString([]byte(jwtSecret))
+	tokenStr, err := jb.CreateAndSignToken(jwt.SigningMethodHS256, jwtSecret)
 	if err != nil {
 		return "", err
 	}
 
 	return tokenStr, nil
+}
+
+func (s *Auth) GetAuthUser(ctx context.Context, jwtClaims *JWTClaims) (AuthUser, error) {
+	u, err := s.userRepo.GetUser(ctx, s.db, jwtClaims.UserID)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return AuthUser{}, api.NewAPIError(api.CodeForbidden, errors.New("user does not exist"))
+	} else if err != nil {
+		return AuthUser{}, err
+	}
+
+	return NewAuthUser(u, jwtClaims), nil
 }

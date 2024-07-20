@@ -1,4 +1,4 @@
-package dto
+package repeat
 
 import validation "github.com/go-ozzo/ozzo-validation"
 
