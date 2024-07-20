@@ -8,6 +8,16 @@ WHERE
 LIMIT
   1;
 
+-- name: GetUserByName :one
+SELECT
+  *
+FROM
+  users
+WHERE
+  name = ?
+LIMIT
+  1;
+
 -- name: CreateUser :execresult
 INSERT INTO
   users (name)

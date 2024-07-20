@@ -17,7 +17,7 @@ func NewRepeatHandler() *RepeatHandler {
 	}
 }
 
-func (h *RepeatHandler) Repeat(ctx echo.Context) error {
+func (h *RepeatHandler) Repeat(ctx echo.Context) *api.APIResponse {
 	req := new(dto.RepeatRequestDTO)
 
 	if err := ctx.Bind(req); err != nil {

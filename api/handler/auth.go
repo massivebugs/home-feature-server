@@ -25,8 +25,8 @@ func NewAuthHandler(db *sql.DB) *AuthHandler {
 	}
 }
 
-func (h *AuthHandler) CreateUser(ctx echo.Context) error {
-	req := new(dto.CreateUserRequestDTO)
+func (h *AuthHandler) CreateUser(ctx echo.Context) *api.APIResponse {
+	req := new(dto.UserAuthRequestDTO)
 
 	if err := ctx.Bind(req); err != nil {
 		return api.NewAPIResponse(ctx, err, "")
@@ -41,6 +41,18 @@ func (h *AuthHandler) CreateUser(ctx echo.Context) error {
 	return api.NewAPIResponse(ctx, err, "")
 }
 
-func (*AuthHandler) LogIn(ctx echo.Context) error {
-	return api.NewAPIResponse(ctx, nil, "Pong!")
+func (h *AuthHandler) CreateJWTToken(ctx echo.Context) *api.APIResponse {
+	req := new(dto.UserAuthRequestDTO)
+
+	if err := ctx.Bind(req); err != nil {
+		return api.NewAPIResponse(ctx, err, "")
+	}
+
+	if err := ctx.Validate(req); err != nil {
+		return api.NewAPIResponse(ctx, err, "")
+	}
+
+	result, err := h.auth.CreateJWTToken(ctx.Request().Context(), req)
+
+	return api.NewAPIResponse(ctx, err, result)
 }

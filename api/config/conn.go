@@ -11,7 +11,7 @@ func CreateDatabaseConnection(cfg *Config) (*sql.DB, error) {
 	db, err := sql.Open(
 		"mysql",
 		fmt.Sprintf(
-			"%s:%s@tcp(%s:%s)/%s?multiStatements=true",
+			"%s:%s@tcp(%s:%s)/%s?multiStatements=true&parseTime=true",
 			cfg.DBUser,
 			cfg.DBPassword,
 			cfg.DBHost,

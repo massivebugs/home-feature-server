@@ -40,7 +40,7 @@ paths:
                 type: object
                 properties:
                   error:
-                    example: null
+                    $ref: './api.yaml#/components/schemas/error'
                   data:
                     type: string
                     description: The message sent

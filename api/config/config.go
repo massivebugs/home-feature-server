@@ -15,7 +15,7 @@ const (
 )
 
 type Config struct {
-	Environment string
+	Environment EnvironmentType
 	APIPort     string
 
 	DBHost     string
@@ -30,7 +30,7 @@ func NewConfig() *Config {
 }
 
 func (c *Config) Load() error {
-	c.Environment = os.Getenv("ENVIRONMENT")
+	c.Environment = EnvironmentType(os.Getenv("ENVIRONMENT"))
 	c.APIPort = os.Getenv("API_PORT")
 	c.DBHost = os.Getenv("MYSQL_HOST")
 	c.DBPort = os.Getenv("MYSQL_PORT")
@@ -47,7 +47,7 @@ func (c *Config) validate() error {
 		validation.Field(
 			&c.Environment,
 			validation.Required,
-			validation.In(string(EnvironmentLocal), string(EnvironmentProduction)),
+			validation.In(EnvironmentLocal, EnvironmentProduction),
 		),
 		validation.Field(
 			&c.APIPort,

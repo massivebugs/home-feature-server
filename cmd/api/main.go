@@ -34,7 +34,7 @@ func main() {
 	e.Use(middleware.CORS())
 
 	fmt.Println("Registering routes...")
-	route.RegisterRoutes(e, db)
+	route.RegisterRoutes(e, cfg, db)
 
 	e.Logger.Fatal(e.Start(":" + cfg.APIPort))
 }

@@ -12,12 +12,12 @@ const (
 	MAX_PASSWORD_LENGTH int = 72 // bcrypt length limit
 )
 
-type CreateUserRequestDTO struct {
+type UserAuthRequestDTO struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-func (r *CreateUserRequestDTO) Validate() error {
+func (r *UserAuthRequestDTO) Validate() error {
 	return validation.ValidateStruct(
 		r,
 		validation.Field(

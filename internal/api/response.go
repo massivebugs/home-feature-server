@@ -5,12 +5,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type APIResponse[T any] struct {
-	Error *APIError `json:"error"`
-	Data  T         `json:"data"`
+type APIResponse struct {
+	Error *APIError   `json:"error"`
+	Data  interface{} `json:"data"`
 }
 
-func NewAPIResponse[T any](c echo.Context, err error, data T) error {
+func NewAPIResponse[T any](c echo.Context, err error, data T) *APIResponse {
 	apiErr, ok := err.(*APIError)
 	if !ok {
 		if valErrs, ok := err.(validation.Errors); ok {
@@ -20,10 +20,8 @@ func NewAPIResponse[T any](c echo.Context, err error, data T) error {
 		}
 	}
 
-	return c.JSON(
-		apiErr.GetHTTPStatusCode(),
-		&APIResponse[T]{
-			Error: apiErr,
-			Data:  data,
-		})
+	return &APIResponse{
+		Error: apiErr,
+		Data:  data,
+	}
 }

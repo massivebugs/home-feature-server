@@ -27,7 +27,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  err:
+                  error:
                     $ref: './api.yaml#/components/schemas/error'
                   data:
                     type: string
