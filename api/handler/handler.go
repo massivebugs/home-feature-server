@@ -10,16 +10,18 @@ import (
 )
 
 type Handlers struct {
-	PingHandler   *PingHandler
-	RepeatHandler *RepeatHandler
-	AuthHandler   *AuthHandler
+	PingHandler      *PingHandler
+	RepeatHandler    *RepeatHandler
+	AuthHandler      *AuthHandler
+	CashbunnyHandler *CashbunnyHandler
 }
 
 func NewAPIHandlers(cfg *config.Config, db *sql.DB) *Handlers {
 	return &Handlers{
-		PingHandler:   NewPingHandler(),
-		RepeatHandler: NewRepeatHandler(),
-		AuthHandler:   NewAuthHandler(cfg, db),
+		PingHandler:      NewPingHandler(),
+		RepeatHandler:    NewRepeatHandler(),
+		AuthHandler:      NewAuthHandler(cfg, db),
+		CashbunnyHandler: NewCashbunnyHandler(db),
 	}
 }
 

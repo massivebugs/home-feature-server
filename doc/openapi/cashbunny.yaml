@@ -1,0 +1,39 @@
+openapi: "3.0.3"
+
+info:
+  title: Cashbunny
+  version: 1.0.0
+servers:
+- url: "http://{host}:{port}"
+  description: Local development server
+  variables:
+    host:
+      default: localhost
+    port:
+      default: '1323'
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: './api.yaml#/components/securitySchemes/bearerAuth'
+paths:
+  /api/v1/secure/cashbunny/accounts:
+    get:
+      tags: 
+        - v1
+      operationId: cashbunny/accounts
+      description: Retrieves all accounts
+      summary: Retrieves all accounts
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: './api.yaml#/components/schemas/error'
+                  data:
+                    example: ""
