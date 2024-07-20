@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/labstack/echo/v4"
+	"github.com/massivebugs/home-feature-server/api/config"
 	"github.com/massivebugs/home-feature-server/api/dto"
 	"github.com/massivebugs/home-feature-server/db/service/user"
 	"github.com/massivebugs/home-feature-server/db/service/user_password"
@@ -12,11 +13,13 @@ import (
 )
 
 type AuthHandler struct {
+	cfg  *config.Config
 	auth *auth.Auth
 }
 
-func NewAuthHandler(db *sql.DB) *AuthHandler {
+func NewAuthHandler(cfg *config.Config, db *sql.DB) *AuthHandler {
 	return &AuthHandler{
+		cfg: cfg,
 		auth: auth.NewAuth(
 			db,
 			user.New(),
@@ -52,7 +55,7 @@ func (h *AuthHandler) CreateJWTToken(ctx echo.Context) *api.APIResponse {
 		return api.NewAPIResponse(ctx, err, "")
 	}
 
-	result, err := h.auth.CreateJWTToken(ctx.Request().Context(), req)
+	result, err := h.auth.CreateJWTToken(ctx.Request().Context(), h.cfg.JWTSecret, req)
 
 	return api.NewAPIResponse(ctx, err, result)
 }

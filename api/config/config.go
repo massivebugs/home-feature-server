@@ -17,6 +17,7 @@ const (
 type Config struct {
 	Environment EnvironmentType
 	APIPort     string
+	JWTSecret   string
 
 	DBHost     string
 	DBPort     string
@@ -32,6 +33,7 @@ func NewConfig() *Config {
 func (c *Config) Load() error {
 	c.Environment = EnvironmentType(os.Getenv("ENVIRONMENT"))
 	c.APIPort = os.Getenv("API_PORT")
+	c.JWTSecret = os.Getenv("JWT_SECRET")
 	c.DBHost = os.Getenv("MYSQL_HOST")
 	c.DBPort = os.Getenv("MYSQL_PORT")
 	c.DBDatabase = os.Getenv("MYSQL_DATABASE")
@@ -53,6 +55,10 @@ func (c *Config) validate() error {
 			&c.APIPort,
 			validation.Required,
 			is.Port,
+		),
+		validation.Field(
+			&c.JWTSecret,
+			validation.Required,
 		),
 		validation.Field(
 			&c.DBHost,

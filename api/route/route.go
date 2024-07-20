@@ -10,7 +10,7 @@ import (
 
 func RegisterRoutes(e *echo.Echo, cfg *config.Config, db *sql.DB) {
 	api := e.Group("/api")
-	h := handler.NewAPIHandlers(db)
+	h := handler.NewAPIHandlers(cfg, db)
 	registerV1Routes(api, cfg, h)
 }
 

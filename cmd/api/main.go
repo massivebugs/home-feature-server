@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/massivebugs/home-feature-server/api/config"
@@ -12,6 +13,12 @@ import (
 )
 
 func main() {
+	// TODO: Only in local?
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	fmt.Println("Checking config...")
 	cfg := config.NewConfig()
 	if err := cfg.Load(); err != nil {

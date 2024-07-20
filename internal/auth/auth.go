@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/massivebugs/home-feature-server/api/dto"
 	"github.com/massivebugs/home-feature-server/db/service/user"
@@ -76,7 +79,7 @@ func (s *Auth) CreateAuthUser(ctx context.Context, req *dto.UserAuthRequestDTO) 
 	return tx.Commit()
 }
 
-func (s *Auth) CreateJWTToken(ctx context.Context, req *dto.UserAuthRequestDTO) (string, error) {
+func (s *Auth) CreateJWTToken(ctx context.Context, jwtSecret string, req *dto.UserAuthRequestDTO) (string, error) {
 	// Retrieve user
 	u, err := s.userRepo.GetUserByName(ctx, s.db, req.Username)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
@@ -99,5 +102,17 @@ func (s *Auth) CreateJWTToken(ctx context.Context, req *dto.UserAuthRequestDTO) 
 		return "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
 	}
 
-	return "test_token", nil
+	// Set custom claims
+	claims := NewJWTClaims(time.Now(), 72, u.ID)
+
+	// Create token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	tokenStr, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenStr, nil
 }

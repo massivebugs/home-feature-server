@@ -15,11 +15,11 @@ type Handlers struct {
 	AuthHandler   *AuthHandler
 }
 
-func NewAPIHandlers(db *sql.DB) *Handlers {
+func NewAPIHandlers(cfg *config.Config, db *sql.DB) *Handlers {
 	return &Handlers{
 		PingHandler:   NewPingHandler(),
 		RepeatHandler: NewRepeatHandler(),
-		AuthHandler:   NewAuthHandler(db),
+		AuthHandler:   NewAuthHandler(cfg, db),
 	}
 }
 
