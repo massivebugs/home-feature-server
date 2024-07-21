@@ -14,3 +14,14 @@ func IsMoneyNotNegative(m *money.Money) func(v interface{}) error {
 		return nil
 	}
 }
+
+func IsValidCurrency(currencyCode string) func(v interface{}) error {
+	return func(v interface{}) error {
+		c := money.GetCurrency(currencyCode)
+		if c == nil {
+			return errors.New("unsupported or invalid currency")
+		}
+
+		return nil
+	}
+}

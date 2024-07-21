@@ -36,3 +36,42 @@ func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]Account,
 
 	return accounts, nil
 }
+
+func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *CreateAccountRequestDTO) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	err = s.accountRepo.IncrementIndex(
+		ctx,
+		tx,
+		cashbunny_account.IncrementIndexParams{
+			UserID:     userID,
+			OrderIndex: req.OrderIndex,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.accountRepo.CreateAccount(
+		ctx,
+		tx,
+		cashbunny_account.CreateAccountParams{
+			UserID:      userID,
+			Name:        req.Name,
+			Description: req.Description,
+			Balance:     req.Balance,
+			Currency:    req.Currency,
+			Type:        req.Type,
+			OrderIndex:  req.OrderIndex,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}

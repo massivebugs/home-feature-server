@@ -12,7 +12,15 @@ import (
 
 const createAccount = `-- name: CreateAccount :execresult
 INSERT INTO
-  cashbunny_accounts (user_id, name, description, balance, currency, type, order_index)
+  cashbunny_accounts (
+    user_id,
+    name,
+    description,
+    balance,
+    currency,
+    type,
+    order_index
+  )
 VALUES
   (?, ?, ?, ?, ?, ?, ?)
 `
@@ -20,11 +28,11 @@ VALUES
 type CreateAccountParams struct {
 	UserID      uint32
 	Name        string
-	Description sql.NullString
+	Description string
 	Balance     float64
 	Currency    string
 	Type        string
-	OrderIndex  int32
+	OrderIndex  uint32
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, db DBTX, arg CreateAccountParams) (sql.Result, error) {
@@ -39,15 +47,34 @@ func (q *Queries) CreateAccount(ctx context.Context, db DBTX, arg CreateAccountP
 	)
 }
 
+const incrementIndex = `-- name: IncrementIndex :exec
+UPDATE cashbunny_accounts
+SET
+  order_index = order_index + 1
+WHERE
+  user_id = ?
+  AND order_index >= ?
+`
+
+type IncrementIndexParams struct {
+	UserID     uint32
+	OrderIndex uint32
+}
+
+func (q *Queries) IncrementIndex(ctx context.Context, db DBTX, arg IncrementIndexParams) error {
+	_, err := db.ExecContext(ctx, incrementIndex, arg.UserID, arg.OrderIndex)
+	return err
+}
+
 const listAccounts = `-- name: ListAccounts :many
 SELECT
-    id, user_id, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
+  id, user_id, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
 FROM
-    cashbunny_accounts
+  cashbunny_accounts
 WHERE
-    user_id = ?
+  user_id = ?
 ORDER BY
-    order_index
+  order_index
 `
 
 func (q *Queries) ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyAccount, error) {

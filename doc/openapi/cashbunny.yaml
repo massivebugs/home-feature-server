@@ -20,7 +20,7 @@ paths:
     get:
       tags: 
         - v1
-      operationId: cashbunny/accounts
+      operationId: cashbunny/listAccounts
       description: Retrieves all accounts
       summary: Retrieves all accounts
       security:
@@ -37,3 +37,54 @@ paths:
                     $ref: './api.yaml#/components/schemas/error'
                   data:
                     example: ""
+    post:
+      tags: 
+        - v1
+      operationId: cashbunny/createAccount
+      description: Creates an account
+      summary: Creates an account
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Test account
+                description:
+                  type: string
+                  example: For savings
+                balance:
+                  type: number
+                  example: 476000
+                  description: unsigned floating number
+                currency:
+                  type: string
+                  example: JPY
+                type:
+                  type: string
+                  example: credit
+                order_index:
+                  type: number
+                  example: 0
+                  description: unsigned
+              required:
+                - name
+                - balance
+                - currency
+                - type
+                - order_index
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: './api.yaml#/components/schemas/error'

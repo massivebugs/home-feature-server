@@ -33,3 +33,22 @@ func (h *CashbunnyHandler) ListAccounts(ctx echo.Context) *api.APIResponse {
 
 	return api.NewAPIResponse(err, response.NewListAccountResponseDTO(result))
 }
+
+func (h *CashbunnyHandler) CreateAccount(ctx echo.Context) *api.APIResponse {
+	token := ctx.Get("user").(*jwt.Token)
+	claims := token.Claims.(*auth.JWTClaims)
+
+	req := new(cashbunny.CreateAccountRequestDTO)
+
+	if err := ctx.Bind(req); err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	if err := ctx.Validate(req); err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	err := h.cashbunny.CreateAccount(ctx.Request().Context(), claims.UserID, req)
+
+	return api.NewAPIResponse(err, nil)
+}

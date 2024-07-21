@@ -11,8 +11,9 @@ import (
 type AccountType string
 
 const (
-	AccountTypeCredit AccountType = "credit"
-	AccountTypeDebit  AccountType = "debit"
+	AccountTypeCredit    AccountType = "credit"
+	AccountTypeDebit     AccountType = "debit"
+	AccountTypeLiability AccountType = "liability"
 )
 
 type Account struct {
@@ -29,7 +30,7 @@ func NewAccount(account *cashbunny_account.CashbunnyAccount) (Account, error) {
 	a := Account{
 		ID:          account.ID,
 		Name:        account.Name,
-		Description: account.Description.String,
+		Description: account.Description,
 		Balance:     money.NewFromFloat(account.Balance, account.Currency),
 		Type:        AccountType(account.Type),
 		CreatedAt:   account.CreatedAt,
@@ -58,7 +59,7 @@ func (e *Account) validate() error {
 		validation.Field(
 			&e.Type,
 			validation.Required,
-			validation.In(AccountTypeCredit, AccountTypeDebit),
+			validation.In(AccountTypeCredit, AccountTypeDebit, AccountTypeLiability),
 		),
 	)
 }

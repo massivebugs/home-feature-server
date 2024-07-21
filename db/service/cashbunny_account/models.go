@@ -13,11 +13,11 @@ type CashbunnyAccount struct {
 	ID          uint32
 	UserID      uint32
 	Name        string
-	Description sql.NullString
+	Description string
 	Balance     float64
 	Currency    string
 	Type        string
-	OrderIndex  int32
+	OrderIndex  uint32
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   sql.NullTime

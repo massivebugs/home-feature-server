@@ -33,4 +33,5 @@ func registerV1Routes(e *echo.Group, cfg *config.Config, jwtMiddleware echo.Midd
 	v1Secure.POST("/auth", handler.CreateEchoHandlerFunc(cfg, h.AuthHandler.GetAuthUser))
 
 	v1Secure.GET("/cashbunny/accounts", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.ListAccounts))
+	v1Secure.POST("/cashbunny/accounts", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.CreateAccount))
 }

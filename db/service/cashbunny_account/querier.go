@@ -11,6 +11,7 @@ import (
 
 type Querier interface {
 	CreateAccount(ctx context.Context, db DBTX, arg CreateAccountParams) (sql.Result, error)
+	IncrementIndex(ctx context.Context, db DBTX, arg IncrementIndexParams) error
 	ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyAccount, error)
 }
 
