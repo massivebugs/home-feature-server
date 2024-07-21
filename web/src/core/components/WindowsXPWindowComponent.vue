@@ -32,7 +32,7 @@
         <button v-if="options.controls?.close" aria-label="Close" @click="options.onClose" />
       </div>
     </div>
-    <WindowsXPWindowToolbarComponent v-if="options.toolbar" :rows="options.toolbar" />
+    <WindowToolbarComponent v-if="options.toolbar" :rows="options.toolbar" />
     <div class="window-body">
       <slot />
     </div>
@@ -53,9 +53,9 @@
 <script setup lang="ts">
 import { useDraggableResizable } from '@/core/composables/useDragResize'
 import CoreContextMenuComponent from './CoreContextMenuComponent.vue'
-import WindowsXPWindowToolbarComponent, {
+import WindowToolbarComponent, {
   type WindowToolbarRow,
-} from './WindowsXPWindowToolbarComponent.vue'
+} from './WindowToolbarComponent.vue'
 import type { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
 import { onUpdated, ref } from 'vue'

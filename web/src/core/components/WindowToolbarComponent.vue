@@ -50,6 +50,5 @@ function onMenuItemClick(e: Event, item: WindowToolbarItem) {
 </script>
 
 <style scoped lang="scss">
-@use 'xp.css/dist/XP.css';
-@use '@/assets/xp.custom';
+@use '@/assets/theme.default';
 </style>
