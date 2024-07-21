@@ -1,7 +1,7 @@
 <template>
-  <nav class="window-toolbar">
+  <nav class="twc-window-toolbar">
     <template v-for="row in rows" :key="row">
-      <ul v-if="row.isMenu" class="window-menu">
+      <ul v-if="row.isMenu" class="twc-window-menu">
         <li
           v-for="(item, idx) in row.items"
           :key="idx"
@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { type GetContextualMetrics, type SetContextMenu } from '../composables/useContext'
-import type { ContextMenuOptions } from './CoreContextMenuComponent.vue'
+import type { ContextMenuOptions } from './ContextMenuComponent.vue'
 import { inject, type Ref } from 'vue'
 
 export type WindowToolbarItem = {

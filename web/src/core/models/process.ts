@@ -1,4 +1,4 @@
-import type { WindowOptions } from '../components/WindowsXPWindowComponent.vue'
+import type { WindowOptions } from '../components/WindowComponent.vue'
 import type { Program } from './program'
 
 export class Process {

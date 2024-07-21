@@ -1,6 +1,6 @@
 <template>
   <div
-    class="twc-window-component window"
+    class="twc-window-component twc-window"
     ref="windowEl"
     @mousedown="options.isResizable && !isMaximized ? onResizeStart($event) : undefined"
     @touchstart="options.isResizable && !isMaximized ? onResizeStart($event) : undefined"
@@ -13,7 +13,7 @@
     }"
   >
     <div
-      class="title-bar"
+      class="twc-title-bar"
       @mousedown="options.isDraggable && !isMaximized ? onDragStart($event) : undefined"
       @touchstart="options.isDraggable && !isMaximized ? onDragStart($event) : undefined"
       @dblclick.self="isMaximized ? restoreSize() : maximizeSize()"
@@ -21,27 +21,37 @@
         borderRadius: isMaximized ? 0 : undefined,
       }"
     >
-      <div class="title-bar-text">{{ options.title }}</div>
-      <div class="title-bar-controls">
-        <button v-if="options.controls?.minimize" aria-label="Minimize" />
+      <div class="twc-title-bar-title">{{ options.title }}</div>
+      <div class="twc-title-bar-controls">
         <button
-          v-if="options.controls?.maximize"
-          :aria-label="isMaximized ? 'Restore' : 'Maximize'"
-          @click="isMaximized ? restoreSize() : maximizeSize()"
+          class="twc-title-bar-close-btn"
+          v-if="options.controls?.minimize"
+          aria-label="Minimize"
         />
-        <button v-if="options.controls?.close" aria-label="Close" @click="options.onClose" />
+        <button
+          :class="[isMaximized ? 'twc-title-bar-restore-btn' : 'twc-title-bar-maximize-btn']"
+          v-if="options.controls?.maximize"
+          @click="isMaximized ? restoreSize() : maximizeSize()"
+          :aria-label="isMaximized ? 'Restore' : 'Maximize'"
+        />
+        <button
+          class="twc-title-bar-close-btn"
+          v-if="options.controls?.close"
+          aria-label="Close"
+          @click="options.onClose"
+        />
       </div>
     </div>
     <WindowToolbarComponent v-if="options.toolbar" :rows="options.toolbar" />
-    <div class="window-body">
+    <div class="twc-window-body">
       <slot />
     </div>
-    <div v-if="options.isShowStatusBar" class="status-bar">
-      <p v-for="info in options.statusBarInfo || []" :key="info" class="status-bar-field">
+    <div v-if="options.isShowStatusBar" class="twc-status-bar">
+      <p v-for="info in options.statusBarInfo || []" :key="info">
         {{ info }}
       </p>
     </div>
-    <CoreContextMenuComponent
+    <ContextMenuComponent
       ref="contextMenuEl"
       v-if="contextMenu"
       :options="contextMenu"
@@ -52,10 +62,8 @@
 
 <script setup lang="ts">
 import { useDraggableResizable } from '@/core/composables/useDragResize'
-import CoreContextMenuComponent from './CoreContextMenuComponent.vue'
-import WindowToolbarComponent, {
-  type WindowToolbarRow,
-} from './WindowToolbarComponent.vue'
+import ContextMenuComponent from './ContextMenuComponent.vue'
+import WindowToolbarComponent, { type WindowToolbarRow } from './WindowToolbarComponent.vue'
 import type { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
 import { onUpdated, ref } from 'vue'
@@ -132,8 +140,7 @@ function restoreSize() {
 </script>
 
 <style scoped lang="scss">
-@use 'xp.css/dist/XP.css';
-@use '@/assets/xp.custom';
+@use '@/assets/theme.default';
 
 .twc-window-component {
   position: absolute;
@@ -142,29 +149,5 @@ function restoreSize() {
   // Just enough base size to display the title bar control buttons
   min-width: 100px;
   min-height: 30px;
-}
-
-.title-bar {
-  height: auto;
-}
-
-.window-body {
-  overflow: auto;
-  margin: 0 3px;
-  flex-grow: 1;
-}
-
-.status-bar {
-  overflow: hidden;
-}
-
-.title-bar-text {
-  margin: 0;
-  min-width: 0;
-  text-wrap: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  pointer-events: none;
-  user-select: none;
 }
 </style>

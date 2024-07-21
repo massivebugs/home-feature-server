@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { Process } from './core/models/process'
 import { Program } from './core/models/program'
 import { RelativePosition } from './core/models/relative_position'
@@ -10,13 +11,15 @@ import { RelativeSize } from './core/models/relative_size'
 import { useStore } from './core/stores'
 import BudgetPlannerView from './modules/budget_planner/views/BudgetPlannerView.vue'
 
+const {t} = useI18n();
+
 const store = useStore()
 store.processes.set(
   '1',
   new Process('1', new Program(BudgetPlannerView, {}), {
     pos: new RelativePosition(10, 20),
     size: new RelativeSize(60, 70),
-    title: 'Budget Planner',
+    title: t('budgetPlanner.name'),
     controls: {
       minimize: true,
       maximize: true,

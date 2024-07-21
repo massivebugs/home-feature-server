@@ -24,7 +24,7 @@
       <template #overview_label>
         <div class="twc-budget-planner-tab-label">
           <OverviewTabIconComponent />
-          {{ $t('budgetPlanner.overview') }}
+          {{ t('budgetPlanner.overview') }}
         </div>
       </template>
       <template #overview>
@@ -35,7 +35,7 @@
       <template #accounts_label>
         <div class="twc-budget-planner-tab-label">
           <AccountsTabIconComponent />
-          {{ $t('budgetPlanner.accounts') }}
+          {{ t('budgetPlanner.accounts') }}
         </div>
       </template>
       <template #accounts>
@@ -46,7 +46,7 @@
       <template #transactions_label>
         <div class="twc-budget-planner-tab-label">
           <TransactionsTabIconComponent />
-          {{ $t('budgetPlanner.transactions') }}
+          {{ t('budgetPlanner.transactions') }}
         </div>
       </template>
       <template #transactions>
@@ -55,7 +55,7 @@
       <template #incomes_label>
         <div class="twc-budget-planner-tab-label">
           <IncomesTabIconComponent />
-          {{ $t('budgetPlanner.incomes') }}
+          {{ t('budgetPlanner.incomes') }}
         </div>
       </template>
       <template #incomes>
@@ -64,7 +64,7 @@
       <template #expenses_label>
         <div class="twc-budget-planner-tab-label">
           <ExpensesTabIconComponent />
-          {{ $t('budgetPlanner.expenses') }}
+          {{ t('budgetPlanner.expenses') }}
         </div>
       </template>
       <template #expenses>
@@ -85,7 +85,9 @@ import IncomesTabIconComponent from '@/modules/budget_planner/components/Incomes
 import ExpensesTabIconComponent from '@/modules/budget_planner/components/ExpensesTabIconComponent.vue'
 import { useStore } from '@/modules/budget_planner/stores'
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
+const {t} = useI18n()
 const store = useStore()
 const currentTabId = ref<string>('overview')
 

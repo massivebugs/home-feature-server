@@ -13,13 +13,14 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(
   createI18n({
+    legacy: false,
     locale: 'en',
     fallbackLocale: 'ja',
     messages: {
       en: {
         home: 'Home',
         budgetPlanner: {
-          name: 'Budget Planner',
+          name: 'Cashbunny',
           overview: 'Overview',
           accounts: 'Accounts',
           transactions: 'Transactions',
@@ -31,7 +32,7 @@ app.use(
       ja: {
         home: 'ホーム',
         budgetPlanner: {
-          name: '家計簿',
+          name: 'Cashbunny',
           overview: 'Overview',
           accounts: 'Accounts',
           transactions: 'Transactions',
