@@ -3,8 +3,35 @@ package response
 import (
 	"time"
 
+	"github.com/massivebugs/home-feature-server/db/service/cashbunny_category"
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
+
+type CategoryResponseDTO struct {
+	ID          uint32    `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func NewCategoryResponseDTO(c *cashbunny_category.CashbunnyCategory) CategoryResponseDTO {
+	return CategoryResponseDTO{
+		ID:          c.ID,
+		Name:        c.Description,
+		Description: c.Description,
+		CreatedAt:   c.CreatedAt,
+		UpdatedAt:   c.UpdatedAt,
+	}
+}
+
+func NewListCategoriesResponseDTO(categories []*cashbunny_category.CashbunnyCategory) []CategoryResponseDTO {
+	result := make([]CategoryResponseDTO, len(categories))
+	for idx, c := range categories {
+		result[idx] = NewCategoryResponseDTO(c)
+	}
+	return result
+}
 
 type ListAccountResponseDTO struct {
 	ID          uint32                `json:"id"`

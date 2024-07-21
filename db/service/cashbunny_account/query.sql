@@ -2,6 +2,7 @@
 INSERT INTO
   cashbunny_accounts (
     user_id,
+    category_id,
     name,
     description,
     balance,
@@ -10,7 +11,7 @@ INSERT INTO
     order_index
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?);
+  (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: ListAccounts :many
 SELECT

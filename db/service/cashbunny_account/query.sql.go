@@ -14,6 +14,7 @@ const createAccount = `-- name: CreateAccount :execresult
 INSERT INTO
   cashbunny_accounts (
     user_id,
+    category_id,
     name,
     description,
     balance,
@@ -22,11 +23,12 @@ INSERT INTO
     order_index
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?)
+  (?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateAccountParams struct {
 	UserID      uint32
+	CategoryID  uint32
 	Name        string
 	Description string
 	Balance     float64
@@ -38,6 +40,7 @@ type CreateAccountParams struct {
 func (q *Queries) CreateAccount(ctx context.Context, db DBTX, arg CreateAccountParams) (sql.Result, error) {
 	return db.ExecContext(ctx, createAccount,
 		arg.UserID,
+		arg.CategoryID,
 		arg.Name,
 		arg.Description,
 		arg.Balance,
@@ -68,7 +71,7 @@ func (q *Queries) IncrementIndex(ctx context.Context, db DBTX, arg IncrementInde
 
 const listAccounts = `-- name: ListAccounts :many
 SELECT
-  id, user_id, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
+  id, user_id, category_id, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
 FROM
   cashbunny_accounts
 WHERE
@@ -89,6 +92,7 @@ func (q *Queries) ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
+			&i.CategoryID,
 			&i.Name,
 			&i.Description,
 			&i.Balance,

@@ -2,10 +2,29 @@ package cashbunny
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/go-ozzo/ozzo-validation/is"
 )
 
+type CreateCategoryRequestDTO struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+func (r *CreateCategoryRequestDTO) Validate() error {
+	return validation.ValidateStruct(
+		r,
+		validation.Field(
+			&r.Name,
+			validation.Required,
+		),
+		validation.Field(
+			&r.Description,
+			validation.Required,
+		),
+	)
+}
+
 type CreateAccountRequestDTO struct {
+	CategoryID  uint32  `json:"category_id"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Balance     float64 `json:"balance"`
@@ -17,6 +36,10 @@ type CreateAccountRequestDTO struct {
 func (r *CreateAccountRequestDTO) Validate() error {
 	return validation.ValidateStruct(
 		r,
+		validation.Field(
+			&r.CategoryID,
+			validation.Required,
+		),
 		validation.Field(
 			&r.Name,
 			validation.Required,
@@ -38,11 +61,11 @@ func (r *CreateAccountRequestDTO) Validate() error {
 		validation.Field(
 			&r.Type,
 			validation.Required,
-			validation.In(string(AccountTypeCredit), string(AccountTypeDebit), string(AccountTypeLiability)),
+			validation.In(string(AccountTypeCredit), string(AccountTypeDebit)),
 		),
 		validation.Field(
 			&r.OrderIndex,
-			is.UTFDigit,
+			validation.Required,
 		),
 	)
 }

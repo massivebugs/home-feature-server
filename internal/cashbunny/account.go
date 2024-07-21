@@ -11,9 +11,8 @@ import (
 type AccountType string
 
 const (
-	AccountTypeCredit    AccountType = "credit"
-	AccountTypeDebit     AccountType = "debit"
-	AccountTypeLiability AccountType = "liability"
+	AccountTypeCredit AccountType = "credit"
+	AccountTypeDebit  AccountType = "debit"
 )
 
 type Account struct {
@@ -59,7 +58,7 @@ func (e *Account) validate() error {
 		validation.Field(
 			&e.Type,
 			validation.Required,
-			validation.In(AccountTypeCredit, AccountTypeDebit, AccountTypeLiability),
+			validation.In(AccountTypeCredit, AccountTypeDebit),
 		),
 	)
 }

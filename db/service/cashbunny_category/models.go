@@ -2,23 +2,18 @@
 // versions:
 //   sqlc v1.25.0
 
-package cashbunny_account
+package cashbunny_category
 
 import (
 	"database/sql"
 	"time"
 )
 
-type CashbunnyAccount struct {
+type CashbunnyCategory struct {
 	ID          uint32
 	UserID      uint32
-	CategoryID  uint32
 	Name        string
 	Description string
-	Balance     float64
-	Currency    string
-	Type        string
-	OrderIndex  uint32
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   sql.NullTime
