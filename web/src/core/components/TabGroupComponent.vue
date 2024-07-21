@@ -45,6 +45,5 @@ const isCurrentTab = (tabId: string) => {
 </script>
 
 <style scoped lang="scss">
-@use 'xp.css/dist/XP.css';
-@use '@/assets/xp.custom';
+@use '@/assets/theme.default';
 </style>

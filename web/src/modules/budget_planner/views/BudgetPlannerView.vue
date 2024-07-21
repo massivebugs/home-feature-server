@@ -1,6 +1,6 @@
 <template>
   <div class="twc-budget-planner-view">
-    <WindowsXPTabGroupCompmonent
+    <TabGroupCompmonent
       @tab-click="(e) => (currentTabId = e.tabId)"
       :selected-tab-id="currentTabId"
       :tabs="[
@@ -70,12 +70,12 @@
       <template #expenses>
         <div>Expenses</div>
       </template>
-    </WindowsXPTabGroupCompmonent>
+    </TabGroupCompmonent>
   </div>
 </template>
 
 <script setup lang="ts">
-import WindowsXPTabGroupCompmonent from '@/core/components/WindowsXPTabGroupComponent.vue'
+import TabGroupCompmonent from '@/core/components/TabGroupComponent.vue'
 import DataTableComponent from '@/modules/budget_planner/components/DataTableComponent.vue'
 import AccountingBalanceComponent from '@/modules/budget_planner/components/AccountingBalanceComponent.vue'
 import OverviewTabIconComponent from '@/modules/budget_planner/components/OverviewTabIconComponent.vue'
