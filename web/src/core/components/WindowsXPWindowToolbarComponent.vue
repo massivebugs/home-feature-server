@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { type GetContextualMetrics, type SetContextMenu } from '../composables/useContext'
-import type { ContextMenuOptions } from './WindowsXPContextMenuComponent.vue'
+import type { ContextMenuOptions } from './CoreContextMenuComponent.vue'
 import { inject, type Ref } from 'vue'
 
 export type WindowToolbarItem = {

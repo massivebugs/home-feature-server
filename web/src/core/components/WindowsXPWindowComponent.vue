@@ -41,7 +41,7 @@
         {{ info }}
       </p>
     </div>
-    <WindowsXPContextMenuComponent
+    <CoreContextMenuComponent
       ref="contextMenuEl"
       v-if="contextMenu"
       :options="contextMenu"
@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { useDraggableResizable } from '@/core/composables/useDragResize'
-import WindowsXPContextMenuComponent from './WindowsXPContextMenuComponent.vue'
+import CoreContextMenuComponent from './CoreContextMenuComponent.vue'
 import WindowsXPWindowToolbarComponent, {
   type WindowToolbarRow,
 } from './WindowsXPWindowToolbarComponent.vue'
