@@ -1,16 +1,16 @@
 <template>
   <main ref="desktopViewEl">
     <template v-for="process in store.processes.values()" :key="process.id">
-      <WindowsXPWindowComponent :options="process.windowOptions">
+      <WindowComponent :options="process.windowOptions">
         <component :is="process.program.component" v-bind="process.program.props"></component>
-      </WindowsXPWindowComponent>
+      </WindowComponent>
     </template>
   </main>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import WindowsXPWindowComponent from '../components/WindowsXPWindowComponent.vue'
+import WindowComponent from '../components/WindowComponent.vue'
 import { useContext } from '../composables/useContext'
 import { useStore } from '../stores'
 

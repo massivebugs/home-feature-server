@@ -50,8 +50,7 @@ const contextMenuEl = ref()
 </script>
 
 <style scoped lang="scss">
-@use 'xp.css/dist/XP.css';
-@use '@/assets/xp.custom';
+@use '@/assets/theme.default';
 
 .twc-context-menu {
   z-index: 999;

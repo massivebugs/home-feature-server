@@ -13,30 +13,41 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(
   createI18n({
+    legacy: false,
     locale: 'en',
     fallbackLocale: 'ja',
     messages: {
       en: {
+        app: {
+          name: 'Massivebugs Systems',
+        },
+        login: {
+          title: 'Log into @:app.name',
+          login: 'Login',
+        },
         home: 'Home',
         budgetPlanner: {
-          name: 'Budget Planner',
+          name: 'Cashbunny',
           overview: 'Overview',
           accounts: 'Accounts',
           transactions: 'Transactions',
-          incomes: 'Incomes',
-          expenses: 'Expenses',
           balance: 'Balance',
         },
       },
       ja: {
+        app: {
+          name: 'Massivebugs Systems',
+        },
+        login: {
+          title: '@:app.name にログインする',
+          login: 'ログイン',
+        },
         home: 'ホーム',
         budgetPlanner: {
-          name: '家計簿',
+          name: 'Cashbunny',
           overview: 'Overview',
           accounts: 'Accounts',
           transactions: 'Transactions',
-          incomes: 'Incomes',
-          expenses: 'Expenses',
           balance: '合計',
         },
       },

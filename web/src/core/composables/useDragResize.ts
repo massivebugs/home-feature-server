@@ -21,7 +21,7 @@ const ResizeCursor = {
 
 export type ResizeCursor = (typeof ResizeCursor)[keyof typeof ResizeCursor]
 
-const DRAG_CORNER_OFFSET_PX = 10
+const DRAG_CORNER_OFFSET_PX = 5
 
 export function useDraggableResizable(
   initialPos: RelativePosition,
