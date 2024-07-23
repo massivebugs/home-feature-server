@@ -1,20 +1,20 @@
 <template>
   <section class="tabs">
-    <menu role="tablist">
+    <menu>
       <button
         role="tab"
         v-for="tab in tabs"
         :key="tab.id"
         :aria-selected="isCurrentTab(tab.id)"
         :aria-controls="tab.id"
-        @click="$emit('tabClick', { tabId: tab.id })"
+        @click="emit('tabClick', { tabId: tab.id })"
       >
         <slot :name="tab.id + '_label'">
           {{ tab.label }}
         </slot>
       </button>
     </menu>
-    <article role="tabpanel">
+    <article>
       <slot :name="selectedTabId" />
     </article>
   </section>
@@ -46,4 +46,9 @@ const isCurrentTab = (tabId: string) => {
 
 <style scoped lang="scss">
 @use '@/assets/theme.default';
+
+menu {
+  padding: 0;
+  margin: 0;
+}
 </style>

@@ -2,13 +2,12 @@
 
 .twc-window {
   background: colors.$white;
-  border: 3px double colors.$rich-black;
-  border-radius: 3px;
+  border: 1px solid colors.$black;
   overflow: hidden;
 }
 
 .twc-title-bar {
-  background-color: colors.$rich-black;
+  background-color: colors.$black;
   color: colors.$white;
   display: flex;
   justify-content: space-between;
@@ -17,23 +16,12 @@
 }
 
 nav.twc-window-toolbar {
-  color: colors.$rich-black;
+  color: colors.$black;
   display: flex;
   flex-direction: column;
-  margin: 0 3px;
   user-select: none;
   overflow: hidden;
-  > * {
-    border-bottom: 3px double colors.$rich-black;
-    &:not(:first-child) {
-      border-top: 3px double colors.$rich-black;
-    }
-    &:last-child {
-      box-shadow: 0 -3px 3px -3px colors.$rich-black inset;
-      -webkit-box-shadow: 0 -3px 3px -3px colors.$rich-black inset;
-      -moz-box-shadow: 0 -3px 3px -3px colors.$rich-black inset;
-    }
-  }
+  border-bottom: 1px solid colors.$black;
 
   > .title-bar-title {
     margin: 0;
@@ -54,7 +42,7 @@ nav.twc-window-toolbar {
     padding: 0 7px;
     line-height: 24px;
     &:hover {
-      background-color: colors.$rich-black;
+      background-color: colors.$black;
       color: colors.$white;
     }
   }
@@ -62,7 +50,6 @@ nav.twc-window-toolbar {
 
 .twc-window-body {
   overflow: auto;
-  margin: 0 3px;
   flex-grow: 1;
 }
 
@@ -73,17 +60,17 @@ nav.twc-window-toolbar {
     margin: 0;
     padding: 3px;
     flex-grow: 1;
-    border-top: 3px double colors.$rich-black;
+    border-top: 1px solid colors.$black;
     &:not(:last-child) {
-      border-right: 3px double colors.$rich-black;
+      border-right: 1px solid colors.$black;
     }
   }
 }
 
 div.context-menu {
   padding: 2px;
-  border: 1px solid colors.$rich-black;
-  background-color: white;
+  border: 1px solid colors.$black;
+  background-color: colors.$white;
   // box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
   // -webkit-box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
   // -moz-box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
@@ -92,7 +79,7 @@ div.context-menu {
 
   hr {
     margin: 4px 2px;
-    border-color: colors.$rich-black;
+    border-color: colors.$black;
     border-style: solid;
     border-bottom: 0;
   }
@@ -110,8 +97,8 @@ div.context-menu {
     align-items: center;
     justify-content: space-between;
     &:hover {
-      background-color: colors.$rich-black;
-      color: white;
+      background-color: colors.$black;
+      color: colors.$white;
     }
     > span.context-menu__item-icon {
       width: 17px;

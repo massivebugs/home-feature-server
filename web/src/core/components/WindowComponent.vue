@@ -27,19 +27,25 @@
           class="twc-title-bar-close-btn"
           v-if="options.controls?.minimize"
           aria-label="Minimize"
-        />
+        >
+          _
+        </button>
         <button
           :class="[isMaximized ? 'twc-title-bar-restore-btn' : 'twc-title-bar-maximize-btn']"
           v-if="options.controls?.maximize"
           @click="isMaximized ? restoreSize() : maximizeSize()"
           :aria-label="isMaximized ? 'Restore' : 'Maximize'"
-        />
+        >
+          {{ isMaximized ? '■' : '□' }}
+        </button>
         <button
           class="twc-title-bar-close-btn"
           v-if="options.controls?.close"
           aria-label="Close"
           @click="options.onClose"
-        />
+        >
+          X
+        </button>
       </div>
     </div>
     <WindowToolbarComponent v-if="options.toolbar" :rows="options.toolbar" />

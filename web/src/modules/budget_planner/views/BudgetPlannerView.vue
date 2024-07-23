@@ -13,12 +13,6 @@
         {
           id: 'transactions',
         },
-        {
-          id: 'incomes',
-        },
-        {
-          id: 'expenses',
-        },
       ]"
     >
       <template #overview_label>
@@ -28,9 +22,7 @@
         </div>
       </template>
       <template #overview>
-        <div>
-          <AccountingBalanceComponent :balance="store.summary?.balances || []" />
-        </div>
+        <AccountingBalanceComponent :balance="store.summary?.balances || []" />
       </template>
       <template #accounts_label>
         <div class="twc-budget-planner-tab-label">
@@ -39,36 +31,13 @@
         </div>
       </template>
       <template #accounts>
-        <div>
-          <DataTableComponent />
-        </div>
+        <DataTableComponent />
       </template>
       <template #transactions_label>
         <div class="twc-budget-planner-tab-label">
           <TransactionsTabIconComponent />
           {{ t('budgetPlanner.transactions') }}
         </div>
-      </template>
-      <template #transactions>
-        <div>Transactions</div>
-      </template>
-      <template #incomes_label>
-        <div class="twc-budget-planner-tab-label">
-          <IncomesTabIconComponent />
-          {{ t('budgetPlanner.incomes') }}
-        </div>
-      </template>
-      <template #incomes>
-        <div>Incomes</div>
-      </template>
-      <template #expenses_label>
-        <div class="twc-budget-planner-tab-label">
-          <ExpensesTabIconComponent />
-          {{ t('budgetPlanner.expenses') }}
-        </div>
-      </template>
-      <template #expenses>
-        <div>Expenses</div>
       </template>
     </TabGroupCompmonent>
   </div>
@@ -81,13 +50,11 @@ import AccountingBalanceComponent from '@/modules/budget_planner/components/Acco
 import OverviewTabIconComponent from '@/modules/budget_planner/components/OverviewTabIconComponent.vue'
 import AccountsTabIconComponent from '@/modules/budget_planner/components/AccountsTabIconComponent.vue'
 import TransactionsTabIconComponent from '@/modules/budget_planner/components/TransactionsTabIconComponent.vue'
-import IncomesTabIconComponent from '@/modules/budget_planner/components/IncomesTabIconComponent.vue'
-import ExpensesTabIconComponent from '@/modules/budget_planner/components/ExpensesTabIconComponent.vue'
 import { useStore } from '@/modules/budget_planner/stores'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const {t} = useI18n()
+const { t } = useI18n()
 const store = useStore()
 const currentTabId = ref<string>('overview')
 
@@ -99,8 +66,8 @@ onMounted(() => {
 <style scoped lang="scss">
 .twc-budget-planner-view {
   width: 100%;
-  height: 98%;
-  padding: 5px 2px 0 2px;
+  height: 100%;
+  padding: 5px;
 }
 
 .twc-budget-planner-tab-label {

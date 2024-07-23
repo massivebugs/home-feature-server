@@ -18,26 +18,36 @@ app.use(
     fallbackLocale: 'ja',
     messages: {
       en: {
+        app: {
+          name: 'Massivebugs Systems',
+        },
+        login: {
+          title: 'Log into @:app.name',
+          login: 'Login',
+        },
         home: 'Home',
         budgetPlanner: {
           name: 'Cashbunny',
           overview: 'Overview',
           accounts: 'Accounts',
           transactions: 'Transactions',
-          incomes: 'Incomes',
-          expenses: 'Expenses',
           balance: 'Balance',
         },
       },
       ja: {
+        app: {
+          name: 'Massivebugs Systems',
+        },
+        login: {
+          title: '@:app.name にログインする',
+          login: 'ログイン',
+        },
         home: 'ホーム',
         budgetPlanner: {
           name: 'Cashbunny',
           overview: 'Overview',
           accounts: 'Accounts',
           transactions: 'Transactions',
-          incomes: 'Incomes',
-          expenses: 'Expenses',
           balance: '合計',
         },
       },
