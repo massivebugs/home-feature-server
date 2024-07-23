@@ -30,7 +30,7 @@ func registerV1Routes(e *echo.Group, cfg *config.Config, jwtMiddleware echo.Midd
 	// Authenticated routes
 	v1Secure := v1.Group("/secure")
 	v1Secure.Use(jwtMiddleware)
-	v1Secure.POST("/auth", handler.CreateEchoHandlerFunc(cfg, h.AuthHandler.GetAuthUser))
+	v1Secure.GET("/auth", handler.CreateEchoHandlerFunc(cfg, h.AuthHandler.GetAuthUser))
 
 	v1Secure.POST("/cashbunny/categories", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.CreateCategory))
 	v1Secure.GET("/cashbunny/categories", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.ListCategories))

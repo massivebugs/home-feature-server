@@ -44,7 +44,7 @@ type ListAccountResponseDTO struct {
 	UpdatedAt   time.Time             `json:"updated_at"`
 }
 
-func NewListAccountResponseDTO(accounts []cashbunny.Account) []ListAccountResponseDTO {
+func NewListAccountResponseDTO(accounts []*cashbunny.Account) []ListAccountResponseDTO {
 	result := make([]ListAccountResponseDTO, len(accounts))
 	for idx, a := range accounts {
 		result[idx] = ListAccountResponseDTO{

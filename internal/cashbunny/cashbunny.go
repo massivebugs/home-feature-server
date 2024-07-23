@@ -107,13 +107,13 @@ func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *Creat
 	return tx.Commit()
 }
 
-func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]Account, error) {
+func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]*Account, error) {
 	allAccountData, err := s.accountRepo.ListAccounts(ctx, s.db, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	accounts := make([]Account, len(allAccountData))
+	accounts := make([]*Account, len(allAccountData))
 	for idx, d := range allAccountData {
 		a, err := NewAccount(d)
 		if err != nil {
@@ -124,3 +124,5 @@ func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]Account,
 
 	return accounts, nil
 }
+
+// func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32) ()

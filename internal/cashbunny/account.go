@@ -25,8 +25,8 @@ type Account struct {
 	UpdatedAt   time.Time
 }
 
-func NewAccount(account *cashbunny_account.CashbunnyAccount) (Account, error) {
-	a := Account{
+func NewAccount(account *cashbunny_account.CashbunnyAccount) (*Account, error) {
+	a := &Account{
 		ID:          account.ID,
 		Name:        account.Name,
 		Description: account.Description,
