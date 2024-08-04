@@ -32,6 +32,13 @@ export const i18nOptions: I18nOptions = {
         accountDeleteConfirmMessage:
           'Deleting this account will affect your transactions and balances. Would you really like to delete this account?',
       },
+      portfolio: {
+        name: 'Portfolio',
+        toolbarTitle: "Portfolio - {'@'}massivebugs",
+        help: 'Help',
+        about: 'About Portfolio',
+        githubLinkTitle: 'Check out my GitHub',
+      },
     },
     ja: {
       app: {
@@ -59,6 +66,13 @@ export const i18nOptions: I18nOptions = {
         accountDeleteConfirmTitle: '本当にこのアカウントを削除しますか？',
         accountDeleteConfirmMessage:
           'アカウントを削除すると金額情報やトランザクション記録も影響されます。本当に削除しますか？',
+      },
+      portfolio: {
+        name: 'ポートフォリオ',
+        toolbarTitle: "ポートフォリオ - {'@'}massivebugs",
+        help: 'ヘルプ',
+        about: 'ポートフォリオについて',
+        githubLinkTitle: 'GitHubを見てみる',
       },
     },
   },

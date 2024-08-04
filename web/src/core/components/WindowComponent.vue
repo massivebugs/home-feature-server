@@ -26,27 +26,25 @@
         borderRadius: isMaximized ? 0 : undefined,
       }"
     >
-      <div class="title-bar-title">{{ options.title }}</div>
+      <div class="title-bar-title">{{ title }}</div>
       <div class="title-bar-controls">
-        <button v-if="options.controls?.minimize" aria-label="Minimize">_</button>
+        <button v-if="controls?.minimize" aria-label="Minimize">_</button>
         <button
-          v-if="options.controls?.maximize"
+          v-if="controls?.maximize"
           @click="isMaximized ? restoreSize() : maximizeSize()"
           :aria-label="isMaximized ? 'Restore' : 'Maximize'"
         >
           {{ isMaximized ? '■' : '□' }}
         </button>
-        <button v-if="options.controls?.close" aria-label="Close" @click="emit('clickClose')">
-          X
-        </button>
+        <button v-if="controls?.close" aria-label="Close" @click="emit('clickClose')">X</button>
       </div>
     </div>
-    <WindowToolbarComponent v-if="options.toolbar" :rows="options.toolbar" />
+    <WindowToolbarComponent v-if="toolbar" :rows="toolbar" />
     <div class="window-body">
       <slot />
     </div>
-    <div v-if="options.statusBarInfo" class="status-bar">
-      <p v-for="info in options.statusBarInfo || []" :key="info">
+    <div v-if="statusBarInfo" class="status-bar">
+      <p v-for="info in statusBarInfo || []" :key="info">
         {{ info }}
       </p>
     </div>
@@ -57,14 +55,19 @@
 import { uniqueId } from 'lodash'
 import { onMounted, onUpdated, provide, ref } from 'vue'
 import { useDraggableResizable } from '../composables/useDragResize'
-import type { RelativePosition } from '../models/relative_position'
+import { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
 import { useStore } from '../stores'
 import WindowToolbarComponent, { type WindowToolbarRow } from './WindowToolbarComponent.vue'
 
 export type IBlockWindowFunc = (block: boolean) => void
 
-export type WindowOptions = {
+const emit = defineEmits<{
+  (e: 'clickClose'): void
+}>()
+
+const props = defineProps<{
+  pos?: RelativePosition
   size: RelativeSize
   title?: string
   controls?: {
@@ -75,19 +78,6 @@ export type WindowOptions = {
   toolbar?: WindowToolbarRow[]
   statusBarInfo?: string[]
   isResizable?: boolean
-}
-
-defineOptions({
-  inheritAttrs: false,
-})
-
-const emit = defineEmits<{
-  (e: 'clickClose'): void
-}>()
-
-const props = defineProps<{
-  pos: RelativePosition
-  options: WindowOptions
 }>()
 
 const store = useStore()
@@ -101,8 +91,17 @@ const originalBoxValues = ref({
   top: 0,
   left: 0,
 })
+const windowIdx = store.processes.size
 const { boxWidth, boxHeight, boxTop, boxLeft, dragStyle, onDragStart, onResizeStart } =
-  useDraggableResizable(props.pos, props.options.size, windowEl)
+  useDraggableResizable(
+    props.pos ??
+      new RelativePosition(
+        windowIdx + 50 - props.size.width / 2,
+        windowIdx + 50 - props.size.height / 2,
+      ),
+    props.size,
+    windowEl,
+  )
 
 const blockWindow: IBlockWindowFunc = (blocked: boolean) => {
   isBlocked.value = blocked
@@ -140,13 +139,13 @@ const restoreSize = () => {
 
 const onWindowMouseDown = (e: MouseEvent | TouchEvent) => {
   store.focusedWindowUid = windowUid
-  if (props.options.isResizable) {
+  if (props.isResizable) {
     isMaximized.value ? undefined : onResizeStart(e)
   }
 }
 
 const onToolbarDblClick = () => {
-  if (props.options.isResizable) {
+  if (props.isResizable) {
     isMaximized.value ? restoreSize() : maximizeSize()
   }
 }
@@ -174,6 +173,10 @@ onUpdated(() => {
   background: colors.$white;
   border: 1px solid colors.$black;
 
+  &.focused {
+    z-index: 999;
+  }
+
   &.blocked {
     pointer-events: none;
   }
@@ -191,6 +194,17 @@ onUpdated(() => {
   padding: 3px;
   font-weight: 500;
   user-select: none;
+}
+
+.title-bar-title {
+  margin: 0;
+  min-width: 0;
+  text-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  user-select: none;
+  margin-top: 0.2em;
 }
 
 .window-body {

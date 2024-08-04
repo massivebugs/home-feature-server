@@ -1,5 +1,15 @@
 <template>
-  <WindowComponent :options="windowOptions" :pos="pos" @click-close="emit('clickClose')">
+  <WindowComponent
+    :pos="pos"
+    :size="props.size"
+    :title="props.title"
+    :controls="{
+      close: true,
+      minimize: false,
+      maximize: false,
+    }"
+    @click-close="emit('clickClose')"
+  >
     <div class="container">
       <p class="message">{{ message }}</p>
       <div class="button-container">
@@ -19,7 +29,7 @@ import { inject, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
-import WindowComponent, { type IBlockWindowFunc, type WindowOptions } from './WindowComponent.vue'
+import WindowComponent, { type IBlockWindowFunc } from './WindowComponent.vue'
 
 const emit = defineEmits<{
   (e: 'clickSuccess'): void
@@ -36,15 +46,6 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const blockParentWindow = inject('blockParentWindow') as IBlockWindowFunc
-const windowOptions: WindowOptions = {
-  size: props.size,
-  title: props.title,
-  controls: {
-    close: true,
-    minimize: false,
-    maximize: false,
-  },
-}
 
 onMounted(() => {
   blockParentWindow(true)

@@ -1,20 +1,13 @@
-import type { WindowOptions } from '../components/WindowComponent.vue'
-
 export class Program {
   name: string
+  icon: string
   component: Object
   componentProps: Object
-  windowOptions: WindowOptions
 
-  constructor(
-    name: string,
-    component: Object,
-    componentProps: Object,
-    windowOptions: WindowOptions,
-  ) {
+  constructor(name: string, icon: string, component: Object, componentProps: Object) {
     this.name = name
+    this.icon = icon
     this.component = component
     this.componentProps = componentProps
-    this.windowOptions = windowOptions
   }
 }

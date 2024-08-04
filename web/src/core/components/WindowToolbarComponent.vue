@@ -61,15 +61,6 @@ nav.window-toolbar {
   overflow: hidden;
   border-bottom: 1px solid colors.$black;
 
-  > .title-bar-title {
-    margin: 0;
-    min-width: 0;
-    text-wrap: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    pointer-events: none;
-    user-select: none;
-  }
   > ul.window-menu {
     margin: 0;
     padding-left: 0;
