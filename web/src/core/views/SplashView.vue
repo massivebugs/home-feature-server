@@ -1,5 +1,5 @@
 <template>
-  <div class="twc-splash">
+  <div class="splash">
     <p v-for="message in displayedMessages" :key="message">[ OK ] {{ message }}</p>
   </div>
 </template>
@@ -41,9 +41,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@use '@/assets/theme.default';
-
-.twc-splash {
+.splash {
   width: 100vw;
   height: 100vh;
 }

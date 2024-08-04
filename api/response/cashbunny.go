@@ -3,7 +3,7 @@ package response
 import (
 	"time"
 
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_category"
+	"github.com/massivebugs/home-feature-server/db/service/cashbunny_account"
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
@@ -15,17 +15,17 @@ type CategoryResponseDTO struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-func NewCategoryResponseDTO(c *cashbunny_category.CashbunnyCategory) CategoryResponseDTO {
+func NewCategoryResponseDTO(c *cashbunny_account.CashbunnyCategory) CategoryResponseDTO {
 	return CategoryResponseDTO{
 		ID:          c.ID,
-		Name:        c.Description,
+		Name:        c.Name,
 		Description: c.Description,
 		CreatedAt:   c.CreatedAt,
 		UpdatedAt:   c.UpdatedAt,
 	}
 }
 
-func NewListCategoriesResponseDTO(categories []*cashbunny_category.CashbunnyCategory) []CategoryResponseDTO {
+func NewListCategoriesResponseDTO(categories []*cashbunny_account.CashbunnyCategory) []CategoryResponseDTO {
 	result := make([]CategoryResponseDTO, len(categories))
 	for idx, c := range categories {
 		result[idx] = NewCategoryResponseDTO(c)
@@ -42,6 +42,7 @@ type ListAccountResponseDTO struct {
 	Type        cashbunny.AccountType `json:"type"`
 	CreatedAt   time.Time             `json:"created_at"`
 	UpdatedAt   time.Time             `json:"updated_at"`
+	Category    CategoryResponseDTO   `json:"category"`
 }
 
 func NewListAccountResponseDTO(accounts []*cashbunny.Account) []ListAccountResponseDTO {
@@ -56,6 +57,8 @@ func NewListAccountResponseDTO(accounts []*cashbunny.Account) []ListAccountRespo
 			Type:        a.Type,
 			CreatedAt:   a.CreatedAt,
 			UpdatedAt:   a.UpdatedAt,
+			// TODO: Let's group all the queries together for each module... gosh
+			Category: NewCategoryResponseDTO((*cashbunny_account.CashbunnyCategory)(a.Category)),
 		}
 	}
 	return result

@@ -7,14 +7,14 @@ const api = axios.create({
 })
 
 api.interceptors.request.use(
-  config => {
-    config.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
-    }
-);
+  (config) => {
+    config.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
 
 api.interceptors.response.use(
   (res) => {
@@ -22,18 +22,22 @@ api.interceptors.response.use(
   },
   (err: AxiosError) => {
     if (err.response?.status === 401 && location.pathname !== '/login') {
-      window.location.replace("/login")
+      window.location.replace('/login')
     }
     return Promise.reject(err)
   },
 )
 
 export const APIEndpoints = {
-  v1: { 
-    accountingSummary: 'v1/accounting', 
+  v1: {
     auth: 'v1/auth',
     authToken: 'v1/auth/token',
-    authUser: 'v1/secure/auth',
+    secure: {
+      authUser: 'v1/secure/auth',
+      cashbunny: {
+        accounts: 'v1/secure/cashbunny/accounts',
+      },
+    },
   },
 }
 

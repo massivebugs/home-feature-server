@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/massivebugs/home-feature-server/api/response"
 	"github.com/massivebugs/home-feature-server/db/service/cashbunny_account"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_category"
 	"github.com/massivebugs/home-feature-server/internal/api"
 	"github.com/massivebugs/home-feature-server/internal/auth"
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
@@ -21,7 +20,6 @@ func NewCashbunnyHandler(db *sql.DB) *CashbunnyHandler {
 	return &CashbunnyHandler{
 		cashbunny: cashbunny.NewCashbunny(
 			db,
-			cashbunny_category.New(),
 			cashbunny_account.New(),
 		),
 	}

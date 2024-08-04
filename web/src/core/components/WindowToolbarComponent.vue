@@ -1,12 +1,12 @@
 <template>
-  <nav class="twc-window-toolbar">
+  <nav class="window-toolbar">
     <template v-for="row in rows" :key="row">
-      <ul v-if="row.isMenu" class="twc-window-menu">
+      <ul v-if="row.isMenu" class="window-menu">
         <li
           v-for="(item, idx) in row.items"
           :key="idx"
           @click.stop="onMenuItemClick($event, item)"
-          @mouseover="contextMenu && onMenuItemClick($event, item)"
+          @mouseover="contextMenuOptions && onMenuItemClick($event, item)"
         >
           {{ item.label }}
         </li>
@@ -19,9 +19,10 @@
 </template>
 
 <script setup lang="ts">
-import { type GetContextualMetrics, type SetContextMenu } from '../composables/useContext'
+import { type Ref, inject } from 'vue'
+import { AbsolutePosition } from '../models/absolute_position'
+import type { SetContextMenu } from '../views/DesktopView.vue'
 import type { ContextMenuOptions } from './ContextMenuComponent.vue'
-import { inject, type Ref } from 'vue'
 
 export type WindowToolbarItem = {
   label?: string
@@ -37,18 +38,51 @@ defineProps<{
   rows: WindowToolbarRow[]
 }>()
 
-const contextMenu = inject<Ref<ContextMenuOptions | null>>('contextMenu')
+const contextMenuOptions = inject<Ref<ContextMenuOptions | null>>('contextMenu')
 const setContextMenu = inject('setContextMenu') as SetContextMenu
-const getContextualMetrics = inject('getContextualMetrics') as GetContextualMetrics
 
 function onMenuItemClick(e: Event, item: WindowToolbarItem) {
   if (item.contextMenuOptions) {
-    const { relPos, relSize } = getContextualMetrics(e.target as HTMLElement)
-    setContextMenu(item.contextMenuOptions ?? null, relPos.add(0, relSize.height))
+    const { left, top, height } = (e.target as HTMLElement).getBoundingClientRect()
+    const contextMenuPos = new AbsolutePosition(left, top + height)
+    setContextMenu(item.contextMenuOptions ?? null, contextMenuPos)
   }
 }
 </script>
 
 <style scoped lang="scss">
-@use '@/assets/theme.default';
+@use '@/assets/colors';
+
+nav.window-toolbar {
+  color: colors.$black;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  overflow: hidden;
+  border-bottom: 1px solid colors.$black;
+
+  > .title-bar-title {
+    margin: 0;
+    min-width: 0;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    user-select: none;
+  }
+  > ul.window-menu {
+    margin: 0;
+    padding-left: 0;
+    display: flex;
+    list-style-type: none;
+  }
+  > ul > li {
+    padding: 0 7px;
+    line-height: 24px;
+    &:hover {
+      background-color: colors.$black;
+      color: colors.$white;
+    }
+  }
+}
 </style>

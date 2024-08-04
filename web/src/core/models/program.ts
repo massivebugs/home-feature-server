@@ -1,9 +1,20 @@
-export class Program {
-  component: Object
-  props: Object
+import type { WindowOptions } from '../components/WindowComponent.vue'
 
-  constructor(component: Object, props: Object) {
+export class Program {
+  name: string
+  component: Object
+  componentProps: Object
+  windowOptions: WindowOptions
+
+  constructor(
+    name: string,
+    component: Object,
+    componentProps: Object,
+    windowOptions: WindowOptions,
+  ) {
+    this.name = name
     this.component = component
-    this.props = props
+    this.componentProps = componentProps
+    this.windowOptions = windowOptions
   }
 }

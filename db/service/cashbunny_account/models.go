@@ -23,3 +23,13 @@ type CashbunnyAccount struct {
 	UpdatedAt   time.Time
 	DeletedAt   sql.NullTime
 }
+
+type CashbunnyCategory struct {
+	ID          uint32
+	UserID      uint32
+	Name        string
+	Description string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	DeletedAt   sql.NullTime
+}

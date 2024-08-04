@@ -5,28 +5,25 @@ import (
 	"database/sql"
 
 	"github.com/massivebugs/home-feature-server/db/service/cashbunny_account"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_category"
 )
 
 type Cashbunny struct {
-	db           *sql.DB
-	categoryRepo cashbunny_category.Querier
-	accountRepo  cashbunny_account.Querier
+	db          *sql.DB
+	accountRepo cashbunny_account.Querier
 }
 
-func NewCashbunny(db *sql.DB, categoryRepo cashbunny_category.Querier, accountRepo cashbunny_account.Querier) *Cashbunny {
+func NewCashbunny(db *sql.DB, accountRepo cashbunny_account.Querier) *Cashbunny {
 	return &Cashbunny{
-		db:           db,
-		categoryRepo: categoryRepo,
-		accountRepo:  accountRepo,
+		db:          db,
+		accountRepo: accountRepo,
 	}
 }
 
-func (s *Cashbunny) CreateCategory(ctx context.Context, userID uint32, req *CreateCategoryRequestDTO) (*cashbunny_category.CashbunnyCategory, error) {
-	result, err := s.categoryRepo.CreateCategory(
+func (s *Cashbunny) CreateCategory(ctx context.Context, userID uint32, req *CreateCategoryRequestDTO) (*cashbunny_account.CashbunnyCategory, error) {
+	result, err := s.accountRepo.CreateCategory(
 		ctx,
 		s.db,
-		cashbunny_category.CreateCategoryParams{
+		cashbunny_account.CreateCategoryParams{
 			UserID:      userID,
 			Name:        req.Name,
 			Description: req.Description,
@@ -42,10 +39,10 @@ func (s *Cashbunny) CreateCategory(ctx context.Context, userID uint32, req *Crea
 		return nil, err
 	}
 
-	c, err := s.categoryRepo.GetCategoryByID(
+	c, err := s.accountRepo.GetCategoryByID(
 		ctx,
 		s.db,
-		cashbunny_category.GetCategoryByIDParams{
+		cashbunny_account.GetCategoryByIDParams{
 			UserID: userID,
 			ID:     uint32(id),
 		},
@@ -57,8 +54,8 @@ func (s *Cashbunny) CreateCategory(ctx context.Context, userID uint32, req *Crea
 	return c, err
 }
 
-func (s *Cashbunny) ListCategories(ctx context.Context, userID uint32) ([]*cashbunny_category.CashbunnyCategory, error) {
-	result, err := s.categoryRepo.ListCategoriesByUserID(
+func (s *Cashbunny) ListCategories(ctx context.Context, userID uint32) ([]*cashbunny_account.CashbunnyCategory, error) {
+	result, err := s.accountRepo.ListCategoriesByUserID(
 		ctx,
 		s.db,
 		userID,
@@ -108,14 +105,14 @@ func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *Creat
 }
 
 func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]*Account, error) {
-	allAccountData, err := s.accountRepo.ListAccounts(ctx, s.db, userID)
+	data, err := s.accountRepo.ListAccountsAndCategories(ctx, s.db, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	accounts := make([]*Account, len(allAccountData))
-	for idx, d := range allAccountData {
-		a, err := NewAccount(d)
+	accounts := make([]*Account, len(data))
+	for idx, d := range data {
+		a, err := NewAccount(&d.CashbunnyAccount, &d.CashbunnyCategory)
 		if err != nil {
 			return nil, err
 		}

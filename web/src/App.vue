@@ -4,209 +4,24 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { Process } from './core/models/process'
-import { Program } from './core/models/program'
-import { RelativePosition } from './core/models/relative_position'
-import { RelativeSize } from './core/models/relative_size'
 import { useStore } from './core/stores'
-import BudgetPlannerView from './modules/budget_planner/views/BudgetPlannerView.vue'
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { AuthUser } from './core/models/auth_user'
+import { getPrograms } from './programs'
+import { Process } from './core/models/process'
+import { uniqueId } from 'lodash'
 
 const { t } = useI18n()
 const store = useStore()
-const router = useRouter()
 
-onMounted(async () => {
-  // Any better way? like onUpdate or smth
-  // if (location.pathname !== '/login') {
-  //   const res = await store.getAuthUser()
-  //   if (res.data.error === null) {
-  //     store.authUser = new AuthUser(res.data.data)
-  //     router.push({ name: 'desktop' })
-  //   } else {
-  //     // TODO: handle errors
-  //   }
-  // }
+// Register all programs to system
+const programs = getPrograms(store, t)
+programs.forEach((program) => {
+  store.addProgram(program)
 })
 
-store.processes.set(
-  '1',
-  new Process('1', new Program(BudgetPlannerView, {}), {
-    pos: new RelativePosition(10, 20),
-    size: new RelativeSize(60, 70),
-    title: t('budgetPlanner.name'),
-    controls: {
-      minimize: true,
-      maximize: true,
-      close: true,
-    },
-    toolbar: [
-      {
-        isMenu: true,
-        items: [
-          {
-            label: 'File',
-            contextMenuOptions: {
-              itemGroups: [
-                [
-                  {
-                    icon: 'check',
-                    label: 'Foo',
-                    shortcutKey: 'Ctrl+A',
-                    isDisabled: false,
-                    onClick: () => {
-                      console.log('Clicked Foo')
-                    },
-                  },
-                  {
-                    label: 'Bar',
-                    shortcutKey: 'Ctrl+B',
-                    isDisabled: true,
-                    onClick: () => {
-                      console.log('Clicked Bar')
-                    },
-                    children: [
-                      [
-                        {
-                          label: 'Child of Bar',
-                        },
-                      ],
-                    ],
-                  },
-                  {
-                    label: 'Baz',
-                    shortcutKey: 'Ctrl+C',
-                    isDisabled: false,
-                    onClick: () => {
-                      console.log('Clicked Baz')
-                    },
-                    children: [
-                      [
-                        {
-                          label: 'Child of Baz',
-                        },
-                      ],
-                    ],
-                  },
-                ],
-              ],
-            },
-          },
-          {
-            label: 'Edit',
-          },
-          {
-            label: 'View',
-          },
-          {
-            label: 'Favorites',
-            contextMenuOptions: {
-              itemGroups: [
-                [
-                  {
-                    icon: 'check',
-                    label: 'Foo',
-                    shortcutKey: 'Ctrl+A',
-                    isDisabled: false,
-                    onClick: () => {
-                      console.log('Clicked Foo')
-                    },
-                  },
-                  {
-                    label: 'Scan with TeamViewer_setup.exe',
-                    shortcutKey: 'Ctrl+B',
-                    isDisabled: true,
-                    onClick: () => {
-                      console.log('Clicked Bar')
-                    },
-                    children: [
-                      [
-                        {
-                          label: 'Child of Bar',
-                        },
-                      ],
-                    ],
-                  },
-                  {
-                    label: 'Baz',
-                    shortcutKey: 'Ctrl+C',
-                    isDisabled: false,
-                    onClick: () => {
-                      console.log('Clicked Baz')
-                    },
-                    children: [
-                      [
-                        {
-                          label: 'Child of Baz',
-                        },
-                      ],
-                    ],
-                  },
-                ],
-                [
-                  {
-                    icon: 'check',
-                    label: 'Foo',
-                    shortcutKey: 'Ctrl+A',
-                    isDisabled: false,
-                    onClick: () => {
-                      console.log('Clicked Foo')
-                    },
-                  },
-                  {
-                    label: 'Scan with TeamViewer_setup.exe',
-                    shortcutKey: 'Ctrl+B',
-                    isDisabled: true,
-                    onClick: () => {
-                      console.log('Clicked Bar')
-                    },
-                    children: [
-                      [
-                        {
-                          label: 'Child of Bar',
-                        },
-                      ],
-                    ],
-                  },
-                  {
-                    label: 'Baz',
-                    shortcutKey: 'Ctrl+C',
-                    isDisabled: false,
-                    onClick: () => {
-                      console.log('Clicked Baz')
-                    },
-                    children: [
-                      [
-                        {
-                          label: 'Child of Baz',
-                        },
-                      ],
-                    ],
-                  },
-                ],
-              ],
-            },
-          },
-          {
-            label: 'Tools',
-          },
-          {
-            label: 'Help',
-          },
-        ],
-      },
-    ],
-    statusBarInfo: ['Something goes here...', 'Something else here'],
-    isDraggable: true,
-    isResizable: true,
-    isShowStatusBar: true,
-    onClose: () => {
-      store.removeProcess('1')
-    },
-  }),
-)
+// TODO: For now, run cashbunny by default
+const cashbunnyProgram = programs[0]
+const cashbunnyProcess = new Process(uniqueId('pid_'), cashbunnyProgram)
+store.addProcess(cashbunnyProcess)
 </script>
 
 <style scoped lang="scss"></style>

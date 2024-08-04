@@ -1,5 +1,5 @@
 <template>
-  <div class="twc-budget-planner-view">
+  <div class="budget-planner-view">
     <TabGroupCompmonent
       @tab-click="(e) => (currentTabId = e.tabId)"
       :selected-tab-id="currentTabId"
@@ -16,27 +16,27 @@
       ]"
     >
       <template #overview_label>
-        <div class="twc-budget-planner-tab-label">
+        <div class="budget-planner-tab-label">
           <OverviewTabIconComponent />
-          {{ t('budgetPlanner.overview') }}
+          {{ t('cashbunny.overview') }}
         </div>
       </template>
       <template #overview>
-        <AccountingBalanceComponent :balance="store.summary?.balances || []" />
+        <!-- <AccountingBalanceComponent :balance="store.summary?.balances || []" /> -->
       </template>
       <template #accounts_label>
-        <div class="twc-budget-planner-tab-label">
+        <div class="budget-planner-tab-label">
           <AccountsTabIconComponent />
-          {{ t('budgetPlanner.accounts') }}
+          {{ t('cashbunny.accounts') }}
         </div>
       </template>
       <template #accounts>
-        <DataTableComponent />
+        <AccountsDataTableComponent />
       </template>
       <template #transactions_label>
-        <div class="twc-budget-planner-tab-label">
+        <div class="budget-planner-tab-label">
           <TransactionsTabIconComponent />
-          {{ t('budgetPlanner.transactions') }}
+          {{ t('cashbunny.transactions') }}
         </div>
       </template>
     </TabGroupCompmonent>
@@ -45,12 +45,12 @@
 
 <script setup lang="ts">
 import TabGroupCompmonent from '@/core/components/TabGroupComponent.vue'
-import DataTableComponent from '@/modules/budget_planner/components/DataTableComponent.vue'
-import AccountingBalanceComponent from '@/modules/budget_planner/components/AccountingBalanceComponent.vue'
-import OverviewTabIconComponent from '@/modules/budget_planner/components/OverviewTabIconComponent.vue'
-import AccountsTabIconComponent from '@/modules/budget_planner/components/AccountsTabIconComponent.vue'
-import TransactionsTabIconComponent from '@/modules/budget_planner/components/TransactionsTabIconComponent.vue'
-import { useStore } from '@/modules/budget_planner/stores'
+import AccountsDataTableComponent from '@/modules/cashbunny/components/AccountsDataTableComponent.vue'
+import AccountingBalanceComponent from '@/modules/cashbunny/components/AccountingBalanceComponent.vue'
+import OverviewTabIconComponent from '@/modules/cashbunny/components/OverviewTabIconComponent.vue'
+import AccountsTabIconComponent from '@/modules/cashbunny/components/AccountsTabIconComponent.vue'
+import TransactionsTabIconComponent from '@/modules/cashbunny/components/TransactionsTabIconComponent.vue'
+import { useStore } from '@/modules/cashbunny/stores'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -59,18 +59,18 @@ const store = useStore()
 const currentTabId = ref<string>('overview')
 
 onMounted(() => {
-  store.fetchSummary()
+  // TODO
 })
 </script>
 
 <style scoped lang="scss">
-.twc-budget-planner-view {
+.budget-planner-view {
   width: 100%;
   height: 100%;
   padding: 5px;
 }
 
-.twc-budget-planner-tab-label {
+.budget-planner-tab-label {
   padding: 5px 0;
   display: flex;
   align-items: center;

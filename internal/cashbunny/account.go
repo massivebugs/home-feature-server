@@ -23,9 +23,11 @@ type Account struct {
 	Type        AccountType
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+
+	Category *cashbunny_account.CashbunnyCategory
 }
 
-func NewAccount(account *cashbunny_account.CashbunnyAccount) (*Account, error) {
+func NewAccount(account *cashbunny_account.CashbunnyAccount, category *cashbunny_account.CashbunnyCategory) (*Account, error) {
 	a := &Account{
 		ID:          account.ID,
 		Name:        account.Name,
@@ -34,6 +36,7 @@ func NewAccount(account *cashbunny_account.CashbunnyAccount) (*Account, error) {
 		Type:        AccountType(account.Type),
 		CreatedAt:   account.CreatedAt,
 		UpdatedAt:   account.UpdatedAt,
+		Category:    category,
 	}
 
 	return a, a.validate()

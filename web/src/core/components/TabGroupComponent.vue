@@ -45,8 +45,6 @@ const isCurrentTab = (tabId: string) => {
 </script>
 
 <style scoped lang="scss">
-@use '@/assets/theme.default';
-
 menu {
   padding: 0;
   margin: 0;

@@ -1,15 +1,15 @@
 <template>
   <div
     ref="contextMenuEl"
-    class="twc-context-menu context-menu"
+    class="context-menu context-menu"
     :style="{
-      left: relPos.x + '%',
-      top: relPos.y + '%',
+      left: pos.x + '%',
+      top: pos.y + '%',
     }"
   >
     <template v-for="(itemGroup, idx) in options.itemGroups" :key="idx">
       <ul>
-        <li v-for="(item, idx) in itemGroup" :key="idx">
+        <li v-for="(item, idx) in itemGroup" :key="idx" @click="item.onClick">
           <span class="context-menu__item-icon"> </span>
           <span class="context-menu__item-label">
             {{ item.label }}
@@ -42,7 +42,7 @@ export type ContextMenuOptions = {
 }
 
 defineProps<{
-  relPos: RelativePosition
+  pos: RelativePosition
   options: ContextMenuOptions
 }>()
 
@@ -50,10 +50,54 @@ const contextMenuEl = ref()
 </script>
 
 <style scoped lang="scss">
-@use '@/assets/theme.default';
+@use '@/assets/colors';
 
-.twc-context-menu {
+.context-menu {
   z-index: 999;
   position: absolute;
+  padding: 2px;
+  border: 1px solid colors.$black;
+  background-color: colors.$white;
+  // box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
+  // -webkit-box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
+  // -moz-box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
+  min-width: 100px;
+  user-select: none;
+
+  hr {
+    margin: 4px 2px;
+    border-color: colors.$black;
+    border-style: solid;
+    border-bottom: 0;
+  }
+
+  > ul {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    padding-left: 0;
+    list-style-type: none;
+  }
+  > ul > li {
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    &:hover {
+      background-color: colors.$black;
+      color: colors.$white;
+    }
+    > span.context-menu__item-icon {
+      width: 17px;
+    }
+    > span.context-menu__item-label {
+      flex-grow: 1;
+      margin-right: 15px;
+    }
+    > span.context-menu__item-suffix {
+      text-align: end;
+      margin-right: 15px;
+    }
+  }
 }
 </style>

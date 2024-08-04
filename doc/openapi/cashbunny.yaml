@@ -54,7 +54,7 @@ paths:
               properties:
                 name:
                   type: string
-                  example: Test account
+                  example: Savings 
                 description:
                   type: string
                   example: For savings

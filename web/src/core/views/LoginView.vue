@@ -1,5 +1,5 @@
 <template>
-  <div class="twc-login">
+  <div class="login">
     <p>
       {{ t('login.title') }}
     </p>
@@ -17,10 +17,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useStore } from '../stores'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { AuthUser } from '../models/auth_user'
-import { useI18n } from 'vue-i18n'
+import { useStore } from '../stores'
 
 const { t } = useI18n()
 const store = useStore()
@@ -50,9 +50,7 @@ const checkAuth = async () => {
 </script>
 
 <style scoped lang="scss">
-@use '@/assets/theme.default';
-
-.twc-login {
+.login {
   width: 100vw;
   height: 100vh;
 }

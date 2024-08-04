@@ -50,6 +50,55 @@ func (q *Queries) CreateAccount(ctx context.Context, db DBTX, arg CreateAccountP
 	)
 }
 
+const createCategory = `-- name: CreateCategory :execresult
+INSERT INTO
+  cashbunny_categories (user_id, name, description)
+VALUES
+  (?, ?, ?)
+`
+
+type CreateCategoryParams struct {
+	UserID      uint32
+	Name        string
+	Description string
+}
+
+func (q *Queries) CreateCategory(ctx context.Context, db DBTX, arg CreateCategoryParams) (sql.Result, error) {
+	return db.ExecContext(ctx, createCategory, arg.UserID, arg.Name, arg.Description)
+}
+
+const getCategoryByID = `-- name: GetCategoryByID :one
+SELECT
+  id, user_id, name, description, created_at, updated_at, deleted_at
+FROM
+  cashbunny_categories
+WHERE
+  user_id = ?
+  AND id = ?
+LIMIT
+  1
+`
+
+type GetCategoryByIDParams struct {
+	UserID uint32
+	ID     uint32
+}
+
+func (q *Queries) GetCategoryByID(ctx context.Context, db DBTX, arg GetCategoryByIDParams) (*CashbunnyCategory, error) {
+	row := db.QueryRowContext(ctx, getCategoryByID, arg.UserID, arg.ID)
+	var i CashbunnyCategory
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return &i, err
+}
+
 const incrementIndex = `-- name: IncrementIndex :exec
 UPDATE cashbunny_accounts
 SET
@@ -99,6 +148,107 @@ func (q *Queries) ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*
 			&i.Currency,
 			&i.Type,
 			&i.OrderIndex,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAccountsAndCategories = `-- name: ListAccountsAndCategories :many
+SELECT
+  cashbunny_accounts.id, cashbunny_accounts.user_id, cashbunny_accounts.category_id, cashbunny_accounts.name, cashbunny_accounts.description, cashbunny_accounts.balance, cashbunny_accounts.currency, cashbunny_accounts.type, cashbunny_accounts.order_index, cashbunny_accounts.created_at, cashbunny_accounts.updated_at, cashbunny_accounts.deleted_at,
+  cashbunny_categories.id, cashbunny_categories.user_id, cashbunny_categories.name, cashbunny_categories.description, cashbunny_categories.created_at, cashbunny_categories.updated_at, cashbunny_categories.deleted_at
+FROM
+  cashbunny_accounts
+  LEFT JOIN cashbunny_categories ON cashbunny_categories.id = cashbunny_accounts.category_id
+WHERE
+  cashbunny_accounts.user_id = ?
+ORDER BY
+  cashbunny_accounts.order_index
+`
+
+type ListAccountsAndCategoriesRow struct {
+	CashbunnyAccount  CashbunnyAccount
+	CashbunnyCategory CashbunnyCategory
+}
+
+func (q *Queries) ListAccountsAndCategories(ctx context.Context, db DBTX, userID uint32) ([]*ListAccountsAndCategoriesRow, error) {
+	rows, err := db.QueryContext(ctx, listAccountsAndCategories, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*ListAccountsAndCategoriesRow{}
+	for rows.Next() {
+		var i ListAccountsAndCategoriesRow
+		if err := rows.Scan(
+			&i.CashbunnyAccount.ID,
+			&i.CashbunnyAccount.UserID,
+			&i.CashbunnyAccount.CategoryID,
+			&i.CashbunnyAccount.Name,
+			&i.CashbunnyAccount.Description,
+			&i.CashbunnyAccount.Balance,
+			&i.CashbunnyAccount.Currency,
+			&i.CashbunnyAccount.Type,
+			&i.CashbunnyAccount.OrderIndex,
+			&i.CashbunnyAccount.CreatedAt,
+			&i.CashbunnyAccount.UpdatedAt,
+			&i.CashbunnyAccount.DeletedAt,
+			&i.CashbunnyCategory.ID,
+			&i.CashbunnyCategory.UserID,
+			&i.CashbunnyCategory.Name,
+			&i.CashbunnyCategory.Description,
+			&i.CashbunnyCategory.CreatedAt,
+			&i.CashbunnyCategory.UpdatedAt,
+			&i.CashbunnyCategory.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCategoriesByUserID = `-- name: ListCategoriesByUserID :many
+SELECT
+  id, user_id, name, description, created_at, updated_at, deleted_at
+FROM
+  cashbunny_categories
+WHERE
+  user_id = ?
+`
+
+func (q *Queries) ListCategoriesByUserID(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyCategory, error) {
+	rows, err := db.QueryContext(ctx, listCategoriesByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*CashbunnyCategory{}
+	for rows.Next() {
+		var i CashbunnyCategory
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Description,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,

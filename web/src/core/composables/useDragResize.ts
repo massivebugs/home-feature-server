@@ -1,16 +1,6 @@
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, type Ref, type CSSProperties } from 'vue'
 import type { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
-
-type DraggableResizable = {
-  boxWidth: Ref<number>
-  boxHeight: Ref<number>
-  boxTop: Ref<number>
-  boxLeft: Ref<number>
-  resizeCursor: Ref<ResizeCursor | null> // values are changed on mousedown for performance considerations
-  onDragStart: (e: MouseEvent | TouchEvent) => void
-  onResizeStart: (e: MouseEvent | TouchEvent) => void
-}
 
 const ResizeCursor = {
   ew: 'ew-resize',
@@ -27,7 +17,7 @@ export function useDraggableResizable(
   initialPos: RelativePosition,
   initialSize: RelativeSize,
   el?: Ref<HTMLElement | undefined>,
-): DraggableResizable {
+) {
   // Drag states
   let isDragging = false
   let isResizing = false
@@ -47,9 +37,12 @@ export function useDraggableResizable(
   // Result
   const boxWidth = ref(initialSize.width) // percentage
   const boxHeight = ref(initialSize.height) // percentage
-  const boxTop = ref(initialPos.x) // percentage
-  const boxLeft = ref(initialPos.y) // percentage
-  const resizeCursor = ref<ResizeCursor | null>(null)
+  const boxLeft = ref(initialPos.x) // percentage
+  const boxTop = ref(initialPos.y) // percentage
+  const dragStyle = ref<CSSProperties>({
+    cursor: 'auto',
+    userSelect: 'auto',
+  })
 
   const onDragStart = (e: MouseEvent | TouchEvent) => {
     if (e.type === 'mousedown') {
@@ -95,16 +88,16 @@ export function useDraggableResizable(
 
       // Set which cursor should be displayed, based on the selected corners
       if ((dragCorners.top && dragCorners.left) || (dragCorners.bottom && dragCorners.right)) {
-        resizeCursor.value = ResizeCursor.nwse
+        dragStyle.value.cursor = ResizeCursor.nwse
       } else if (
         (dragCorners.top && dragCorners.right) ||
         (dragCorners.bottom && dragCorners.left)
       ) {
-        resizeCursor.value = ResizeCursor.nesw
+        dragStyle.value.cursor = ResizeCursor.nesw
       } else if (dragCorners.top || dragCorners.bottom) {
-        resizeCursor.value = ResizeCursor.ns
+        dragStyle.value.cursor = ResizeCursor.ns
       } else {
-        resizeCursor.value = ResizeCursor.ew
+        dragStyle.value.cursor = ResizeCursor.ew
       }
 
       isResizing = true
@@ -139,16 +132,16 @@ export function useDraggableResizable(
 
       // Set which cursor should be displayed, based on the selected corners
       if ((dragCorners.top && dragCorners.left) || (dragCorners.bottom && dragCorners.right)) {
-        resizeCursor.value = ResizeCursor.nwse
+        dragStyle.value.cursor = ResizeCursor.nwse
       } else if (
         (dragCorners.top && dragCorners.right) ||
         (dragCorners.bottom && dragCorners.left)
       ) {
-        resizeCursor.value = ResizeCursor.nesw
+        dragStyle.value.cursor = ResizeCursor.nesw
       } else if (dragCorners.top || dragCorners.bottom) {
-        resizeCursor.value = ResizeCursor.ns
+        dragStyle.value.cursor = ResizeCursor.ns
       } else {
-        resizeCursor.value = ResizeCursor.ew
+        dragStyle.value.cursor = ResizeCursor.ew
       }
 
       isResizing = true
@@ -162,6 +155,7 @@ export function useDraggableResizable(
       window.addEventListener('touchmove', onTouchMove)
       window.addEventListener('touchend', onTouchEnd)
     }
+    dragStyle.value.userSelect = 'none'
   }
 
   const onMouseMove = (e: MouseEvent) => {
@@ -219,7 +213,8 @@ export function useDraggableResizable(
   const onMouseUp = () => {
     isDragging = false
     isResizing = false
-    resizeCursor.value = null
+    dragStyle.value.cursor = 'auto'
+    dragStyle.value.userSelect = 'auto'
     window.removeEventListener('mousemove', onMouseMove)
     window.removeEventListener('mouseup', onMouseUp)
   }
@@ -227,7 +222,8 @@ export function useDraggableResizable(
   const onTouchEnd = () => {
     isDragging = false
     isResizing = false
-    resizeCursor.value = null
+    dragStyle.value.cursor = 'auto'
+    dragStyle.value.userSelect = 'auto'
     window.removeEventListener('touchmove', onTouchMove)
     window.removeEventListener('touchend', onTouchEnd)
   }
@@ -245,7 +241,7 @@ export function useDraggableResizable(
     boxHeight,
     boxTop,
     boxLeft,
-    resizeCursor,
+    dragStyle,
     onDragStart,
     onResizeStart,
   }
