@@ -20,10 +20,10 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { AuthUser } from '../models/auth_user'
-import { useStore } from '../stores'
+import { useCoreStore } from '../stores'
 
 const { t } = useI18n()
-const store = useStore()
+const store = useCoreStore()
 const router = useRouter()
 const username = ref('massivebugs')
 const password = ref('this_is_meant_to_be_public123')

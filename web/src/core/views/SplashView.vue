@@ -37,6 +37,7 @@ const displayLoadingMessages = () => {
 
 onMounted(() => {
   displayLoadingMessages()
+  // TODO: Retrieve supported currencies
 })
 </script>
 

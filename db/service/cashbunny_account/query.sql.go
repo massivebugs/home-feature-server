@@ -99,6 +99,38 @@ func (q *Queries) GetCategoryByID(ctx context.Context, db DBTX, arg GetCategoryB
 	return &i, err
 }
 
+const getCategoryByName = `-- name: GetCategoryByName :one
+SELECT
+  id, user_id, name, description, created_at, updated_at, deleted_at
+FROM
+  cashbunny_categories
+WHERE
+  user_id = ?
+  AND name = ?
+LIMIT
+  1
+`
+
+type GetCategoryByNameParams struct {
+	UserID uint32
+	Name   string
+}
+
+func (q *Queries) GetCategoryByName(ctx context.Context, db DBTX, arg GetCategoryByNameParams) (*CashbunnyCategory, error) {
+	row := db.QueryRowContext(ctx, getCategoryByName, arg.UserID, arg.Name)
+	var i CashbunnyCategory
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return &i, err
+}
+
 const incrementIndex = `-- name: IncrementIndex :exec
 UPDATE cashbunny_accounts
 SET

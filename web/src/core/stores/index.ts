@@ -6,7 +6,7 @@ import { AuthUser } from '../models/auth_user'
 import { Process } from '../models/process'
 import type { Program } from '../models/program'
 
-export const useStore = defineStore('core', () => {
+export const useCoreStore = defineStore('core', () => {
   const focusedWindowUid = ref<string | null>(null)
   const authUser = ref<AuthUser | null>(null)
   const processes = shallowRef<Map<string, Process>>(new Map())
@@ -32,6 +32,12 @@ export const useStore = defineStore('core', () => {
     triggerRef(programs)
   }
 
+  const findProgramProcesses = (id: string): Process[] => {
+    return [...processes.value.values()].filter((p) => {
+      return p.program.id === id
+    })
+  }
+
   return {
     focusedWindowUid,
     authUser,
@@ -42,5 +48,6 @@ export const useStore = defineStore('core', () => {
     addProcess,
     removeProcess,
     addProgram,
+    findProgramProcesses,
   }
 })

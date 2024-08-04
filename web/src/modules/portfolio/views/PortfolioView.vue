@@ -1,7 +1,7 @@
 <template>
   <WindowComponent
     :size="new RelativeSize(70, 80)"
-    :title="t('portfolio.toolbarTitle')"
+    :title="t('portfolio.title')"
     :controls="{
       minimize: true,
       maximize: true,

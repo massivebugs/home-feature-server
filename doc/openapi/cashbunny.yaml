@@ -106,9 +106,9 @@ paths:
             schema:
               type: object
               properties:
-                category_id:
-                  type: number
-                  example: 1
+                category_name:
+                  type: string
+                  example: savings
                 name:
                   type: string
                   example: Test account

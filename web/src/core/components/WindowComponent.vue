@@ -18,6 +18,7 @@
     }"
   >
     <div
+      v-if="!hideTitlebar"
       class="title-bar"
       @mousedown="!isMaximized ? onDragStart($event) : undefined"
       @touchstart="!isMaximized ? onDragStart($event) : undefined"
@@ -57,7 +58,7 @@ import { onMounted, onUpdated, provide, ref } from 'vue'
 import { useDraggableResizable } from '../composables/useDragResize'
 import { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
-import { useStore } from '../stores'
+import { useCoreStore } from '../stores'
 import WindowToolbarComponent, { type WindowToolbarRow } from './WindowToolbarComponent.vue'
 
 export type IBlockWindowFunc = (block: boolean) => void
@@ -70,6 +71,7 @@ const props = defineProps<{
   pos?: RelativePosition
   size: RelativeSize
   title?: string
+  hideTitlebar?: boolean
   controls?: {
     minimize: boolean
     maximize: boolean
@@ -80,7 +82,7 @@ const props = defineProps<{
   isResizable?: boolean
 }>()
 
-const store = useStore()
+const store = useCoreStore()
 const windowUid = uniqueId('window_')
 const windowEl = ref<HTMLElement>()
 const isBlocked = ref<boolean>(false)

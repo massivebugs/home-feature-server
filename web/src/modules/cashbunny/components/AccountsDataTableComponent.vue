@@ -1,5 +1,9 @@
 <template>
   <div>
+    <div class="controls">
+      <div></div>
+      <button @click="onClickAddAccount">{{ t('cashbunny.addAccount') }}</button>
+    </div>
     <DataTable
       :columns="columns"
       :data="data"
@@ -15,14 +19,22 @@
       :size="new RelativeSize(20, 20)"
       :title="t('cashbunny.accountDeleteConfirmTitle')"
       :message="t('cashbunny.accountDeleteConfirmMessage')"
+      :blocking="true"
+    />
+    <AccountFormDialogComponent
+      v-if="showAccountFormDialog"
+      :pos="new RelativePosition(25, 25)"
+      :size="new RelativeSize(50, 50)"
+      :title="t('cashbunny.addAccount')"
+      @click-submit="onClickAddAccountSubmit"
+      @click-cancel="onClickAddAccountCancel"
+      @click-close="onClickAddAccountCancel"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import DataTablesCore from 'datatables.net'
-import 'datatables.net-buttons'
-import 'datatables.net-buttons/js/buttons.html5'
 import type { Api, Config, ConfigColumns } from 'datatables.net-dt'
 import 'datatables.net-responsive'
 import 'datatables.net-select'
@@ -35,31 +47,21 @@ import { RelativePosition } from '@/core/models/relative_position'
 import { RelativeSize } from '@/core/models/relative_size'
 import type { SetContextMenu } from '@/core/views/DesktopView.vue'
 import type { AccountDto } from '../models/dto'
-import { useStore } from '../stores'
+import { useCashbunnyStore } from '../stores'
+import AccountFormDialogComponent from './AccountFormDialogComponent.vue'
 
 DataTable.use(DataTablesCore)
 
 const { t } = useI18n()
-const store = useStore()
+const store = useCashbunnyStore()
 const table = ref()
 const setContextMenu = inject('setContextMenu') as SetContextMenu
 let dt: Api
 const data = ref<AccountDto[]>([])
 const showConfirmDeleteDialog = ref<boolean>(false)
+const showAccountFormDialog = ref<boolean>(false)
 
 const layoutOptions = {
-  top1End: {
-    buttons: [
-      {
-        extend: 'copy',
-        text: t('cashbunny.copy'),
-      },
-      {
-        extend: 'csv',
-        text: t('cashbunny.csv'),
-      },
-    ],
-  },
   topStart: {
     pageLength: {},
   },
@@ -71,7 +73,6 @@ const layoutOptions = {
 const options: Config = {
   responsive: true,
   select: true,
-  buttons: true,
   layout: {
     ...(layoutOptions as any),
   },
@@ -177,6 +178,18 @@ onMounted(async () => {
   })
 })
 
+const onClickAddAccount = () => {
+  showAccountFormDialog.value = true
+}
+
+const onClickAddAccountSubmit = () => {
+  //
+}
+
+const onClickAddAccountCancel = () => {
+  showAccountFormDialog.value = false
+}
+
 const onRowClickEdit = (accountDto: AccountDto) => {
   console.log('edit', accountDto)
 }
@@ -203,5 +216,10 @@ const onCloseConfirmDeleteDialog = () => {
 
 .table-action-btn {
   margin-right: 5px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
 }
 </style>

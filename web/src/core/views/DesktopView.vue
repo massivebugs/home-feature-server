@@ -6,6 +6,7 @@
         :is="process.program.component"
         v-bind="process.program.componentProps"
         @click-close="onClickWindowClose(process.id)"
+        @click-cancel="onClickWindowCancel(process.id)"
       />
     </template>
     <ContextMenuComponent
@@ -27,7 +28,7 @@ import FileListComponent, { type FileOption } from '../components/FileListCompon
 import type { AbsolutePosition } from '../models/absolute_position'
 import { Process } from '../models/process'
 import { RelativePosition } from '../models/relative_position'
-import { useStore } from '../stores'
+import { useCoreStore } from '../stores'
 import { getRelativeParentPosition } from '../utils/element'
 
 export type SetContextMenu = (
@@ -35,7 +36,7 @@ export type SetContextMenu = (
   pos?: AbsolutePosition,
 ) => void
 
-const store = useStore()
+const store = useCoreStore()
 const desktopViewEl = ref()
 const contextMenuEl = ref<HTMLElement>()
 const contextMenuOptions = ref<ContextMenuOptions | null>(null)
@@ -60,6 +61,10 @@ provide('contextMenu', contextMenuOptions)
 provide('setContextMenu', setContextMenu)
 
 const onClickWindowClose = (processId: string) => {
+  store.removeProcess(processId)
+}
+
+const onClickWindowCancel = (processId: string) => {
   store.removeProcess(processId)
 }
 

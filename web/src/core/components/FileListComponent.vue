@@ -7,6 +7,7 @@
       :key="file.name"
       @click="onFileClick(file)"
       @dblclick="onFileDblClick(file)"
+      @touchend="onFileDblClick(file)"
     >
       <img class="file-icon" :src="file.icon" :alt="file.name + ' icon'" />
       <div class="file-name">

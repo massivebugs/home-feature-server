@@ -3,6 +3,7 @@ package cashbunny
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/massivebugs/home-feature-server/db/service/cashbunny_account"
 )
@@ -65,6 +66,24 @@ func (s *Cashbunny) ListCategories(ctx context.Context, userID uint32) ([]*cashb
 }
 
 func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *CreateAccountRequestDTO) error {
+	// Check if category exists
+	category, err := s.accountRepo.GetCategoryByName(
+		ctx,
+		s.db,
+		cashbunny_account.GetCategoryByNameParams{
+			UserID: userID,
+			Name:   req.CategoryName,
+		},
+	)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+
+	var categoryID uint32
+	if category != nil {
+		categoryID = category.ID
+	}
+
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -83,12 +102,34 @@ func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *Creat
 		return err
 	}
 
+	if categoryID == 0 {
+		result, err := s.accountRepo.CreateCategory(
+			ctx,
+			tx,
+			cashbunny_account.CreateCategoryParams{
+				UserID:      userID,
+				Name:        req.CategoryName,
+				Description: req.CategoryName,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		lastInsertID, err := result.LastInsertId()
+		if err != nil {
+			return err
+		}
+
+		categoryID = uint32(lastInsertID)
+	}
+
 	_, err = s.accountRepo.CreateAccount(
 		ctx,
 		tx,
 		cashbunny_account.CreateAccountParams{
 			UserID:      userID,
-			CategoryID:  req.CategoryID,
+			CategoryID:  categoryID,
 			Name:        req.Name,
 			Description: req.Description,
 			Balance:     req.Balance,

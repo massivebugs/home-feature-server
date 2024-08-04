@@ -1,8 +1,8 @@
-import { api, APIEndpoints } from '@/utils/api'
 import { defineStore } from 'pinia'
+import { APIEndpoints, api } from '@/utils/api'
 import { type GetAccountsResponse } from '../models/dto'
 
-export const useStore = defineStore('cashbunny', () => {
+export const useCashbunnyStore = defineStore('cashbunny', () => {
   // const summary = ref<AccountingSummary | null>(null)
   // const fetchSummary = async () => {
   // const accountingSummary = (

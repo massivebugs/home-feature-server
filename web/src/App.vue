@@ -6,11 +6,11 @@
 import { uniqueId } from 'lodash'
 import { useI18n } from 'vue-i18n'
 import { Process } from './core/models/process'
-import { useStore } from './core/stores'
+import { useCoreStore } from './core/stores'
 import { getPrograms } from './programs'
 
 const { t } = useI18n()
-const store = useStore()
+const store = useCoreStore()
 
 // Register all programs to system
 const programs = getPrograms(store, t)

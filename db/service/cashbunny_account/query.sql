@@ -54,6 +54,17 @@ WHERE
 LIMIT
   1;
 
+-- name: GetCategoryByName :one
+SELECT
+  *
+FROM
+  cashbunny_categories
+WHERE
+  user_id = ?
+  AND name = ?
+LIMIT
+  1;
+
 -- name: CreateCategory :execresult
 INSERT INTO
   cashbunny_categories (user_id, name, description)

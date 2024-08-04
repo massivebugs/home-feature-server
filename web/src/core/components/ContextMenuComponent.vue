@@ -9,15 +9,17 @@
   >
     <template v-for="(itemGroup, idx) in options.itemGroups" :key="idx">
       <ul>
-        <li v-for="(item, idx) in itemGroup" :key="idx" @click="item.onClick">
-          <span class="context-menu__item-icon"> </span>
-          <span class="context-menu__item-label">
-            {{ item.label }}
-          </span>
-          <span class="context-menu__item-suffix">
-            {{ item.shortcutKey }}
-          </span>
-        </li>
+        <template v-for="(item, idx) in itemGroup" :key="idx">
+          <li v-if="item" @click="item.onClick">
+            <span class="context-menu__item-icon"> </span>
+            <span class="context-menu__item-label">
+              {{ item.label }}
+            </span>
+            <span class="context-menu__item-suffix">
+              {{ item.shortcutKey }}
+            </span>
+          </li>
+        </template>
       </ul>
       <hr v-if="options.itemGroups.length > 1 && idx < options.itemGroups.length - 1" />
     </template>
@@ -38,7 +40,7 @@ export type ContextMenuItem = {
 }
 
 export type ContextMenuOptions = {
-  itemGroups: ContextMenuItem[][] // Groups are separated with a spacer
+  itemGroups: (ContextMenuItem | undefined)[][] // Groups are separated with a spacer
 }
 
 defineProps<{

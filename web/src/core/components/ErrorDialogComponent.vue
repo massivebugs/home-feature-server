@@ -4,7 +4,7 @@
     :size="size"
     :title="title"
     :buttons="{
-      success: true,
+      success: false,
       cancel: true,
     }"
     :blocking="blocking"
