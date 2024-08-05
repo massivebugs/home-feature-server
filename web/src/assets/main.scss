@@ -1,4 +1,5 @@
 @use 'variables';
+@use 'colors';
 
 html,
 body {
@@ -12,7 +13,7 @@ body {
 #app {
   height: 100%;
   width: 100%;
-  background-image: url('/images/windows_xp_wallpaper.jpg');
+  background-color: colors.$white;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

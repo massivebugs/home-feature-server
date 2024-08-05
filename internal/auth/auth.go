@@ -35,17 +35,16 @@ func (s *Auth) CreateAuthUser(ctx context.Context, req *UserAuthRequestDTO) erro
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
 	// Check if user already exists
-	existingUser, err := s.userRepo.GetUserByName(ctx, s.db, req.Username)
-	if err != nil {
+	_, err = s.userRepo.GetUserByName(ctx, s.db, req.Username)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
-	}
-	if existingUser != nil {
+	} else if err == nil {
 		return api.NewAPIError(api.CodeBadRequest, errors.New("user already exists"))
 	}
 
-	defer tx.Rollback()
 	// Create new user
 	result, err := s.userRepo.CreateUser(ctx, tx, req.Username)
 	if err != nil {

@@ -33,11 +33,11 @@ paths:
                 username:
                   type: string
                   description: must be between 3 to 100 alphanumerical characters
-                  example: testuser
+                  example: massivebugs
                 password:
                   type: string
                   description: must be between 8 to 72 characters, and contain a letter, number and a special character
-                  example: Somepassword12#
+                  example: this_is_meant_to_be_public123
               required:
                 - username
                 - password
@@ -70,11 +70,11 @@ paths:
                 username:
                   type: string
                   description: must be between 3 to 100 alphanumerical characters
-                  example: testuser
+                  example: massivebugs
                 password:
                   type: string
                   description: must be between 8 to 72 characters, and contain a letter, number and a special character
-                  example: Somepassword12#
+                  example: this_is_meant_to_be_public123
               required:
                 - username
                 - password
@@ -92,7 +92,7 @@ paths:
                     type: string
                     example: ""
   /api/v1/secure/auth:
-    post:
+    get:
       tags: 
         - v1
       operationId: secure/auth

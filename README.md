@@ -1,7 +1,7 @@
 # Home Feature Server
 This project is a personal server tailored to meet various personal needs. 
 
-The main idea is to create a api server+frontend with a Windows XP-inspired UI to manage household budgets, control homemade robots, and more.
+The main idea is to create a api server+frontend with a Desktop like UI to manage household budgets, control homemade robots, and more.
 
 ## Getting started for development
 ### 1. Install dependencies
