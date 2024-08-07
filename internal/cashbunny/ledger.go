@@ -1,11 +1,11 @@
 package cashbunny
 
-type Ledger struct {
-	Transactions []*Transaction
-}
+// type Ledger struct {
+// 	Transactions []*Transaction
+// }
 
-func NewLedger(ts []*Transaction) *Ledger {
-	return &Ledger{
-		Transactions: ts,
-	}
-}
+// func NewLedger(ts []*Transaction) *Ledger {
+// 	return &Ledger{
+// 		Transactions: ts,
+// 	}
+// }

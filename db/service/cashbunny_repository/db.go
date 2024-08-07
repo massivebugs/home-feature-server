@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.25.0
 
-package cashbunny_entry
+package cashbunny_repository
 
 import (
 	"context"

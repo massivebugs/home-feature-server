@@ -16,60 +16,6 @@ components:
     bearerAuth:
       $ref: './api.yaml#/components/securitySchemes/bearerAuth'
 paths:
-  /api/v1/secure/cashbunny/account_categories:
-    get:
-      tags: 
-        - v1
-      operationId: cashbunny/listAccountCategories
-      description: Retrieves all account categories
-      summary: Retrieves all account categories
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    $ref: './api.yaml#/components/schemas/error'
-                  data:
-                    example: ""
-    post:
-      tags: 
-        - v1
-      operationId: cashbunny/createAccountCategory
-      description: Creates a account category
-      summary: Creates a account category
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: Savings 
-                description:
-                  type: string
-                  example: For savings
-              required:
-                - name
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    $ref: './api.yaml#/components/schemas/error'
   /api/v1/secure/cashbunny/accounts:
     get:
       tags: 
@@ -106,7 +52,7 @@ paths:
             schema:
               type: object
               properties:
-                category_name:
+                category:
                   type: string
                   example: savings
                 name:

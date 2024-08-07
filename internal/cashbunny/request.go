@@ -6,41 +6,28 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
-type CreateAccountCategoryRequestDTO struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-func (r *CreateAccountCategoryRequestDTO) Validate() error {
-	return validation.ValidateStruct(
-		r,
-		validation.Field(
-			&r.Name,
-			validation.Required,
-		),
-		validation.Field(
-			&r.Description,
-			validation.Required,
-		),
-	)
-}
-
 type CreateAccountRequestDTO struct {
-	Name         string  `json:"name"`
-	CategoryName string  `json:"category_name"`
-	Description  string  `json:"description"`
-	Balance      float64 `json:"balance"`
-	Currency     string  `json:"currency"`
-	Type         string  `json:"type"`
-	OrderIndex   uint32  `json:"order_index"`
+	Name        string  `json:"name"`
+	Category    string  `json:"category"`
+	Description string  `json:"description"`
+	Balance     float64 `json:"balance"`
+	Currency    string  `json:"currency"`
+	Type        string  `json:"type"`
+	OrderIndex  uint32  `json:"order_index"`
 }
 
 func (r *CreateAccountRequestDTO) Validate() error {
 	return validation.ValidateStruct(
 		r,
 		validation.Field(
-			&r.CategoryName,
+			&r.Category,
 			validation.Required,
+			validation.In(
+				string(AccountCategoryAssets),
+				string(AccountCategoryLiabilities),
+				string(AccountCategoryRevenue),
+				string(AccountCategoryExpenses),
+			),
 		),
 		validation.Field(
 			&r.Name,
@@ -62,7 +49,10 @@ func (r *CreateAccountRequestDTO) Validate() error {
 		validation.Field(
 			&r.Type,
 			validation.Required,
-			validation.In(string(AccountTypeCredit), string(AccountTypeDebit)),
+			validation.In(
+				string(AccountTypeCredit),
+				string(AccountTypeDebit),
+			),
 		),
 		validation.Field(
 			&r.OrderIndex,
