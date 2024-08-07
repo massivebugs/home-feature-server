@@ -98,8 +98,11 @@ const columns: ConfigColumns[] = [
     title: 'ID',
   },
   {
-    data: 'category.name',
+    data: 'category',
     title: 'Category',
+    render: function (data: string, _, row: AccountDto) {
+      return `${data} (${row.type})`
+    },
   },
   {
     data: 'name',

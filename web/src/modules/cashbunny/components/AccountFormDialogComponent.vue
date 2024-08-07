@@ -20,13 +20,12 @@
         :error-message="validationErrors.name"
         v-model="accountName"
       />
-      <TextInputComponent
-        name="categoryName"
-        :label="t('cashbunny.categoryName')"
-        :placeholder="t('cashbunny.categoryNamePlaceholder')"
-        :list="existingCategoryNames"
-        :error-message="validationErrors.category_name"
-        v-model="categoryName"
+      <SelectInputComponent
+        name="accountCategory"
+        :label="t('cashbunny.accountCategory')"
+        :options="['assets', 'liabilities', 'revenue', 'expenses']"
+        :error-message="validationErrors.category"
+        v-model:value="category"
       />
       <TextInputComponent
         name="accountDescription"
@@ -45,20 +44,13 @@
         v-model:value="accountBalance"
         v-model:unit="accountCurrency"
       />
-      <SelectInputComponent
-        name="accountType"
-        :label="t('cashbunny.accountType')"
-        :options="['debit', 'credit']"
-        :error-message="validationErrors.type"
-        v-model:value="accountType"
-      />
     </div>
   </DialogComponent>
 </template>
 
 <script setup lang="ts">
 import { AxiosError } from 'axios'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DialogComponent from '@/core/components/DialogComponent.vue'
 import NumberInputComponent from '@/core/components/NumberInputComponent.vue'
@@ -83,16 +75,14 @@ const props = defineProps<{
 const { t } = useI18n()
 const store = useCashbunnyStore()
 const accountName = ref<string>('')
-const categoryName = ref<string>('')
+const category = ref<string>('assets')
 const accountDescription = ref<string>('')
 const accountBalance = ref<number>(0)
 const accountCurrency = ref<string>('CAD')
-const accountType = ref<string>('debit')
-const existingCategoryNames = ref<string[]>([])
 const errorMessage = ref<string>('')
 const validationErrors = ref({
   name: '',
-  category_name: '',
+  category: '',
   description: '',
   balance: '',
   currency: '',
@@ -104,11 +94,10 @@ const onClickSubmit = async () => {
   await store
     .createAccount({
       name: accountName.value,
-      category_name: categoryName.value,
+      category: category.value,
       description: accountDescription.value,
       balance: accountBalance.value,
       currency: accountCurrency.value,
-      type: accountType.value,
       order_index: props.nextAccountIndex,
     })
     .then(() => {
@@ -122,13 +111,6 @@ const onClickSubmit = async () => {
       }
     })
 }
-
-onMounted(async () => {
-  const res = await store.getAccountCategories()
-  if (res.data.error === null) {
-    existingCategoryNames.value = res.data.data.map((category) => category.name)
-  }
-})
 </script>
 
 <style scoped lang="scss">

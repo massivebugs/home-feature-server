@@ -20,6 +20,12 @@ func NewCashbunny(db *sql.DB, accountRepo cashbunny_repository.Querier) *Cashbun
 }
 
 func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *CreateAccountRequestDTO) error {
+	accountType, err := GetAccountTypeForCategory(AccountCategory(req.Category))
+	if err != nil {
+		// TODO: Flag errors
+		return err
+	}
+
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -48,7 +54,7 @@ func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *Creat
 			Description: req.Description,
 			Balance:     req.Balance,
 			Currency:    req.Currency,
-			Type:        req.Type,
+			Type:        string(accountType),
 			OrderIndex:  req.OrderIndex,
 		},
 	)
@@ -83,5 +89,3 @@ func (s *Cashbunny) DeleteAccount(ctx context.Context, userID uint32, accountID 
 		ID:     accountID,
 	})
 }
-
-// func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32) ()

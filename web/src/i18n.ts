@@ -32,15 +32,14 @@ export const i18nOptions: I18nOptions = {
         delete: 'Delete',
         csv: 'Export to CSV',
         addAccount: 'Add Account',
-        accountName: 'Account name',
+        accountName: 'Name',
         accountNamePlaceholder: 'e.g. ABC Bank account for savings',
-        categoryName: 'Category',
-        categoryNamePlaceholder: 'e.g. Savings',
+        accountCategory: 'Category',
         accountDescription: 'Description',
         accountDescriptionPlaceholder:
           "e.g. Dump all savings to this account, can't withdraw until 2030/05/01",
         accountBalance: 'Balance',
-        accountType: 'Account type',
+        accountType: 'Type',
         save: 'Save',
         accountDeleteConfirmTitle: 'Really delete this account?',
         accountDeleteConfirmMessage:

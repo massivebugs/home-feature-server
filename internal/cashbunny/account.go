@@ -1,6 +1,7 @@
 package cashbunny
 
 import (
+	"errors"
 	"time"
 
 	"github.com/Rhymond/go-money"
@@ -20,6 +21,16 @@ const (
 	AccountCategoryRevenue     AccountCategory = "revenue"
 	AccountCategoryExpenses    AccountCategory = "expenses"
 )
+
+func GetAccountTypeForCategory(c AccountCategory) (AccountType, error) {
+	switch c {
+	case AccountCategoryAssets, AccountCategoryExpenses:
+		return AccountTypeDebit, nil
+	case AccountCategoryLiabilities, AccountCategoryRevenue:
+		return AccountTypeCredit, nil
+	}
+	return "", errors.New("failed to get account type as account category is invalid")
+}
 
 type Account struct {
 	ID          uint32
