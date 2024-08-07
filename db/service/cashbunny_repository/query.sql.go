@@ -8,6 +8,8 @@ package cashbunny_repository
 import (
 	"context"
 	"database/sql"
+	"strings"
+	"time"
 )
 
 const createAccount = `-- name: CreateAccount :execresult
@@ -50,6 +52,43 @@ func (q *Queries) CreateAccount(ctx context.Context, db DBTX, arg CreateAccountP
 	)
 }
 
+const createTransaction = `-- name: CreateTransaction :execresult
+INSERT INTO
+  cashbunny_transactions (
+    user_id,
+    src_account_id,
+    dest_account_id,
+    description,
+    amount,
+    currency,
+    transacted_at
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?)
+`
+
+type CreateTransactionParams struct {
+	UserID        uint32
+	SrcAccountID  uint32
+	DestAccountID uint32
+	Description   string
+	Amount        float64
+	Currency      string
+	TransactedAt  time.Time
+}
+
+func (q *Queries) CreateTransaction(ctx context.Context, db DBTX, arg CreateTransactionParams) (sql.Result, error) {
+	return db.ExecContext(ctx, createTransaction,
+		arg.UserID,
+		arg.SrcAccountID,
+		arg.DestAccountID,
+		arg.Description,
+		arg.Amount,
+		arg.Currency,
+		arg.TransactedAt,
+	)
+}
+
 const deleteAccount = `-- name: DeleteAccount :exec
 UPDATE cashbunny_accounts
 SET
@@ -67,6 +106,43 @@ type DeleteAccountParams struct {
 func (q *Queries) DeleteAccount(ctx context.Context, db DBTX, arg DeleteAccountParams) error {
 	_, err := db.ExecContext(ctx, deleteAccount, arg.UserID, arg.ID)
 	return err
+}
+
+const getAccountByID = `-- name: GetAccountByID :one
+SELECT
+  id, user_id, category, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
+FROM
+  cashbunny_accounts
+WHERE
+  user_id = ?
+  AND id = ?
+LIMIT
+  1
+`
+
+type GetAccountByIDParams struct {
+	UserID uint32
+	ID     uint32
+}
+
+func (q *Queries) GetAccountByID(ctx context.Context, db DBTX, arg GetAccountByIDParams) (*CashbunnyAccount, error) {
+	row := db.QueryRowContext(ctx, getAccountByID, arg.UserID, arg.ID)
+	var i CashbunnyAccount
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Category,
+		&i.Name,
+		&i.Description,
+		&i.Balance,
+		&i.Currency,
+		&i.Type,
+		&i.OrderIndex,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return &i, err
 }
 
 const incrementIndex = `-- name: IncrementIndex :exec
@@ -119,6 +195,118 @@ func (q *Queries) ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*
 			&i.Currency,
 			&i.Type,
 			&i.OrderIndex,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAccountsByIDs = `-- name: ListAccountsByIDs :many
+SELECT
+  id, user_id, category, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
+FROM
+  cashbunny_accounts
+WHERE
+  user_id = ?
+  AND deleted_at IS NULL
+  AND id IN (/*SLICE:IDs*/?)
+ORDER BY
+  order_index
+`
+
+type ListAccountsByIDsParams struct {
+	UserID uint32
+	IDs    []uint32
+}
+
+func (q *Queries) ListAccountsByIDs(ctx context.Context, db DBTX, arg ListAccountsByIDsParams) ([]*CashbunnyAccount, error) {
+	query := listAccountsByIDs
+	var queryParams []interface{}
+	queryParams = append(queryParams, arg.UserID)
+	if len(arg.IDs) > 0 {
+		for _, v := range arg.IDs {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:IDs*/?", strings.Repeat(",?", len(arg.IDs))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:IDs*/?", "NULL", 1)
+	}
+	rows, err := db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*CashbunnyAccount{}
+	for rows.Next() {
+		var i CashbunnyAccount
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Category,
+			&i.Name,
+			&i.Description,
+			&i.Balance,
+			&i.Currency,
+			&i.Type,
+			&i.OrderIndex,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTransactions = `-- name: ListTransactions :many
+SELECT
+  id, user_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
+FROM
+  cashbunny_transactions
+WHERE
+  user_id = ?
+  AND deleted_at IS NULL
+ORDER BY
+  transacted_at
+`
+
+func (q *Queries) ListTransactions(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyTransaction, error) {
+	rows, err := db.QueryContext(ctx, listTransactions, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*CashbunnyTransaction{}
+	for rows.Next() {
+		var i CashbunnyTransaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.SrcAccountID,
+			&i.DestAccountID,
+			&i.Description,
+			&i.Amount,
+			&i.Currency,
+			&i.TransactedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,

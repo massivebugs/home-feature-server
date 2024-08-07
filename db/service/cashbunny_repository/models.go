@@ -23,3 +23,17 @@ type CashbunnyAccount struct {
 	UpdatedAt   time.Time
 	DeletedAt   sql.NullTime
 }
+
+type CashbunnyTransaction struct {
+	ID            uint32
+	UserID        uint32
+	SrcAccountID  uint32
+	DestAccountID uint32
+	Description   string
+	Amount        float64
+	Currency      string
+	TransactedAt  time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     sql.NullTime
+}

@@ -1,36 +1,79 @@
 package cashbunny
 
-// import (
-// 	"time"
+import (
+	"time"
 
-// 	"github.com/massivebugs/home-feature-server/db/service/cashbunny_entry"
-// 	"github.com/massivebugs/home-feature-server/db/service/cashbunny_transaction"
-// )
+	"github.com/Rhymond/go-money"
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+)
 
-// type TransactionType string
+type Transaction struct {
+	ID           uint32
+	Description  string
+	Amount       *money.Money
+	TransactedAt time.Time
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 
-// type Transaction struct {
-// 	ID           uint32
-// 	UserID       uint32
-// 	Description  string
-// 	TransactedAt time.Time
-// 	CreatedAt    time.Time
+	SourceAccount      *Account
+	DestinationAccount *Account
+}
 
-// 	Entries []Entry
-// }
+func NewTransaction(transaction *cashbunny_repository.CashbunnyTransaction, srcAccount *cashbunny_repository.CashbunnyAccount, destAccount *cashbunny_repository.CashbunnyAccount) (*Transaction, error) {
+	sa, err := NewAccount(srcAccount)
+	if err != nil {
+		return nil, err
+	}
 
-// func NewTransaction(t *cashbunny_transaction.CashbunnyTransaction, es []*cashbunny_entry.CashbunnyEntry) *Transaction {
-// 	entries := make([]Entry, len(es))
-// 	for idx, e := range es {
-// 		entries[idx] = NewEntry(e)
-// 	}
+	da, err := NewAccount(destAccount)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return &Transaction{
-// 		ID:           t.ID,
-// 		UserID:       t.UserID,
-// 		Description:  t.Description,
-// 		TransactedAt: t.TransactedAt,
-// 		CreatedAt:    t.CreatedAt,
-// 		Entries:      entries,
-// 	}
-// }
+	t := &Transaction{
+
+		ID:           transaction.ID,
+		Description:  transaction.Description,
+		Amount:       money.NewFromFloat(transaction.Amount, transaction.Currency),
+		TransactedAt: transaction.TransactedAt,
+		CreatedAt:    transaction.CreatedAt,
+		UpdatedAt:    transaction.UpdatedAt,
+
+		SourceAccount:      sa,
+		DestinationAccount: da,
+	}
+
+	return t, t.validate()
+}
+
+func (e *Transaction) validate() error {
+	return validation.ValidateStruct(
+		e,
+		validation.Field(
+			&e.ID,
+			validation.Required,
+		),
+		validation.Field(
+			&e.Description,
+			validation.Required,
+		),
+		validation.Field(
+			&e.Amount,
+			validation.Required,
+			validation.By(IsMoneyNotNegative(e.Amount)),
+		),
+		validation.Field(
+			&e.TransactedAt,
+			validation.Required,
+		),
+		validation.Field(
+			&e.SourceAccount,
+			validation.Required,
+		),
+		validation.Field(
+			&e.DestinationAccount,
+			validation.Required,
+		),
+	)
+}

@@ -91,3 +91,78 @@ paths:
                 properties:
                   error:
                     $ref: './api.yaml#/components/schemas/error'
+  /api/v1/secure/cashbunny/transactions:
+    get:
+      tags: 
+        - v1
+      operationId: cashbunny/listTransactions
+      description: Retrieves all transactions
+      summary: Retrieves all transactions
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: './api.yaml#/components/schemas/error'
+                  data:
+                    example: ""
+    post:
+      tags: 
+        - v1
+      operationId: cashbunny/createTransaction
+      description: Creates an transaction
+      summary: Creates an transaction
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  example: Paid for groceries at Foo store
+                amount:
+                  type: number
+                  example: 5140
+                  description: unsigned floating number
+                currency:
+                  type: string
+                  example: JPY
+                source_account_id:
+                  type: number
+                  example: 1
+                  description: Money from
+                destination_account_id:
+                  type: number
+                  example: 2
+                  description: Money to
+                transacted_at:
+                  type: string
+                  example: "2006-01-02 15:04:05"
+                  description: Datetime of transaction
+              required:
+                - description
+                - amount
+                - currency
+                - source_account_id
+                - destination_account_id
+                - transacted_at
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: './api.yaml#/components/schemas/error'

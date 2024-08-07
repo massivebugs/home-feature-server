@@ -53,12 +53,11 @@ func (r *CreateAccountRequestDTO) Validate() error {
 
 type CreateTransactionRequestDTO struct {
 	Description          string  `json:"description"`
-	TransactedAt         string  `json:"transacted_at"`
-	SourceAccountID      uint32  `json:"source_account_id"`
-	DestinationAccountID uint32  `json:"destination_account_id"`
 	Amount               float64 `json:"amount"`
 	Currency             string  `json:"currency"`
-	FXRate               float64 `json:"fx_rate"`
+	SourceAccountID      uint32  `json:"source_account_id"`
+	DestinationAccountID uint32  `json:"destination_account_id"`
+	TransactedAt         string  `json:"transacted_at"`
 }
 
 func (r *CreateTransactionRequestDTO) Validate() error {
@@ -66,18 +65,6 @@ func (r *CreateTransactionRequestDTO) Validate() error {
 		r,
 		validation.Field(
 			&r.Description,
-			validation.Required,
-		),
-		validation.Field(
-			&r.TransactedAt,
-			validation.Date(time.DateTime),
-		),
-		validation.Field(
-			&r.SourceAccountID,
-			validation.Required,
-		),
-		validation.Field(
-			&r.DestinationAccountID,
 			validation.Required,
 		),
 		validation.Field(
@@ -90,8 +77,16 @@ func (r *CreateTransactionRequestDTO) Validate() error {
 			validation.By(IsValidCurrency(r.Currency)),
 		),
 		validation.Field(
-			&r.FXRate,
+			&r.SourceAccountID,
 			validation.Required,
+		),
+		validation.Field(
+			&r.DestinationAccountID,
+			validation.Required,
+		),
+		validation.Field(
+			&r.TransactedAt,
+			validation.Date(time.DateTime),
 		),
 	)
 }

@@ -11,9 +11,13 @@ import (
 
 type Querier interface {
 	CreateAccount(ctx context.Context, db DBTX, arg CreateAccountParams) (sql.Result, error)
+	CreateTransaction(ctx context.Context, db DBTX, arg CreateTransactionParams) (sql.Result, error)
 	DeleteAccount(ctx context.Context, db DBTX, arg DeleteAccountParams) error
+	GetAccountByID(ctx context.Context, db DBTX, arg GetAccountByIDParams) (*CashbunnyAccount, error)
 	IncrementIndex(ctx context.Context, db DBTX, arg IncrementIndexParams) error
 	ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyAccount, error)
+	ListAccountsByIDs(ctx context.Context, db DBTX, arg ListAccountsByIDsParams) ([]*CashbunnyAccount, error)
+	ListTransactions(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyTransaction, error)
 }
 
 var _ Querier = (*Queries)(nil)

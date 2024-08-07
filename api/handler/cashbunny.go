@@ -51,7 +51,7 @@ func (h *CashbunnyHandler) ListAccounts(ctx echo.Context) *api.APIResponse {
 
 	result, err := h.cashbunny.ListAccounts(ctx.Request().Context(), claims.UserID)
 
-	return api.NewAPIResponse(err, response.NewListAccountResponseDTO(result))
+	return api.NewAPIResponse(err, response.NewListAccountsResponseDTO(result))
 }
 
 func (h *CashbunnyHandler) DeleteAccount(ctx echo.Context) *api.APIResponse {
@@ -67,4 +67,32 @@ func (h *CashbunnyHandler) DeleteAccount(ctx echo.Context) *api.APIResponse {
 
 	return api.NewAPIResponse(err, nil)
 
+}
+
+func (h *CashbunnyHandler) CreateTransaction(ctx echo.Context) *api.APIResponse {
+	token := ctx.Get("user").(*jwt.Token)
+	claims := token.Claims.(*auth.JWTClaims)
+
+	req := new(cashbunny.CreateTransactionRequestDTO)
+
+	if err := ctx.Bind(req); err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	if err := ctx.Validate(req); err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	err := h.cashbunny.CreateTransaction(ctx.Request().Context(), claims.UserID, req)
+
+	return api.NewAPIResponse(err, nil)
+}
+
+func (h *CashbunnyHandler) ListTransactions(ctx echo.Context) *api.APIResponse {
+	token := ctx.Get("user").(*jwt.Token)
+	claims := token.Claims.(*auth.JWTClaims)
+
+	result, err := h.cashbunny.ListTransactions(ctx.Request().Context(), claims.UserID)
+
+	return api.NewAPIResponse(err, response.NewListTransactionsResponseDTO(result))
 }
