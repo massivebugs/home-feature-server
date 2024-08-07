@@ -7,6 +7,10 @@
         :key="tab.id"
         :aria-selected="isCurrentTab(tab.id)"
         :aria-controls="tab.id"
+        class="tab"
+        :class="{
+          selected: isCurrentTab(tab.id),
+        }"
         @click="emit('tabClick', { tabId: tab.id })"
       >
         <slot :name="tab.id + '_label'">
@@ -45,8 +49,17 @@ const isCurrentTab = (tabId: string) => {
 </script>
 
 <style scoped lang="scss">
-menu {
+@use '@/assets/colors';
+
+.tabs > menu {
   padding: 0;
   margin: 0;
+  user-select: none;
+
+  .tab.selected {
+    background-color: colors.$black;
+    color: colors.$white;
+    border-top: 3px solid colors.$peach;
+  }
 }
 </style>

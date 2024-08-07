@@ -7,7 +7,7 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
-type CategoryResponseDTO struct {
+type AccountCategoryResponseDTO struct {
 	ID          uint32    `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
@@ -15,8 +15,8 @@ type CategoryResponseDTO struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-func NewCategoryResponseDTO(c *cashbunny_account.CashbunnyCategory) CategoryResponseDTO {
-	return CategoryResponseDTO{
+func NewAccountCategoryResponseDTO(c *cashbunny_account.CashbunnyAccountCategory) AccountCategoryResponseDTO {
+	return AccountCategoryResponseDTO{
 		ID:          c.ID,
 		Name:        c.Name,
 		Description: c.Description,
@@ -25,24 +25,24 @@ func NewCategoryResponseDTO(c *cashbunny_account.CashbunnyCategory) CategoryResp
 	}
 }
 
-func NewListCategoriesResponseDTO(categories []*cashbunny_account.CashbunnyCategory) []CategoryResponseDTO {
-	result := make([]CategoryResponseDTO, len(categories))
+func NewListAccountCategoriesResponseDTO(categories []*cashbunny_account.CashbunnyAccountCategory) []AccountCategoryResponseDTO {
+	result := make([]AccountCategoryResponseDTO, len(categories))
 	for idx, c := range categories {
-		result[idx] = NewCategoryResponseDTO(c)
+		result[idx] = NewAccountCategoryResponseDTO(c)
 	}
 	return result
 }
 
 type ListAccountResponseDTO struct {
-	ID          uint32                `json:"id"`
-	Name        string                `json:"name"`
-	Description string                `json:"description"`
-	Balance     string                `json:"balance"`
-	Currency    string                `json:"currency"`
-	Type        cashbunny.AccountType `json:"type"`
-	CreatedAt   time.Time             `json:"created_at"`
-	UpdatedAt   time.Time             `json:"updated_at"`
-	Category    CategoryResponseDTO   `json:"category"`
+	ID          uint32                     `json:"id"`
+	Name        string                     `json:"name"`
+	Description string                     `json:"description"`
+	Balance     string                     `json:"balance"`
+	Currency    string                     `json:"currency"`
+	Type        cashbunny.AccountType      `json:"type"`
+	CreatedAt   time.Time                  `json:"created_at"`
+	UpdatedAt   time.Time                  `json:"updated_at"`
+	Category    AccountCategoryResponseDTO `json:"category"`
 }
 
 func NewListAccountResponseDTO(accounts []*cashbunny.Account) []ListAccountResponseDTO {
@@ -58,7 +58,7 @@ func NewListAccountResponseDTO(accounts []*cashbunny.Account) []ListAccountRespo
 			CreatedAt:   a.CreatedAt,
 			UpdatedAt:   a.UpdatedAt,
 			// TODO: Let's group all the queries together for each module... gosh
-			Category: NewCategoryResponseDTO((*cashbunny_account.CashbunnyCategory)(a.Category)),
+			Category: NewAccountCategoryResponseDTO((*cashbunny_account.CashbunnyAccountCategory)(a.Category)),
 		}
 	}
 	return result

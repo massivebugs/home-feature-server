@@ -6,12 +6,12 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
-type CreateCategoryRequestDTO struct {
+type CreateAccountCategoryRequestDTO struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
 
-func (r *CreateCategoryRequestDTO) Validate() error {
+func (r *CreateAccountCategoryRequestDTO) Validate() error {
 	return validation.ValidateStruct(
 		r,
 		validation.Field(
@@ -53,7 +53,6 @@ func (r *CreateAccountRequestDTO) Validate() error {
 		),
 		validation.Field(
 			&r.Balance,
-			validation.Required,
 		),
 		validation.Field(
 			&r.Currency,

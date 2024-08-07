@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
+import type { APIResponse } from '@/core/models/dto'
 import { APIEndpoints, api } from '@/utils/api'
-import { type GetAccountsResponse } from '../models/dto'
+import {
+  type CreateAccountDto,
+  type GetAccountsResponse,
+  type GetCategoriesResponse,
+} from '../models/dto'
 
 export const useCashbunnyStore = defineStore('cashbunny', () => {
   // const summary = ref<AccountingSummary | null>(null)
@@ -12,6 +17,12 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
   // }
 
   const getAccounts = () => api.get<GetAccountsResponse>(APIEndpoints.v1.secure.cashbunny.accounts)
+  const getAccountCategories = () =>
+    api.get<GetCategoriesResponse>(APIEndpoints.v1.secure.cashbunny.categories)
+  const createAccount = (data: CreateAccountDto) =>
+    api.post<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts, data)
+  const deleteAccount = (accountId: number) =>
+    api.delete<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts + `/${accountId}`)
 
-  return { getAccounts }
+  return { getAccounts, getAccountCategories, createAccount, deleteAccount }
 })

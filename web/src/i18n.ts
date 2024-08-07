@@ -24,6 +24,7 @@ export const i18nOptions: I18nOptions = {
         processAlreadyExistsTitle: 'Error',
         processAlreadyExistsMessage: 'This program can have only one running process',
         overview: 'Overview',
+        planner: 'Planner',
         accounts: 'Accounts',
         transactions: 'Transactions',
         balance: 'Balance',
@@ -32,6 +33,14 @@ export const i18nOptions: I18nOptions = {
         csv: 'Export to CSV',
         addAccount: 'Add Account',
         accountName: 'Account name',
+        accountNamePlaceholder: 'e.g. ABC Bank account for savings',
+        categoryName: 'Category',
+        categoryNamePlaceholder: 'e.g. Savings',
+        accountDescription: 'Description',
+        accountDescriptionPlaceholder:
+          "e.g. Dump all savings to this account, can't withdraw until 2030/05/01",
+        accountBalance: 'Balance',
+        accountType: 'Account type',
         save: 'Save',
         accountDeleteConfirmTitle: 'Really delete this account?',
         accountDeleteConfirmMessage:

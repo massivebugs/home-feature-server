@@ -21,6 +21,9 @@
             id: Tabs.overview,
           },
           {
+            id: Tabs.planner,
+          },
+          {
             id: Tabs.accounts,
           },
           {
@@ -30,16 +33,29 @@
       >
         <template #overview_label>
           <div class="tab-label">
-            <OverviewTabIconComponent />
+            <OverviewTabIconComponent
+              :fill="currentTab === Tabs.overview ? '#ebebeb' : undefined"
+            />
             {{ t('cashbunny.overview') }}
           </div>
         </template>
-        <template #overview>
-          <!-- <AccountingBalanceComponent :balance="store.summary?.balances || []" /> -->
+        <template #overview> </template>
+        <template #planner_label>
+          <div class="tab-label">
+            <PlannerTabIconComponent
+              width="30"
+              height="30"
+              :fill="currentTab === Tabs.planner ? '#ebebeb' : undefined"
+            />
+            {{ t('cashbunny.planner') }}
+          </div>
         </template>
+        <template #planner> </template>
         <template #accounts_label>
           <div class="tab-label">
-            <AccountsTabIconComponent />
+            <AccountsTabIconComponent
+              :fill="currentTab === Tabs.accounts ? '#ebebeb' : undefined"
+            />
             {{ t('cashbunny.accounts') }}
           </div>
         </template>
@@ -48,7 +64,9 @@
         </template>
         <template #transactions_label>
           <div class="tab-label">
-            <TransactionsTabIconComponent />
+            <TransactionsTabIconComponent
+              :fill="currentTab === Tabs.transactions ? '#ebebeb' : undefined"
+            />
             {{ t('cashbunny.transactions') }}
           </div>
         </template>
@@ -64,14 +82,15 @@ import TabGroupCompmonent from '@/core/components/TabGroupComponent.vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
 import type { WindowToolbarRow } from '@/core/components/WindowToolbarComponent.vue'
 import { RelativeSize } from '@/core/models/relative_size'
-import AccountingBalanceComponent from '@/modules/cashbunny/components/AccountingBalanceComponent.vue'
 import AccountsDataTableComponent from '@/modules/cashbunny/components/AccountsDataTableComponent.vue'
 import AccountsTabIconComponent from '@/modules/cashbunny/components/AccountsTabIconComponent.vue'
 import OverviewTabIconComponent from '@/modules/cashbunny/components/OverviewTabIconComponent.vue'
 import TransactionsTabIconComponent from '@/modules/cashbunny/components/TransactionsTabIconComponent.vue'
+import PlannerTabIconComponent from './PlannerTabIconComponent.vue'
 
 const Tabs = {
   overview: 'overview',
+  planner: 'planner',
   accounts: 'accounts',
   transactions: 'transactions',
 } as const
@@ -223,6 +242,8 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
 </script>
 
 <style scoped lang="scss">
+@use '@/assets/colors';
+
 .container {
   width: 100%;
   height: 100%;

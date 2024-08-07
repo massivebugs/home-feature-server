@@ -24,7 +24,7 @@ type CashbunnyAccount struct {
 	DeletedAt   sql.NullTime
 }
 
-type CashbunnyCategory struct {
+type CashbunnyAccountCategory struct {
 	ID          uint32
 	UserID      uint32
 	Name        string

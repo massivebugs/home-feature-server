@@ -13,6 +13,7 @@
     />
     <ConfirmDialogComponent
       v-if="showConfirmDeleteDialog"
+      @click-success="onSuccessConfirmDeleteDialog"
       @click-close="onCloseConfirmDeleteDialog"
       @click-cancel="onCloseConfirmDeleteDialog"
       :pos="new RelativePosition(40, 40)"
@@ -26,7 +27,8 @@
       :pos="new RelativePosition(25, 25)"
       :size="new RelativeSize(50, 50)"
       :title="t('cashbunny.addAccount')"
-      @click-submit="onClickAddAccountSubmit"
+      :next-account-index="data.length"
+      @success="onAccountFormSuccess"
       @click-cancel="onClickAddAccountCancel"
       @click-close="onClickAddAccountCancel"
     />
@@ -60,6 +62,8 @@ let dt: Api
 const data = ref<AccountDto[]>([])
 const showConfirmDeleteDialog = ref<boolean>(false)
 const showAccountFormDialog = ref<boolean>(false)
+const clickedData = ref<AccountDto>()
+const selectedData = ref<AccountDto[]>([])
 
 const layoutOptions = {
   topStart: {
@@ -143,8 +147,8 @@ onMounted(async () => {
     e.preventDefault()
 
     // TODO: Types aren't exact here
-    const clickedData: AccountDto = dt.row(this).data()
-    const selectedData: AccountDto[] = dt.rows({ selected: true }).data() as any
+    clickedData.value = dt.row(this).data()
+    selectedData.value = dt.rows({ selected: true }).data().toArray()
 
     const contextMenuPos = new AbsolutePosition(
       (e as PointerEvent).clientX,
@@ -157,18 +161,13 @@ onMounted(async () => {
             {
               label: 'Edit',
               isDisabled: false,
-              onClick: () => {
-                onRowClickEdit(clickedData)
-              },
+              onClick: onRowClickEdit,
             },
             {
               label: 'Delete',
               shortcutKey: 'Del',
               isDisabled: false,
-              onClick: () => {
-                onRowClickDelete(selectedData.length ? selectedData : [clickedData])
-                showConfirmDeleteDialog.value = true
-              },
+              onClick: onRowClickDelete,
             },
           ],
         ],
@@ -182,23 +181,45 @@ const onClickAddAccount = () => {
   showAccountFormDialog.value = true
 }
 
-const onClickAddAccountSubmit = () => {
-  //
+const onAccountFormSuccess = async () => {
+  showAccountFormDialog.value = false
+  const res = await store.getAccounts()
+  if (res.data.error === null) {
+    data.value = res.data.data
+  }
 }
 
 const onClickAddAccountCancel = () => {
   showAccountFormDialog.value = false
 }
 
-const onRowClickEdit = (accountDto: AccountDto) => {
-  console.log('edit', accountDto)
+const onRowClickEdit = () => {
+  console.log('edit', clickedData.value)
 }
 
-const onRowClickDelete = (accountDtos: AccountDto[]) => {
-  console.log('delete', accountDtos)
+const onRowClickDelete = () => {
+  showConfirmDeleteDialog.value = true
 }
 
-const onCloseConfirmDeleteDialog = () => {
+const onSuccessConfirmDeleteDialog = async () => {
+  showConfirmDeleteDialog.value = false
+
+  // TODO
+  const rows = selectedData.value.length
+    ? selectedData.value
+    : clickedData.value
+      ? [clickedData.value]
+      : []
+
+  await Promise.all([...rows.map((info) => store.deleteAccount(info.id))])
+
+  const res = await store.getAccounts()
+  if (res.data.error === null) {
+    data.value = res.data.data
+  }
+}
+
+const onCloseConfirmDeleteDialog = async () => {
   showConfirmDeleteDialog.value = false
 }
 </script>

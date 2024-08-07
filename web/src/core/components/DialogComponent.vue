@@ -1,13 +1,14 @@
 <template>
   <WindowComponent
     :pos="pos"
-    :size="props.size"
-    :title="props.title"
+    :size="size"
+    :title="title"
     :controls="{
       close: true,
       minimize: false,
       maximize: false,
     }"
+    :is-resizable="isResizable"
     @click-close="emit('clickClose')"
   >
     <div class="container">
@@ -46,6 +47,7 @@ const props = defineProps<{
     success: boolean | string
     cancel: boolean | string
   }
+  isResizable?: boolean
 }>()
 
 const { t } = useI18n()

@@ -20,11 +20,11 @@ func NewCashbunny(db *sql.DB, accountRepo cashbunny_account.Querier) *Cashbunny 
 	}
 }
 
-func (s *Cashbunny) CreateCategory(ctx context.Context, userID uint32, req *CreateCategoryRequestDTO) (*cashbunny_account.CashbunnyCategory, error) {
-	result, err := s.accountRepo.CreateCategory(
+func (s *Cashbunny) CreateAccountCategory(ctx context.Context, userID uint32, req *CreateAccountCategoryRequestDTO) (*cashbunny_account.CashbunnyAccountCategory, error) {
+	result, err := s.accountRepo.CreateAccountCategory(
 		ctx,
 		s.db,
-		cashbunny_account.CreateCategoryParams{
+		cashbunny_account.CreateAccountCategoryParams{
 			UserID:      userID,
 			Name:        req.Name,
 			Description: req.Description,
@@ -40,10 +40,10 @@ func (s *Cashbunny) CreateCategory(ctx context.Context, userID uint32, req *Crea
 		return nil, err
 	}
 
-	c, err := s.accountRepo.GetCategoryByID(
+	c, err := s.accountRepo.GetAccountCategoryByID(
 		ctx,
 		s.db,
-		cashbunny_account.GetCategoryByIDParams{
+		cashbunny_account.GetAccountCategoryByIDParams{
 			UserID: userID,
 			ID:     uint32(id),
 		},
@@ -55,8 +55,8 @@ func (s *Cashbunny) CreateCategory(ctx context.Context, userID uint32, req *Crea
 	return c, err
 }
 
-func (s *Cashbunny) ListCategories(ctx context.Context, userID uint32) ([]*cashbunny_account.CashbunnyCategory, error) {
-	result, err := s.accountRepo.ListCategoriesByUserID(
+func (s *Cashbunny) ListAccountCategories(ctx context.Context, userID uint32) ([]*cashbunny_account.CashbunnyAccountCategory, error) {
+	result, err := s.accountRepo.ListAccountCategoriesByUserID(
 		ctx,
 		s.db,
 		userID,
@@ -67,10 +67,10 @@ func (s *Cashbunny) ListCategories(ctx context.Context, userID uint32) ([]*cashb
 
 func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *CreateAccountRequestDTO) error {
 	// Check if category exists
-	category, err := s.accountRepo.GetCategoryByName(
+	category, err := s.accountRepo.GetAccountCategoryByName(
 		ctx,
 		s.db,
-		cashbunny_account.GetCategoryByNameParams{
+		cashbunny_account.GetAccountCategoryByNameParams{
 			UserID: userID,
 			Name:   req.CategoryName,
 		},
@@ -103,10 +103,10 @@ func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *Creat
 	}
 
 	if categoryID == 0 {
-		result, err := s.accountRepo.CreateCategory(
+		result, err := s.accountRepo.CreateAccountCategory(
 			ctx,
 			tx,
-			cashbunny_account.CreateCategoryParams{
+			cashbunny_account.CreateAccountCategoryParams{
 				UserID:      userID,
 				Name:        req.CategoryName,
 				Description: req.CategoryName,
@@ -153,7 +153,7 @@ func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]*Account
 
 	accounts := make([]*Account, len(data))
 	for idx, d := range data {
-		a, err := NewAccount(&d.CashbunnyAccount, &d.CashbunnyCategory)
+		a, err := NewAccount(&d.CashbunnyAccount, &d.CashbunnyAccountCategory)
 		if err != nil {
 			return nil, err
 		}
@@ -161,6 +161,13 @@ func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]*Account
 	}
 
 	return accounts, nil
+}
+
+func (s *Cashbunny) DeleteAccount(ctx context.Context, userID uint32, accountID uint32) error {
+	return s.accountRepo.DeleteAccount(ctx, s.db, cashbunny_account.DeleteAccountParams{
+		UserID: userID,
+		ID:     accountID,
+	})
 }
 
 // func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32) ()

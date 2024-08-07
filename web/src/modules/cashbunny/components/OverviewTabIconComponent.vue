@@ -1,7 +1,7 @@
 <template>
   <svg
-    :width="widthPx ?? '30'"
-    :height="heightPx ?? '30'"
+    width="30"
+    height="30"
     viewBox="0 0 24 24"
     role="img"
     focusable="false"
@@ -13,10 +13,3 @@
     />
   </svg>
 </template>
-
-<script setup lang="ts">
-defineProps<{
-  widthPx?: number
-  heightPx?: number
-}>()
-</script>

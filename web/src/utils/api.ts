@@ -36,6 +36,7 @@ export const APIEndpoints = {
       authUser: 'v1/secure/auth',
       cashbunny: {
         accounts: 'v1/secure/cashbunny/accounts',
+        categories: 'v1/secure/cashbunny/account_categories',
       },
     },
   },

@@ -16,13 +16,13 @@ components:
     bearerAuth:
       $ref: './api.yaml#/components/securitySchemes/bearerAuth'
 paths:
-  /api/v1/secure/cashbunny/categories:
+  /api/v1/secure/cashbunny/account_categories:
     get:
       tags: 
         - v1
-      operationId: cashbunny/listCategories
-      description: Retrieves all categories
-      summary: Retrieves all categories
+      operationId: cashbunny/listAccountCategories
+      description: Retrieves all account categories
+      summary: Retrieves all account categories
       security:
         - bearerAuth: []
       responses:
@@ -40,9 +40,9 @@ paths:
     post:
       tags: 
         - v1
-      operationId: cashbunny/createCategory
-      description: Creates a category
-      summary: Creates a category
+      operationId: cashbunny/createAccountCategory
+      description: Creates a account category
+      summary: Creates a account category
       security:
         - bearerAuth: []
       requestBody:

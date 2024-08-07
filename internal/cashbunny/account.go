@@ -24,10 +24,10 @@ type Account struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 
-	Category *cashbunny_account.CashbunnyCategory
+	Category *cashbunny_account.CashbunnyAccountCategory
 }
 
-func NewAccount(account *cashbunny_account.CashbunnyAccount, category *cashbunny_account.CashbunnyCategory) (*Account, error) {
+func NewAccount(account *cashbunny_account.CashbunnyAccount, category *cashbunny_account.CashbunnyAccountCategory) (*Account, error) {
 	a := &Account{
 		ID:          account.ID,
 		Name:        account.Name,
