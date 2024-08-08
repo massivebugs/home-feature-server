@@ -12,37 +12,44 @@
     @click-success="onClickSubmit"
   >
     <div class="container">
-      <div class="title">{{ t('cashbunny.addAccount') }}</div>
+      <div class="title">{{ t('cashbunny.createTransaction') }}</div>
       <TextInputComponent
-        name="accountName"
-        :label="t('cashbunny.accountName')"
-        :placeholder="t('cashbunny.accountNamePlaceholder')"
-        :error-message="validationErrors.name"
-        v-model="name"
-      />
-      <SelectInputComponent
-        name="accountCategory"
-        :label="t('cashbunny.accountCategory')"
-        :options="['assets', 'liabilities', 'revenue', 'expenses']"
-        :error-message="validationErrors.category"
-        v-model:value="category"
-      />
-      <TextInputComponent
-        name="accountDescription"
-        :label="t('cashbunny.accountDescription')"
-        :placeholder="t('cashbunny.accountDescriptionPlaceholder')"
+        name="transactionDescription"
+        :label="t('cashbunny.transactionDescription')"
+        :placeholder="t('cashbunny.transactionDescriptionPlaceholder')"
         :error-message="validationErrors.description"
         v-model="description"
       />
       <NumberInputComponent
-        name="accountBalance"
-        :label="t('cashbunny.accountBalance')"
+        name="transactionAmount"
+        :label="t('cashbunny.transactionAmount')"
         placeholder="0"
         :min="0"
         :units="['CAD', 'JPY']"
-        :error-message="validationErrors.balance || validationErrors.currency"
-        v-model:value="balance"
+        :error-message="validationErrors.amount || validationErrors.currency"
+        v-model:value="amount"
         v-model:unit="currency"
+      />
+      <SelectInputComponent
+        name="sourceAccount"
+        :label="t('cashbunny.transactionSourceAccount')"
+        :options="accounts.map((a) => a.id)"
+        :error-message="validationErrors.source_account_id"
+        v-model:value="sourceAccountId"
+      />
+      <SelectInputComponent
+        name="destinationAccount"
+        :label="t('cashbunny.transactionDestinationAccount')"
+        :options="accounts.map((a) => a.id)"
+        :error-message="validationErrors.destination_account_id"
+        v-model:value="destinationAccountId"
+      />
+      <TextInputComponent
+        name="transactedAt"
+        :label="t('cashbunny.transactionTransactedAt')"
+        :placeholder="t('cashbunny.transactionTransactedAtPlaceholder')"
+        :error-message="validationErrors.transacted_at"
+        v-model="transactedAt"
       />
     </div>
   </DialogComponent>
@@ -50,7 +57,7 @@
 
 <script setup lang="ts">
 import { AxiosError } from 'axios'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DialogComponent from '@/core/components/DialogComponent.vue'
 import NumberInputComponent from '@/core/components/NumberInputComponent.vue'
@@ -59,46 +66,47 @@ import TextInputComponent from '@/core/components/TextInputComponent.vue'
 import type { APIResponse } from '@/core/models/dto'
 import type { RelativePosition } from '@/core/models/relative_position'
 import type { RelativeSize } from '@/core/models/relative_size'
-import type { CreateAccountDto } from '../models/dto'
+import type { AccountDto, CreateTransactionDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 
 const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-const props = defineProps<{
+defineProps<{
   pos: RelativePosition
   size: RelativeSize
   title: string
-  nextAccountIndex: number
 }>()
 
 const { t } = useI18n()
 const store = useCashbunnyStore()
-const name = ref<string>('')
-const category = ref<string>('assets')
 const description = ref<string>('')
-const balance = ref<number>(0)
+const amount = ref<number>(0)
 const currency = ref<string>('CAD')
+const sourceAccountId = ref<number>(0)
+const destinationAccountId = ref<number>(0)
+const transactedAt = ref<string>('')
 const errorMessage = ref<string>('')
-const validationErrors = ref<{ [k in keyof CreateAccountDto]: string }>({
-  name: '',
-  category: '',
+const validationErrors = ref<{ [k in keyof CreateTransactionDto]: string }>({
   description: '',
-  balance: '',
+  amount: '',
   currency: '',
-  order_index: '',
+  source_account_id: '',
+  destination_account_id: '',
+  transacted_at: '',
 })
+const accounts = ref<AccountDto[]>([])
 
 const onClickSubmit = async () => {
   await store
-    .createAccount({
-      name: name.value,
-      category: category.value,
+    .createTransaction({
       description: description.value,
-      balance: balance.value,
+      amount: amount.value,
       currency: currency.value,
-      order_index: props.nextAccountIndex,
+      source_account_id: sourceAccountId.value,
+      destination_account_id: destinationAccountId.value,
+      transacted_at: transactedAt.value.toString(),
     })
     .then(() => {
       emit('success')
@@ -111,6 +119,13 @@ const onClickSubmit = async () => {
       }
     })
 }
+
+onMounted(async () => {
+  const res = await store.getAccounts()
+  if (res.data.error === null) {
+    accounts.value = res.data.data
+  }
+})
 </script>
 
 <style scoped lang="scss">

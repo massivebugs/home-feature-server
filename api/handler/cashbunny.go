@@ -96,3 +96,18 @@ func (h *CashbunnyHandler) ListTransactions(ctx echo.Context) *api.APIResponse {
 
 	return api.NewAPIResponse(err, response.NewListTransactionsResponseDTO(result))
 }
+
+func (h *CashbunnyHandler) DeleteTransaction(ctx echo.Context) *api.APIResponse {
+	token := ctx.Get("user").(*jwt.Token)
+	claims := token.Claims.(*auth.JWTClaims)
+
+	transactionId, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
+	if err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	err = h.cashbunny.DeleteTransaction(ctx.Request().Context(), claims.UserID, uint32(transactionId))
+
+	return api.NewAPIResponse(err, nil)
+
+}

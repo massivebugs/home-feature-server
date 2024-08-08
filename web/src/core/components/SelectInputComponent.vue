@@ -17,7 +17,7 @@ defineProps<{
   name?: string
   label?: string
   placeholder?: string
-  options?: string[]
+  options?: string[] | number[]
   errorMessage?: string
 }>()
 

@@ -37,4 +37,5 @@ func registerV1Routes(e *echo.Group, cfg *config.Config, jwtMiddleware echo.Midd
 	v1Secure.DELETE("/cashbunny/accounts/:id", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.DeleteAccount))
 	v1Secure.POST("/cashbunny/transactions", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.CreateTransaction))
 	v1Secure.GET("/cashbunny/transactions", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.ListTransactions))
+	v1Secure.DELETE("/cashbunny/transactions/:id", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.DeleteTransaction))
 }

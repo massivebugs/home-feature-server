@@ -13,7 +13,7 @@
     @click-close="emit('clickClose')"
   >
     <div class="container">
-      <TabGroupCompmonent
+      <TabGroupComponent
         @tab-click="(e) => (currentTab = e.tabId)"
         :selected-tab-id="currentTab"
         :tabs="[
@@ -60,7 +60,7 @@
           </div>
         </template>
         <template #accounts>
-          <AccountsDataTableComponent />
+          <AccountDataTableComponent />
         </template>
         <template #transactions_label>
           <div class="tab-label">
@@ -70,7 +70,10 @@
             {{ t('cashbunny.transactions') }}
           </div>
         </template>
-      </TabGroupCompmonent>
+        <template #transactions>
+          <TransactionDataTableComponent />
+        </template>
+      </TabGroupComponent>
     </div>
   </WindowComponent>
 </template>
@@ -78,15 +81,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import TabGroupCompmonent from '@/core/components/TabGroupComponent.vue'
+import TabGroupComponent from '@/core/components/TabGroupComponent.vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
 import type { WindowToolbarRow } from '@/core/components/WindowToolbarComponent.vue'
 import { RelativeSize } from '@/core/models/relative_size'
-import AccountsDataTableComponent from '@/modules/cashbunny/components/AccountsDataTableComponent.vue'
+import AccountDataTableComponent from '@/modules/cashbunny/components/AccountDataTableComponent.vue'
 import AccountsTabIconComponent from '@/modules/cashbunny/components/AccountsTabIconComponent.vue'
 import OverviewTabIconComponent from '@/modules/cashbunny/components/OverviewTabIconComponent.vue'
 import TransactionsTabIconComponent from '@/modules/cashbunny/components/TransactionsTabIconComponent.vue'
 import PlannerTabIconComponent from './PlannerTabIconComponent.vue'
+import TransactionDataTableComponent from './TransactionDataTableComponent.vue'
 
 const Tabs = {
   overview: 'overview',

@@ -87,3 +87,11 @@ WHERE
   AND deleted_at IS NULL
 ORDER BY
   transacted_at;
+
+-- name: DeleteTransaction :exec
+UPDATE cashbunny_transactions
+SET
+  deleted_at = CURRENT_TIMESTAMP()
+WHERE
+  user_id = ?
+  AND id = ?;

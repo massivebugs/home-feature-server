@@ -108,6 +108,25 @@ func (q *Queries) DeleteAccount(ctx context.Context, db DBTX, arg DeleteAccountP
 	return err
 }
 
+const deleteTransaction = `-- name: DeleteTransaction :exec
+UPDATE cashbunny_transactions
+SET
+  deleted_at = CURRENT_TIMESTAMP()
+WHERE
+  user_id = ?
+  AND id = ?
+`
+
+type DeleteTransactionParams struct {
+	UserID uint32
+	ID     uint32
+}
+
+func (q *Queries) DeleteTransaction(ctx context.Context, db DBTX, arg DeleteTransactionParams) error {
+	_, err := db.ExecContext(ctx, deleteTransaction, arg.UserID, arg.ID)
+	return err
+}
+
 const getAccountByID = `-- name: GetAccountByID :one
 SELECT
   id, user_id, category, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at

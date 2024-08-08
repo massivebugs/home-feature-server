@@ -86,6 +86,7 @@ func (r *CreateTransactionRequestDTO) Validate() error {
 		),
 		validation.Field(
 			&r.TransactedAt,
+			validation.Required,
 			validation.Date(time.DateTime),
 		),
 	)

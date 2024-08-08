@@ -172,3 +172,10 @@ func (s *Cashbunny) ListTransactions(ctx context.Context, userID uint32) ([]*Tra
 
 	return trs, nil
 }
+
+func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transactionID uint32) error {
+	return s.cashbunnyRepo.DeleteTransaction(ctx, s.db, cashbunny_repository.DeleteTransactionParams{
+		UserID: userID,
+		ID:     transactionID,
+	})
+}

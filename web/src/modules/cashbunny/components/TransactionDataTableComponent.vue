@@ -2,7 +2,7 @@
   <div>
     <div class="controls">
       <div></div>
-      <button @click="onClickAddAccount">{{ t('cashbunny.addAccount') }}</button>
+      <button @click="onClickAddTransaction">{{ t('cashbunny.createTransaction') }}</button>
     </div>
     <DataTable
       :columns="columns"
@@ -18,19 +18,18 @@
       @click-cancel="onCloseConfirmDeleteDialog"
       :pos="new RelativePosition(40, 40)"
       :size="new RelativeSize(20, 20)"
-      :title="t('cashbunny.accountDeleteConfirmTitle')"
-      :message="t('cashbunny.accountDeleteConfirmMessage')"
+      :title="t('cashbunny.transactionDeleteConfirmTitle')"
+      :message="t('cashbunny.transactionDeleteConfirmMessage', getTargetRowData().length)"
       :blocking="true"
     />
-    <AccountFormDialogComponent
-      v-if="showAccountFormDialog"
+    <TransactionFormDialogComponent
+      v-if="showTransactionFormDialog"
       :pos="new RelativePosition(25, 25)"
       :size="new RelativeSize(50, 50)"
-      :title="t('cashbunny.addAccount')"
-      :next-account-index="data.length"
-      @success="onAccountFormSuccess"
-      @click-cancel="onClickAddAccountCancel"
-      @click-close="onClickAddAccountCancel"
+      :title="t('cashbunny.addTransaction')"
+      @success="onTransactionFormSuccess"
+      @click-cancel="onTransactionFormCancel"
+      @click-close="onTransactionFormCancel"
     />
   </div>
 </template>
@@ -48,9 +47,9 @@ import { AbsolutePosition } from '@/core/models/absolute_position'
 import { RelativePosition } from '@/core/models/relative_position'
 import { RelativeSize } from '@/core/models/relative_size'
 import type { SetContextMenu } from '@/core/views/DesktopView.vue'
-import type { AccountDto } from '../models/dto'
+import type { TransactionDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
-import AccountFormDialogComponent from './AccountFormDialogComponent.vue'
+import TransactionFormDialogComponent from './TransactionFormDialogComponent.vue'
 
 DataTable.use(DataTablesCore)
 
@@ -59,11 +58,11 @@ const store = useCashbunnyStore()
 const table = ref()
 const setContextMenu = inject('setContextMenu') as SetContextMenu
 let dt: Api
-const data = ref<AccountDto[]>([])
+const data = ref<TransactionDto[]>([])
 const showConfirmDeleteDialog = ref<boolean>(false)
-const showAccountFormDialog = ref<boolean>(false)
-const clickedData = ref<AccountDto>()
-const selectedData = ref<AccountDto[]>([])
+const showTransactionFormDialog = ref<boolean>(false)
+const clickedData = ref<TransactionDto>()
+const selectedData = ref<TransactionDto[]>([])
 
 const layoutOptions = {
   topStart: {
@@ -80,16 +79,6 @@ const options: Config = {
   layout: {
     ...(layoutOptions as any),
   },
-  columnDefs: [
-    // {
-    //   className: 'dt-head-right',
-    //   targets: '_all',
-    // },
-    // {
-    //   className: 'dt-body-left',
-    //   targets: '_all',
-    // },
-  ],
 }
 
 const columns: ConfigColumns[] = [
@@ -98,46 +87,106 @@ const columns: ConfigColumns[] = [
     title: 'ID',
   },
   {
-    data: 'category',
-    title: 'Category',
-    render: function (data: string, _, row: AccountDto) {
-      return `${data} (${row.type})`
-    },
-  },
-  {
-    data: 'name',
-    title: 'Name',
-  },
-  {
     data: 'description',
-    title: 'Description',
+    title: t('cashbunny.transactionDescription'),
   },
   {
-    data: 'balance',
-    title: 'Balance',
+    data: 'amount',
+    title: t('cashbunny.transactionAmount'),
   },
   {
     data: 'currency',
-    title: 'Currency',
+    title: t('cashbunny.transactionCurrency'),
+  },
+  {
+    data: 'source_account_id',
+    title: t('cashbunny.transactionSourceAccount'),
+    render: function (data: string, _, row: TransactionDto) {
+      return `${row.source_account_name} (${data})`
+    },
+  },
+  {
+    data: 'destination_account_id',
+    title: t('cashbunny.transactionDestinationAccount'),
+    render: function (data: string, _, row: TransactionDto) {
+      return `${row.destination_account_name} (${data})`
+    },
+  },
+  {
+    data: 'transacted_at',
+    title: t('cashbunny.transactionTransactedAt'),
+    render: function (data: string) {
+      return new Date(data).toLocaleString(navigator.language)
+    },
   },
   {
     data: 'created_at',
-    title: 'Created at',
+    title: t('cashbunny.transactionCreatedAt'),
     render: function (data: string) {
       return new Date(data).toLocaleString(navigator.language)
     },
   },
   {
     data: 'updated_at',
-    title: 'Updated at',
+    title: t('cashbunny.transactionUpdatedAt'),
     render: function (data: string) {
       return new Date(data).toLocaleString(navigator.language)
     },
   },
 ]
 
+const getTargetRowData = () => {
+  return selectedData.value.length
+    ? selectedData.value
+    : clickedData.value
+      ? [clickedData.value]
+      : []
+}
+
+const onClickAddTransaction = () => {
+  showTransactionFormDialog.value = true
+}
+
+const onTransactionFormSuccess = async () => {
+  showTransactionFormDialog.value = false
+  const res = await store.getTransactions()
+  if (res.data.error === null) {
+    data.value = res.data.data
+  }
+}
+
+const onTransactionFormCancel = () => {
+  showTransactionFormDialog.value = false
+}
+
+const onRowClickEdit = () => {
+  console.log('edit', clickedData.value)
+}
+
+const onRowClickDelete = () => {
+  showConfirmDeleteDialog.value = true
+}
+
+const onSuccessConfirmDeleteDialog = async () => {
+  showConfirmDeleteDialog.value = false
+
+  // TODO
+  const rows = getTargetRowData()
+  // TODO
+  await Promise.all([...rows.map((info) => store.deleteTransaction(info.id))])
+
+  const res = await store.getTransactions()
+  if (res.data.error === null) {
+    data.value = res.data.data
+  }
+}
+
+const onCloseConfirmDeleteDialog = async () => {
+  showConfirmDeleteDialog.value = false
+}
+
 onMounted(async () => {
-  const res = await store.getAccounts()
+  const res = await store.getTransactions()
   if (res.data.error === null) {
     data.value = res.data.data
   }
@@ -179,52 +228,6 @@ onMounted(async () => {
     )
   })
 })
-
-const onClickAddAccount = () => {
-  showAccountFormDialog.value = true
-}
-
-const onAccountFormSuccess = async () => {
-  showAccountFormDialog.value = false
-  const res = await store.getAccounts()
-  if (res.data.error === null) {
-    data.value = res.data.data
-  }
-}
-
-const onClickAddAccountCancel = () => {
-  showAccountFormDialog.value = false
-}
-
-const onRowClickEdit = () => {
-  console.log('edit', clickedData.value)
-}
-
-const onRowClickDelete = () => {
-  showConfirmDeleteDialog.value = true
-}
-
-const onSuccessConfirmDeleteDialog = async () => {
-  showConfirmDeleteDialog.value = false
-
-  // TODO
-  const rows = selectedData.value.length
-    ? selectedData.value
-    : clickedData.value
-      ? [clickedData.value]
-      : []
-
-  await Promise.all([...rows.map((info) => store.deleteAccount(info.id))])
-
-  const res = await store.getAccounts()
-  if (res.data.error === null) {
-    data.value = res.data.data
-  }
-}
-
-const onCloseConfirmDeleteDialog = async () => {
-  showConfirmDeleteDialog.value = false
-}
 </script>
 
 <style lang="scss">
