@@ -39,7 +39,7 @@
         :label="t('cashbunny.accountBalance')"
         placeholder="0"
         :min="0"
-        :units="['CAD', 'JPY']"
+        :units="store.userPreferences?.user_currencies"
         :error-message="validationErrors.balance || validationErrors.currency"
         v-model:value="balance"
         v-model:unit="currency"

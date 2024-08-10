@@ -26,6 +26,36 @@ func NewCashbunnyHandler(db *sql.DB) *CashbunnyHandler {
 	}
 }
 
+func (h *CashbunnyHandler) GetCurrencies(ctx echo.Context) *api.APIResponse {
+	result := h.cashbunny.GetAllCurrencies(ctx.Request().Context())
+
+	return api.NewAPIResponse(nil, response.NewGetAllCurrenciesResponseDTO(result))
+}
+
+func (h *CashbunnyHandler) GetUserPreferences(ctx echo.Context) *api.APIResponse {
+	token := ctx.Get("user").(*jwt.Token)
+	claims := token.Claims.(*auth.JWTClaims)
+
+	result, err := h.cashbunny.GetUserPreferences(ctx.Request().Context(), claims.UserID)
+	if err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	return api.NewAPIResponse(nil, response.NewGetUserPreferencesDTO(result))
+}
+
+func (h *CashbunnyHandler) CreateDefaultUserPreferences(ctx echo.Context) *api.APIResponse {
+	token := ctx.Get("user").(*jwt.Token)
+	claims := token.Claims.(*auth.JWTClaims)
+
+	result, err := h.cashbunny.CreateDefaultUserPreferences(ctx.Request().Context(), claims.UserID)
+	if err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	return api.NewAPIResponse(nil, response.NewGetUserPreferencesDTO(result))
+}
+
 func (h *CashbunnyHandler) CreateAccount(ctx echo.Context) *api.APIResponse {
 	token := ctx.Get("user").(*jwt.Token)
 	claims := token.Claims.(*auth.JWTClaims)

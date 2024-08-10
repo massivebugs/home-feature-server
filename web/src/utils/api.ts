@@ -1,5 +1,9 @@
 import axios, { AxiosError } from 'axios'
 
+export const isAPIError = (e: any) => {
+  return axios.isAxiosError(e)
+}
+
 const api = axios.create({
   baseURL: 'http://localhost:1323/api/',
   timeout: 10000,
@@ -35,6 +39,8 @@ export const APIEndpoints = {
     secure: {
       authUser: 'v1/secure/auth',
       cashbunny: {
+        currencies: 'v1/secure/cashbunny/currencies',
+        userPreferences: 'v1/secure/cashbunny/user_preferences',
         accounts: 'v1/secure/cashbunny/accounts',
         transactions: 'v1/secure/cashbunny/transactions',
       },

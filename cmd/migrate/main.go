@@ -16,6 +16,10 @@ import (
 
 func main() {
 	// Parse command line flags
+	var isReset bool
+	flag.BoolVar(&isReset, "reset", false, "Rolls back everything, and migrates everything if this is provided")
+	flag.Parse()
+
 	var isRollback bool
 	flag.BoolVar(&isRollback, "rollback", false, "Rolls back a step if this is provided")
 	flag.Parse()
@@ -61,7 +65,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if isRollback {
+	if isReset {
+		err = m.Down()
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = m.Up()
+	} else if isRollback {
 		err = m.Steps(-1)
 	} else {
 		err = m.Up()

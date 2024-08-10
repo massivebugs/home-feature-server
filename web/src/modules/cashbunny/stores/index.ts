@@ -1,14 +1,36 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import type { APIResponse } from '@/core/models/dto'
 import { APIEndpoints, api } from '@/utils/api'
-import type {
-  AccountDto,
-  CreateAccountDto,
-  CreateTransactionDto,
-  TransactionDto,
+import type { Currency } from '../models/currency'
+import {
+  type AccountDto,
+  type CreateAccountDto,
+  type CreateTransactionDto,
+  type GetAllCurrenciesDto,
+  type TransactionDto,
+  type UserPreferencesDto,
 } from '../models/dto'
 
 export const useCashbunnyStore = defineStore('cashbunny', () => {
+  const currencies = ref<Currency[]>([])
+  const userPreferences = ref<UserPreferencesDto | null>(null)
+
+  const setCurrencies = (dto: GetAllCurrenciesDto) => {
+    for (const [key, value] of Object.entries(dto.currencies_and_grapheme)) {
+      currencies.value.push({ code: key, grapheme: value })
+    }
+  }
+
+  const getAllCurrencies = () =>
+    api.get<APIResponse<GetAllCurrenciesDto>>(APIEndpoints.v1.secure.cashbunny.currencies)
+
+  const getUserPreferences = () =>
+    api.get<APIResponse<UserPreferencesDto>>(APIEndpoints.v1.secure.cashbunny.userPreferences)
+
+  const createUserPreferences = () =>
+    api.post<APIResponse<UserPreferencesDto>>(APIEndpoints.v1.secure.cashbunny.userPreferences)
+
   const getAccounts = () =>
     api.get<APIResponse<AccountDto[]>>(APIEndpoints.v1.secure.cashbunny.accounts)
 
@@ -30,6 +52,12 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     )
 
   return {
+    currencies,
+    userPreferences,
+    setCurrencies,
+    getAllCurrencies,
+    getUserPreferences,
+    createUserPreferences,
     getAccounts,
     createAccount,
     deleteAccount,

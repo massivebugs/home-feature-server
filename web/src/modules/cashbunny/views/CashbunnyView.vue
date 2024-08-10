@@ -1,12 +1,16 @@
 <template>
   <ErrorDialogComponent
-    v-if="isProcessAlreadyExists"
+    v-if="errorTitle && errorMessage"
     :pos="new RelativePosition(40, 40)"
     :size="new RelativeSize(20, 20)"
-    :title="t('cashbunny.processAlreadyExistsTitle')"
-    :message="t('cashbunny.processAlreadyExistsMessage')"
+    :title="errorTitle"
+    :message="errorMessage"
   />
-  <CashbunnySplashComponent v-else-if="!isLoadedInitialData" @loaded="onLoadedData" />
+  <CashbunnySplashComponent
+    v-else-if="!isLoadedInitialData"
+    @loaded="onLoadedData"
+    @error="onErrorLoadingData"
+  />
   <CashbunnyWindowComponent v-else />
 </template>
 
@@ -23,17 +27,24 @@ import { CASHBUNNY_PROGRAM_ID } from '../constants'
 
 const { t } = useI18n()
 const coreStore = useCoreStore()
-const isProcessAlreadyExists = ref<boolean>(false)
+const errorTitle = ref<string | null>(null)
+const errorMessage = ref<string | null>(null)
 const isLoadedInitialData = ref<boolean>(false)
 
 onMounted(() => {
   if (coreStore.findProgramProcesses(CASHBUNNY_PROGRAM_ID).length > 1) {
-    isProcessAlreadyExists.value = true
+    errorTitle.value = t('cashbunny.processAlreadyExistsTitle')
+    errorMessage.value = t('cashbunny.processAlreadyExistsMessage')
   }
 })
 
 const onLoadedData = () => {
   isLoadedInitialData.value = true
+}
+
+const onErrorLoadingData = (e: any) => {
+  errorTitle.value = t('cashbunny.errorLoadingDataTitle')
+  errorMessage.value = t('cashbunny.errorLoadingDataMessage', { e })
 }
 </script>
 

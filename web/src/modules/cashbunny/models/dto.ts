@@ -1,3 +1,11 @@
+export type GetAllCurrenciesDto = {
+  currencies_and_grapheme: { [key: string]: string }
+}
+
+export type UserPreferencesDto = {
+  user_currencies: string[]
+}
+
 export type AccountDto = {
   id: number
   category: string

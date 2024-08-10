@@ -7,24 +7,12 @@ overrides:
           type: "float64"
 sql:
   - engine: "mysql"
-    queries: "../db/service/user/query.sql"
+    queries: "../db/service/auth_repository/query.sql"
     schema: "../db/migration"
     gen:
       go:
         sql_package: "database/sql"
-        out: "../db/service/user"
-        emit_methods_with_db_argument: true
-        emit_interface: true
-        emit_result_struct_pointers: true
-        omit_unused_structs: true
-        emit_empty_slices: true
-  - engine: "mysql"
-    queries: "../db/service/user_password/query.sql"
-    schema: "../db/migration"
-    gen:
-      go:
-        sql_package: "database/sql"
-        out: "../db/service/user_password"
+        out: "../db/service/auth_repository"
         emit_methods_with_db_argument: true
         emit_interface: true
         emit_result_struct_pointers: true

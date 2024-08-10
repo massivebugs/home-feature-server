@@ -25,8 +25,8 @@ import { useCoreStore } from '../stores'
 const { t } = useI18n()
 const store = useCoreStore()
 const router = useRouter()
-const username = ref('massivebugs')
-const password = ref('this_is_meant_to_be_public123')
+const username = ref('testuser')
+const password = ref('test_password_123')
 
 onMounted(() => {
   checkAuth()

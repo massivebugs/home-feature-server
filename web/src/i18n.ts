@@ -23,6 +23,8 @@ export const i18nOptions: I18nOptions = {
         title: 'Cashbunny Budget Planner',
         processAlreadyExistsTitle: 'Error',
         processAlreadyExistsMessage: 'This program can have only one running process',
+        errorLoadingDataTitle: 'Error',
+        errorLoadingDataMessage: 'An error occured while loading data: {e}',
         overview: 'Overview',
         planner: 'Planner',
         accounts: 'Accounts',

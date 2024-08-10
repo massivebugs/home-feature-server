@@ -89,6 +89,33 @@ func (q *Queries) CreateTransaction(ctx context.Context, db DBTX, arg CreateTran
 	)
 }
 
+const createUserCurrency = `-- name: CreateUserCurrency :execresult
+INSERT INTO
+  cashbunny_user_currencies (user_id, currency_code)
+VALUES
+  (?, ?)
+`
+
+type CreateUserCurrencyParams struct {
+	UserID       uint32
+	CurrencyCode string
+}
+
+func (q *Queries) CreateUserCurrency(ctx context.Context, db DBTX, arg CreateUserCurrencyParams) (sql.Result, error) {
+	return db.ExecContext(ctx, createUserCurrency, arg.UserID, arg.CurrencyCode)
+}
+
+const createUserPreferences = `-- name: CreateUserPreferences :execresult
+INSERT INTO
+  cashbunny_user_preferences (user_id)
+VALUES
+  (?)
+`
+
+func (q *Queries) CreateUserPreferences(ctx context.Context, db DBTX, userID uint32) (sql.Result, error) {
+	return db.ExecContext(ctx, createUserPreferences, userID)
+}
+
 const deleteAccount = `-- name: DeleteAccount :exec
 UPDATE cashbunny_accounts
 SET
@@ -127,6 +154,26 @@ func (q *Queries) DeleteTransaction(ctx context.Context, db DBTX, arg DeleteTran
 	return err
 }
 
+const deleteTransactionsByAccountID = `-- name: DeleteTransactionsByAccountID :exec
+UPDATE cashbunny_transactions
+SET
+  deleted_at = CURRENT_TIMESTAMP()
+WHERE
+  user_id = ?
+  AND src_account_id = ?
+  OR dest_account_id = ?
+`
+
+type DeleteTransactionsByAccountIDParams struct {
+	UserID    uint32
+	AccountID uint32
+}
+
+func (q *Queries) DeleteTransactionsByAccountID(ctx context.Context, db DBTX, arg DeleteTransactionsByAccountIDParams) error {
+	_, err := db.ExecContext(ctx, deleteTransactionsByAccountID, arg.UserID, arg.AccountID, arg.AccountID)
+	return err
+}
+
 const getAccountByID = `-- name: GetAccountByID :one
 SELECT
   id, user_id, category, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
@@ -135,6 +182,7 @@ FROM
 WHERE
   user_id = ?
   AND id = ?
+  AND deleted_at IS NULL
 LIMIT
   1
 `
@@ -157,6 +205,68 @@ func (q *Queries) GetAccountByID(ctx context.Context, db DBTX, arg GetAccountByI
 		&i.Currency,
 		&i.Type,
 		&i.OrderIndex,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return &i, err
+}
+
+const getTransactionByID = `-- name: GetTransactionByID :one
+SELECT
+  id, user_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
+FROM
+  cashbunny_transactions
+WHERE
+  user_id = ?
+  AND id = ?
+  AND deleted_at IS NULL
+LIMIT
+  1
+`
+
+type GetTransactionByIDParams struct {
+	UserID uint32
+	ID     uint32
+}
+
+func (q *Queries) GetTransactionByID(ctx context.Context, db DBTX, arg GetTransactionByIDParams) (*CashbunnyTransaction, error) {
+	row := db.QueryRowContext(ctx, getTransactionByID, arg.UserID, arg.ID)
+	var i CashbunnyTransaction
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.SrcAccountID,
+		&i.DestAccountID,
+		&i.Description,
+		&i.Amount,
+		&i.Currency,
+		&i.TransactedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return &i, err
+}
+
+const getUserPreferenceByUserID = `-- name: GetUserPreferenceByUserID :one
+SELECT
+  id, user_id, created_at, updated_at, deleted_at
+FROM
+  cashbunny_user_preferences
+WHERE
+  user_id = ?
+  AND deleted_at IS NULL
+LIMIT
+  1
+`
+
+func (q *Queries) GetUserPreferenceByUserID(ctx context.Context, db DBTX, userID uint32) (*CashbunnyUserPreference, error) {
+	row := db.QueryRowContext(ctx, getUserPreferenceByUserID, userID)
+	var i CashbunnyUserPreference
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -341,4 +451,65 @@ func (q *Queries) ListTransactions(ctx context.Context, db DBTX, userID uint32) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const listUserCurrencies = `-- name: ListUserCurrencies :many
+SELECT
+  id, user_id, currency_code, created_at, updated_at
+FROM
+  cashbunny_user_currencies
+WHERE
+  user_id = ?
+ORDER BY
+  currency_code
+`
+
+func (q *Queries) ListUserCurrencies(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyUserCurrency, error) {
+	rows, err := db.QueryContext(ctx, listUserCurrencies, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*CashbunnyUserCurrency{}
+	for rows.Next() {
+		var i CashbunnyUserCurrency
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CurrencyCode,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateAccountBalance = `-- name: UpdateAccountBalance :exec
+UPDATE cashbunny_accounts
+SET
+  balance = ?
+WHERE
+  user_id = ?
+  AND id = ?
+  AND deleted_at IS NULL
+`
+
+type UpdateAccountBalanceParams struct {
+	Balance float64
+	UserID  uint32
+	ID      uint32
+}
+
+func (q *Queries) UpdateAccountBalance(ctx context.Context, db DBTX, arg UpdateAccountBalanceParams) error {
+	_, err := db.ExecContext(ctx, updateAccountBalance, arg.Balance, arg.UserID, arg.ID)
+	return err
 }

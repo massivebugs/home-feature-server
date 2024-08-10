@@ -3,7 +3,7 @@
 //   sqlc v1.25.0
 // source: query.sql
 
-package user
+package auth_repository
 
 import (
 	"context"
@@ -19,6 +19,22 @@ VALUES
 
 func (q *Queries) CreateUser(ctx context.Context, db DBTX, name string) (sql.Result, error) {
 	return db.ExecContext(ctx, createUser, name)
+}
+
+const createUserPassword = `-- name: CreateUserPassword :execresult
+INSERT INTO
+  user_passwords (user_id, password_hash)
+VALUES
+  (?, ?)
+`
+
+type CreateUserPasswordParams struct {
+	UserID       uint32
+	PasswordHash string
+}
+
+func (q *Queries) CreateUserPassword(ctx context.Context, db DBTX, arg CreateUserPasswordParams) (sql.Result, error) {
+	return db.ExecContext(ctx, createUserPassword, arg.UserID, arg.PasswordHash)
 }
 
 const deleteUser = `-- name: DeleteUser :exec
@@ -82,6 +98,31 @@ func (q *Queries) GetUserByName(ctx context.Context, db DBTX, name string) (*Use
 	return &i, err
 }
 
+const getUserPasswordByUserID = `-- name: GetUserPasswordByUserID :one
+SELECT
+  id, user_id, password_hash, created_at, updated_at, deleted_at
+FROM
+  user_passwords
+WHERE
+  user_id = ?
+LIMIT
+  1
+`
+
+func (q *Queries) GetUserPasswordByUserID(ctx context.Context, db DBTX, userID uint32) (*UserPassword, error) {
+	row := db.QueryRowContext(ctx, getUserPasswordByUserID, userID)
+	var i UserPassword
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.PasswordHash,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return &i, err
+}
+
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
@@ -97,5 +138,23 @@ type UpdateUserParams struct {
 
 func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg UpdateUserParams) error {
 	_, err := db.ExecContext(ctx, updateUser, arg.Name, arg.ID)
+	return err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE user_passwords
+SET
+  password_hash = ?
+WHERE
+  id = ?
+`
+
+type UpdateUserPasswordParams struct {
+	PasswordHash string
+	ID           uint32
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, db DBTX, arg UpdateUserPasswordParams) error {
+	_, err := db.ExecContext(ctx, updateUserPassword, arg.PasswordHash, arg.ID)
 	return err
 }

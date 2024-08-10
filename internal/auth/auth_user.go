@@ -3,7 +3,7 @@ package auth
 import (
 	"time"
 
-	"github.com/massivebugs/home-feature-server/db/service/user"
+	"github.com/massivebugs/home-feature-server/db/service/auth_repository"
 )
 
 type AuthUser struct {
@@ -13,7 +13,7 @@ type AuthUser struct {
 	CreatedAt  time.Time
 }
 
-func NewAuthUser(user *user.User, claims *JWTClaims) AuthUser {
+func NewAuthUser(user *auth_repository.User, claims *JWTClaims) AuthUser {
 	return AuthUser{
 		ID:         user.ID,
 		Name:       user.Name,

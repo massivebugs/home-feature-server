@@ -6,6 +6,31 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
+type GetAllCurrenciesDTO struct {
+	CurrenciesAndGrapheme map[string]string `json:"currencies_and_grapheme"`
+}
+
+func NewGetAllCurrenciesResponseDTO(cgMap map[string]string) GetAllCurrenciesDTO {
+	return GetAllCurrenciesDTO{
+		CurrenciesAndGrapheme: cgMap,
+	}
+}
+
+type GetUserPreferencesDTO struct {
+	UserCurrencies []string `json:"user_currencies"`
+}
+
+func NewGetUserPreferencesDTO(up *cashbunny.UserPreferences) GetUserPreferencesDTO {
+	ucs := make([]string, len(up.UserCurrencies))
+	for idx, uc := range up.UserCurrencies {
+		ucs[idx] = uc.CurrencyCode
+	}
+
+	return GetUserPreferencesDTO{
+		UserCurrencies: ucs,
+	}
+}
+
 type AccountResponseDTO struct {
 	ID          uint32    `json:"id"`
 	Category    string    `json:"category"`

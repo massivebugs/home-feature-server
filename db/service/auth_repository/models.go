@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.25.0
 
-package user
+package auth_repository
 
 import (
 	"database/sql"
@@ -15,4 +15,13 @@ type User struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt sql.NullTime
+}
+
+type UserPassword struct {
+	ID           uint32
+	UserID       uint32
+	PasswordHash string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	DeletedAt    sql.NullTime
 }
