@@ -12,13 +12,15 @@
     @click-success="onClickSubmit"
   >
     <div class="container">
-      <div class="title">{{ t('cashbunny.createTransaction') }}</div>
+      <div class="title">
+        {{ transaction ? t('cashbunny.editTransaction') : t('cashbunny.createTransaction') }}
+      </div>
       <TextInputComponent
         name="transactionDescription"
         :label="t('cashbunny.transactionDescription')"
         :placeholder="t('cashbunny.transactionDescriptionPlaceholder')"
         :error-message="validationErrors.description"
-        v-model="description"
+        v-model="formValues.description"
       />
       <NumberInputComponent
         name="transactionAmount"
@@ -27,29 +29,29 @@
         :min="0"
         :units="store.userPreferences?.user_currencies"
         :error-message="validationErrors.amount || validationErrors.currency"
-        v-model:value="amount"
-        v-model:unit="currency"
+        v-model:value="formValues.amount"
+        v-model:unit="formValues.currency"
       />
       <SelectInputComponent
         name="sourceAccount"
         :label="t('cashbunny.transactionSourceAccount')"
         :options="accounts.map((a) => a.id)"
         :error-message="validationErrors.source_account_id"
-        v-model:value="sourceAccountId"
+        v-model:value="formValues.sourceAccountId"
       />
       <SelectInputComponent
         name="destinationAccount"
         :label="t('cashbunny.transactionDestinationAccount')"
         :options="accounts.map((a) => a.id)"
         :error-message="validationErrors.destination_account_id"
-        v-model:value="destinationAccountId"
+        v-model:value="formValues.destinationAccountId"
       />
       <TextInputComponent
         name="transactedAt"
         :label="t('cashbunny.transactionTransactedAt')"
         :placeholder="t('cashbunny.transactionTransactedAtPlaceholder')"
         :error-message="validationErrors.transacted_at"
-        v-model="transactedAt"
+        v-model="formValues.transactedAt"
       />
     </div>
   </DialogComponent>
@@ -66,27 +68,50 @@ import TextInputComponent from '@/core/components/TextInputComponent.vue'
 import type { APIResponse } from '@/core/models/dto'
 import type { RelativePosition } from '@/core/models/relative_position'
 import type { RelativeSize } from '@/core/models/relative_size'
-import type { AccountDto, CreateTransactionDto } from '../models/dto'
+import type { AccountDto, CreateTransactionDto, TransactionDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
+
+export type TransactionFormValues = {
+  description: string
+  amount: number
+  currency: string
+  sourceAccountId: number
+  destinationAccountId: number
+  transactedAt: string
+}
 
 const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-defineProps<{
+const props = defineProps<{
   pos: RelativePosition
   size: RelativeSize
   title: string
+  transaction?: TransactionDto
 }>()
 
 const { t } = useI18n()
 const store = useCashbunnyStore()
-const description = ref<string>('')
-const amount = ref<number>(0)
-const currency = ref<string>('CAD')
-const sourceAccountId = ref<number>(0)
-const destinationAccountId = ref<number>(0)
-const transactedAt = ref<string>('')
+const formValues = ref<TransactionFormValues>(
+  props.transaction
+    ? {
+        description: props.transaction.description,
+        amount: props.transaction.amount,
+        currency: props.transaction.currency,
+        sourceAccountId: props.transaction.source_account_id,
+        destinationAccountId: props.transaction.destination_account_id,
+        transactedAt: props.transaction.transacted_at,
+      }
+    : {
+        description: '',
+        amount: 0,
+        currency: 'CAD',
+        sourceAccountId: 0,
+        destinationAccountId: 0,
+        transactedAt: '',
+      },
+)
 const errorMessage = ref<string>('')
 const validationErrors = ref<{ [k in keyof CreateTransactionDto]: string }>({
   description: '',
@@ -99,15 +124,22 @@ const validationErrors = ref<{ [k in keyof CreateTransactionDto]: string }>({
 const accounts = ref<AccountDto[]>([])
 
 const onClickSubmit = async () => {
-  await store
-    .createTransaction({
-      description: description.value,
-      amount: amount.value,
-      currency: currency.value,
-      source_account_id: sourceAccountId.value,
-      destination_account_id: destinationAccountId.value,
-      transacted_at: transactedAt.value.toString(),
-    })
+  const request = props.transaction
+    ? store.updateTransaction(props.transaction.id, {
+        description: formValues.value.description,
+        amount: formValues.value.amount,
+        transacted_at: formValues.value.transactedAt,
+      })
+    : store.createTransaction({
+        description: formValues.value.description,
+        amount: formValues.value.amount,
+        currency: formValues.value.currency,
+        source_account_id: formValues.value.sourceAccountId,
+        destination_account_id: formValues.value.destinationAccountId,
+        transacted_at: formValues.value.transactedAt.toString(),
+      })
+
+  await request
     .then(() => {
       emit('success')
     })

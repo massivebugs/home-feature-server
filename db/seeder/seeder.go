@@ -143,7 +143,7 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 			Category:    string(cashbunny.AccountCategoryRevenue),
 			Name:        "Bar Inc.",
 			Description: "My workplace",
-			Balance:     786000,
+			Balance:     1496000,
 			Currency:    "JPY",
 			Type:        string(cashbunny.AccountTypeCredit),
 			OrderIndex:  2,

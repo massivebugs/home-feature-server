@@ -27,6 +27,7 @@
       :pos="new RelativePosition(25, 25)"
       :size="new RelativeSize(50, 50)"
       :title="t('cashbunny.addTransaction')"
+      :transaction="clickedData ?? undefined"
       @success="onTransactionFormSuccess"
       @click-cancel="onTransactionFormCancel"
       @click-close="onTransactionFormCancel"
@@ -61,7 +62,7 @@ let dt: Api
 const data = ref<TransactionDto[]>([])
 const showConfirmDeleteDialog = ref<boolean>(false)
 const showTransactionFormDialog = ref<boolean>(false)
-const clickedData = ref<TransactionDto>()
+const clickedData = ref<TransactionDto | null>(null)
 const selectedData = ref<TransactionDto[]>([])
 
 const layoutOptions = {
@@ -93,6 +94,9 @@ const columns: ConfigColumns[] = [
   {
     data: 'amount',
     title: t('cashbunny.transactionAmount'),
+    render: function (data: string) {
+      return Number(data).toLocaleString()
+    },
   },
   {
     data: 'currency',
@@ -144,6 +148,7 @@ const getTargetRowData = () => {
 }
 
 const onClickAddTransaction = () => {
+  clickedData.value = null
   showTransactionFormDialog.value = true
 }
 
@@ -160,7 +165,7 @@ const onTransactionFormCancel = () => {
 }
 
 const onRowClickEdit = () => {
-  console.log('edit', clickedData.value)
+  showTransactionFormDialog.value = true
 }
 
 const onRowClickDelete = () => {

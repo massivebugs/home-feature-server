@@ -9,6 +9,8 @@ import {
   type CreateTransactionDto,
   type GetAllCurrenciesDto,
   type TransactionDto,
+  type UpdateAccountDto,
+  type UpdateTransactionDto,
   type UserPreferencesDto,
 } from '../models/dto'
 
@@ -37,6 +39,9 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
   const createAccount = (data: CreateAccountDto) =>
     api.post<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts, data)
 
+  const updateAccount = (accountId: number, data: UpdateAccountDto) =>
+    api.put<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts + `/${accountId}`, data)
+
   const deleteAccount = (accountId: number) =>
     api.delete<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts + `/${accountId}`)
 
@@ -45,6 +50,9 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
 
   const createTransaction = (data: CreateTransactionDto) =>
     api.post(APIEndpoints.v1.secure.cashbunny.transactions, data)
+
+  const updateTransaction = (transactionId: number, data: UpdateTransactionDto) =>
+    api.put(APIEndpoints.v1.secure.cashbunny.transactions + `/${transactionId}`, data)
 
   const deleteTransaction = (transactionId: number) =>
     api.delete<APIResponse<null>>(
@@ -60,9 +68,11 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     createUserPreferences,
     getAccounts,
     createAccount,
+    updateAccount,
     deleteAccount,
     getTransactions,
     createTransaction,
+    updateTransaction,
     deleteTransaction,
   }
 })

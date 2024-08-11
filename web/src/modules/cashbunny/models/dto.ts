@@ -11,7 +11,7 @@ export type AccountDto = {
   category: string
   name: string
   description: string
-  balance: string
+  balance: number
   currency: string
   type: string
   created_at: string
@@ -27,10 +27,16 @@ export type CreateAccountDto = {
   order_index: number
 }
 
+export type UpdateAccountDto = {
+  name?: string
+  description?: string
+  order_index?: number
+}
+
 export type TransactionDto = {
   id: number
   description: string
-  amount: string
+  amount: number
   currency: string
   transacted_at: string
   created_at: string
@@ -48,4 +54,10 @@ export type CreateTransactionDto = {
   source_account_id: number
   destination_account_id: number
   transacted_at: string
+}
+
+export type UpdateTransactionDto = {
+  description?: string
+  amount?: number
+  transacted_at?: string
 }

@@ -36,7 +36,7 @@ type AccountResponseDTO struct {
 	Category    string    `json:"category"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	Balance     string    `json:"balance"`
+	Balance     float64   `json:"balance"`
 	Currency    string    `json:"currency"`
 	Type        string    `json:"type"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -49,7 +49,7 @@ func NewAccountResponseDTO(a *cashbunny.Account) AccountResponseDTO {
 		Category:    string(a.Category),
 		Name:        a.Name,
 		Description: a.Description,
-		Balance:     a.Balance.Display(),
+		Balance:     a.Balance.AsMajorUnits(),
 		Currency:    a.Balance.Currency().Code,
 		Type:        string(a.Type),
 		CreatedAt:   a.CreatedAt,
@@ -68,7 +68,7 @@ func NewListAccountsResponseDTO(accounts []*cashbunny.Account) []AccountResponse
 type TransactionResponseDTO struct {
 	ID           uint32    `json:"id"`
 	Description  string    `json:"description"`
-	Amount       string    `json:"amount"`
+	Amount       float64   `json:"amount"`
 	Currency     string    `json:"currency"`
 	TransactedAt time.Time `json:"transacted_at"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -84,7 +84,7 @@ func NewTransactionResponseDTO(t *cashbunny.Transaction) TransactionResponseDTO 
 	return TransactionResponseDTO{
 		ID:           t.ID,
 		Description:  t.Description,
-		Amount:       t.Amount.Display(),
+		Amount:       t.Amount.AsMajorUnits(),
 		Currency:     t.Amount.Currency().Code,
 		TransactedAt: t.TransactedAt,
 		CreatedAt:    t.CreatedAt,

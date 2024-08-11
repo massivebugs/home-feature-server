@@ -28,6 +28,7 @@
       :size="new RelativeSize(50, 50)"
       :title="t('cashbunny.addAccount')"
       :next-account-index="data.length"
+      :account="clickedData ?? undefined"
       @success="onAccountFormSuccess"
       @click-cancel="onAccountFormCancel"
       @click-close="onAccountFormCancel"
@@ -62,7 +63,7 @@ let dt: Api
 const data = ref<AccountDto[]>([])
 const showConfirmDeleteDialog = ref<boolean>(false)
 const showAccountFormDialog = ref<boolean>(false)
-const clickedData = ref<AccountDto>()
+const clickedData = ref<AccountDto | null>(null)
 const selectedData = ref<AccountDto[]>([])
 
 const layoutOptions = {
@@ -115,6 +116,9 @@ const columns: ConfigColumns[] = [
   {
     data: 'balance',
     title: t('cashbunny.accountBalance'),
+    render: function (data: string) {
+      return Number(data).toLocaleString()
+    },
   },
   {
     data: 'currency',
@@ -145,6 +149,7 @@ const getTargetRowData = () => {
 }
 
 const onClickAddAccount = () => {
+  clickedData.value = null
   showAccountFormDialog.value = true
 }
 
@@ -161,7 +166,7 @@ const onAccountFormCancel = () => {
 }
 
 const onRowClickEdit = () => {
-  console.log('edit', clickedData.value)
+  showAccountFormDialog.value = true
 }
 
 const onRowClickDelete = () => {
@@ -206,6 +211,7 @@ onMounted(async () => {
       (e as PointerEvent).clientX,
       (e as PointerEvent).clientY,
     )
+
     setContextMenu(
       {
         itemGroups: [

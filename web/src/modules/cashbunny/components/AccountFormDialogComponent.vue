@@ -12,27 +12,29 @@
     @click-success="onClickSubmit"
   >
     <div class="container">
-      <div class="title">{{ t('cashbunny.addAccount') }}</div>
+      <div class="title">
+        {{ account ? t('cashbunny.editAccount') : t('cashbunny.addAccount') }}
+      </div>
       <TextInputComponent
         name="accountName"
         :label="t('cashbunny.accountName')"
         :placeholder="t('cashbunny.accountNamePlaceholder')"
         :error-message="validationErrors.name"
-        v-model="name"
+        v-model="formValues.name"
       />
       <SelectInputComponent
         name="accountCategory"
         :label="t('cashbunny.accountCategory')"
         :options="['assets', 'liabilities', 'revenue', 'expenses']"
         :error-message="validationErrors.category"
-        v-model:value="category"
+        v-model:value="formValues.category"
       />
       <TextInputComponent
         name="accountDescription"
         :label="t('cashbunny.accountDescription')"
         :placeholder="t('cashbunny.accountDescriptionPlaceholder')"
         :error-message="validationErrors.description"
-        v-model="description"
+        v-model="formValues.description"
       />
       <NumberInputComponent
         name="accountBalance"
@@ -41,8 +43,8 @@
         :min="0"
         :units="store.userPreferences?.user_currencies"
         :error-message="validationErrors.balance || validationErrors.currency"
-        v-model:value="balance"
-        v-model:unit="currency"
+        v-model:value="formValues.balance"
+        v-model:unit="formValues.currency"
       />
     </div>
   </DialogComponent>
@@ -59,8 +61,16 @@ import TextInputComponent from '@/core/components/TextInputComponent.vue'
 import type { APIResponse } from '@/core/models/dto'
 import type { RelativePosition } from '@/core/models/relative_position'
 import type { RelativeSize } from '@/core/models/relative_size'
-import type { CreateAccountDto } from '../models/dto'
+import type { AccountDto, CreateAccountDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
+
+export type AccountFormValues = {
+  name: string
+  category: string
+  description: string
+  balance: number
+  currency: string
+}
 
 const emit = defineEmits<{
   (e: 'success'): void
@@ -71,15 +81,28 @@ const props = defineProps<{
   size: RelativeSize
   title: string
   nextAccountIndex: number
+  account?: AccountDto
 }>()
 
 const { t } = useI18n()
 const store = useCashbunnyStore()
-const name = ref<string>('')
-const category = ref<string>('assets')
-const description = ref<string>('')
-const balance = ref<number>(0)
-const currency = ref<string>('CAD')
+const formValues = ref<AccountFormValues>(
+  props.account
+    ? {
+        name: props.account.name,
+        category: props.account.category,
+        description: props.account.description,
+        balance: props.account.balance,
+        currency: props.account.currency,
+      }
+    : {
+        name: '',
+        category: 'assets',
+        description: '',
+        balance: 0,
+        currency: 'CAD',
+      },
+)
 const errorMessage = ref<string>('')
 const validationErrors = ref<{ [k in keyof CreateAccountDto]: string }>({
   name: '',
@@ -91,15 +114,21 @@ const validationErrors = ref<{ [k in keyof CreateAccountDto]: string }>({
 })
 
 const onClickSubmit = async () => {
-  await store
-    .createAccount({
-      name: name.value,
-      category: category.value,
-      description: description.value,
-      balance: balance.value,
-      currency: currency.value,
-      order_index: props.nextAccountIndex,
-    })
+  const request = props.account
+    ? store.updateAccount(props.account.id, {
+        name: formValues.value.name,
+        description: formValues.value.description,
+      })
+    : store.createAccount({
+        name: formValues.value.name,
+        category: formValues.value.category,
+        description: formValues.value.description,
+        balance: formValues.value.balance,
+        currency: formValues.value.currency,
+        order_index: props.nextAccountIndex,
+      })
+
+  await request
     .then(() => {
       emit('success')
     })
