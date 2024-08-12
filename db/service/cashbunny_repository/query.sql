@@ -143,6 +143,18 @@ WHERE
 LIMIT
   1;
 
+-- name: ListTransactionsBetweenDates :many
+SELECT
+  *
+FROM
+  cashbunny_transactions
+WHERE
+  user_id = ?
+  AND deleted_at IS NULL
+  AND transacted_at BETWEEN ? AND ?
+ORDER BY
+  transacted_at;
+
 -- name: DeleteTransaction :exec
 UPDATE cashbunny_transactions
 SET

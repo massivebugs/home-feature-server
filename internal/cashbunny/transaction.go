@@ -9,71 +9,61 @@ import (
 )
 
 type Transaction struct {
-	ID           uint32
-	Description  string
-	Amount       *money.Money
-	TransactedAt time.Time
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID            uint32
+	SrcAccountID  uint32
+	DestAccountID uint32
+	Description   string
+	Amount        *money.Money
+	TransactedAt  time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 
 	SourceAccount      *Account
 	DestinationAccount *Account
 }
 
-func NewTransaction(transaction *cashbunny_repository.CashbunnyTransaction, srcAccount *cashbunny_repository.CashbunnyAccount, destAccount *cashbunny_repository.CashbunnyAccount) (*Transaction, error) {
-	sa, err := NewAccount(srcAccount)
-	if err != nil {
-		return nil, err
-	}
-
-	da, err := NewAccount(destAccount)
-	if err != nil {
-		return nil, err
-	}
-
+func NewTransaction(transaction *cashbunny_repository.CashbunnyTransaction) (*Transaction, error) {
 	t := &Transaction{
-
-		ID:           transaction.ID,
-		Description:  transaction.Description,
-		Amount:       money.NewFromFloat(transaction.Amount, transaction.Currency),
-		TransactedAt: transaction.TransactedAt,
-		CreatedAt:    transaction.CreatedAt,
-		UpdatedAt:    transaction.UpdatedAt,
-
-		SourceAccount:      sa,
-		DestinationAccount: da,
+		ID:            transaction.ID,
+		SrcAccountID:  transaction.SrcAccountID,
+		DestAccountID: transaction.DestAccountID,
+		Description:   transaction.Description,
+		Amount:        money.NewFromFloat(transaction.Amount, transaction.Currency),
+		TransactedAt:  transaction.TransactedAt,
+		CreatedAt:     transaction.CreatedAt,
+		UpdatedAt:     transaction.UpdatedAt,
 	}
 
 	return t, t.validate()
 }
 
-func (e *Transaction) validate() error {
+func (tr *Transaction) validate() error {
 	return validation.ValidateStruct(
-		e,
+		tr,
 		validation.Field(
-			&e.ID,
+			&tr.ID,
 			validation.Required,
 		),
 		validation.Field(
-			&e.Description,
+			&tr.Description,
 			validation.Required,
 		),
 		validation.Field(
-			&e.Amount,
+			&tr.Amount,
 			validation.Required,
-			validation.By(IsMoneyNotNegative(e.Amount)),
+			validation.By(IsMoneyNotNegative(tr.Amount)),
 		),
 		validation.Field(
-			&e.TransactedAt,
-			validation.Required,
-		),
-		validation.Field(
-			&e.SourceAccount,
-			validation.Required,
-		),
-		validation.Field(
-			&e.DestinationAccount,
+			&tr.TransactedAt,
 			validation.Required,
 		),
 	)
+}
+
+func (tr *Transaction) IsSourceAccount(a *Account) bool {
+	return tr.SrcAccountID == a.ID
+}
+
+func (tr *Transaction) IsDestinationAccount(a *Account) bool {
+	return tr.DestAccountID == a.ID
 }

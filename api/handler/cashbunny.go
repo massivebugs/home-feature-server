@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"strconv"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -24,6 +25,43 @@ func NewCashbunnyHandler(db *sql.DB) *CashbunnyHandler {
 			cashbunny_repository.New(),
 		),
 	}
+}
+
+func (h *CashbunnyHandler) GetOverview(ctx echo.Context) *api.APIResponse {
+	token := ctx.Get("user").(*jwt.Token)
+	claims := token.Claims.(*auth.JWTClaims)
+
+	qFrom := ctx.QueryParam("from_date")
+	qTo := ctx.QueryParam("to_date")
+
+	var from time.Time
+	var to time.Time
+	var err error
+
+	if qFrom == "" {
+		from = time.Time{}
+	} else {
+		from, err = time.Parse(time.DateOnly, qFrom)
+	}
+	if err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	if qTo == "" {
+		to = time.Now()
+	} else {
+		to, err = time.Parse(time.DateOnly, qTo)
+	}
+	if err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	ledger, err := h.cashbunny.GetOverview(ctx.Request().Context(), claims.UserID, from, to)
+	if err != nil {
+		return api.NewAPIResponse(err, "")
+	}
+
+	return api.NewAPIResponse(nil, response.NewGetOverviewResponseDTO(ledger))
 }
 
 func (h *CashbunnyHandler) GetCurrencies(ctx echo.Context) *api.APIResponse {

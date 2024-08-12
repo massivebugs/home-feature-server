@@ -33,6 +33,7 @@ func registerV1Routes(e *echo.Group, cfg *config.Config, jwtMiddleware echo.Midd
 	v1Secure.GET("/auth", handler.CreateEchoHandlerFunc(cfg, h.AuthHandler.GetAuthUser))
 
 	cashbunny := v1Secure.Group("/cashbunny")
+	cashbunny.GET("/overview", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.GetOverview))
 	cashbunny.GET("/currencies", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.GetCurrencies))
 	cashbunny.GET("/user_preferences", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.GetUserPreferences))
 	cashbunny.POST("/user_preferences", handler.CreateEchoHandlerFunc(cfg, h.CashbunnyHandler.CreateDefaultUserPreferences))

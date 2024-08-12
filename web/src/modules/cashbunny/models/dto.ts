@@ -1,3 +1,10 @@
+export type OverviewDto = {
+  revenues: { [key: string]: string }
+  expenses: { [key: string]: string }
+  sums: { [key: string]: string }
+  totals: { [key: string]: string }
+}
+
 export type GetAllCurrenciesDto = {
   currencies_and_grapheme: { [key: string]: string }
 }

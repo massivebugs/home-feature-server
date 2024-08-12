@@ -23,7 +23,7 @@ func (r *CreateAccountRequestDTO) Validate() error {
 			validation.In(
 				string(AccountCategoryAssets),
 				string(AccountCategoryLiabilities),
-				string(AccountCategoryRevenue),
+				string(AccountCategoryRevenues),
 				string(AccountCategoryExpenses),
 			),
 		),

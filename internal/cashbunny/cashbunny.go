@@ -205,6 +205,56 @@ func NewCashbunny(db *sql.DB, cashbunnyRepo cashbunny_repository.Querier) *Cashb
 	}
 }
 
+func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Time, to time.Time) (*Ledger, error) {
+	accountListData, err := s.cashbunnyRepo.ListAccounts(ctx, s.db, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts := make([]*Account, len(accountListData))
+	for idx, ad := range accountListData {
+		a, err := NewAccount(ad)
+		if err != nil {
+			return nil, err
+		}
+		accounts[idx] = a
+	}
+
+	transactionListData, err := s.cashbunnyRepo.ListTransactionsBetweenDates(
+		ctx,
+		s.db,
+		cashbunny_repository.ListTransactionsBetweenDatesParams{
+			UserID:           userID,
+			FromTransactedAt: from,
+			ToTransactedAt:   to,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions := make([]*Transaction, len(transactionListData))
+	for idx, td := range transactionListData {
+		tr, err := NewTransaction(td)
+		if err != nil {
+			return nil, err
+		}
+		transactions[idx] = tr
+	}
+
+	for _, a := range accounts {
+		for _, tr := range transactions {
+			if tr.IsSourceAccount(a) {
+				a.AddOutgoingTransaction(tr)
+			} else if tr.IsDestinationAccount(a) {
+				a.AddIncomingTransaction(tr)
+			}
+		}
+	}
+
+	return NewLedger(accounts), nil
+}
+
 func (s *Cashbunny) GetAllCurrencies(ctx context.Context) map[string]string {
 	currencies := map[string]string{}
 	for _, code := range SupportedCurrencyCodes {
@@ -499,13 +549,26 @@ func (s *Cashbunny) ListTransactions(ctx context.Context, userID uint32) ([]*Tra
 
 	trs := make([]*Transaction, len(data))
 	for idx, d := range data {
-		srcAccount := SliceFind(accounts, func(a *cashbunny_repository.CashbunnyAccount) bool { return a.ID == d.SrcAccountID })
-		destAccount := SliceFind(accounts, func(a *cashbunny_repository.CashbunnyAccount) bool { return a.ID == d.DestAccountID })
+		srcAccountDa := SliceFind(accounts, func(a *cashbunny_repository.CashbunnyAccount) bool { return a.ID == d.SrcAccountID })
+		destAccountDa := SliceFind(accounts, func(a *cashbunny_repository.CashbunnyAccount) bool { return a.ID == d.DestAccountID })
 
-		a, err := NewTransaction(d, *srcAccount, *destAccount)
+		a, err := NewTransaction(d)
 		if err != nil {
 			return nil, err
 		}
+
+		sa, err := NewAccount(*srcAccountDa)
+		if err != nil {
+			return nil, err
+		}
+
+		da, err := NewAccount(*destAccountDa)
+		if err != nil {
+			return nil, err
+		}
+
+		a.SourceAccount = sa
+		a.DestinationAccount = da
 
 		trs[idx] = a
 	}

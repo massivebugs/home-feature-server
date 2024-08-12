@@ -39,7 +39,9 @@
             {{ t('cashbunny.overview') }}
           </div>
         </template>
-        <template #overview> </template>
+        <template #overview>
+          <OverviewComponent />
+        </template>
         <template #planner_label>
           <div class="tab-label">
             <PlannerTabIconComponent
@@ -89,6 +91,7 @@ import AccountDataTableComponent from '@/modules/cashbunny/components/AccountDat
 import AccountsTabIconComponent from '@/modules/cashbunny/components/AccountsTabIconComponent.vue'
 import OverviewTabIconComponent from '@/modules/cashbunny/components/OverviewTabIconComponent.vue'
 import TransactionsTabIconComponent from '@/modules/cashbunny/components/TransactionsTabIconComponent.vue'
+import OverviewComponent from './OverviewComponent.vue'
 import PlannerTabIconComponent from './PlannerTabIconComponent.vue'
 import TransactionDataTableComponent from './TransactionDataTableComponent.vue'
 

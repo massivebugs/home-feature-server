@@ -140,7 +140,7 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 		tx,
 		cashbunny_repository.CreateAccountParams{
 			UserID:      uint32(userID),
-			Category:    string(cashbunny.AccountCategoryRevenue),
+			Category:    string(cashbunny.AccountCategoryRevenues),
 			Name:        "Bar Inc.",
 			Description: "My workplace",
 			Balance:     1496000,

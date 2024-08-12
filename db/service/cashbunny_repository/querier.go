@@ -24,6 +24,7 @@ type Querier interface {
 	ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyAccount, error)
 	ListAccountsByIDs(ctx context.Context, db DBTX, arg ListAccountsByIDsParams) ([]*CashbunnyAccount, error)
 	ListTransactions(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyTransaction, error)
+	ListTransactionsBetweenDates(ctx context.Context, db DBTX, arg ListTransactionsBetweenDatesParams) ([]*CashbunnyTransaction, error)
 	ListUserCurrencies(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyUserCurrency, error)
 	UpdateAccountBalance(ctx context.Context, db DBTX, arg UpdateAccountBalanceParams) error
 }

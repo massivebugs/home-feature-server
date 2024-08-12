@@ -1,4 +1,5 @@
-import { ref, onMounted, onUnmounted, type Ref, type CSSProperties } from 'vue'
+import { type CSSProperties, type Ref, computed, onMounted, onUnmounted, ref } from 'vue'
+import { AbsoluteSize } from '../models/absolute_size'
 import type { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
 
@@ -8,8 +9,21 @@ const ResizeCursor = {
   nesw: 'nesw-resize',
   nwse: 'nwse-resize',
 } as const
-
 export type ResizeCursor = (typeof ResizeCursor)[keyof typeof ResizeCursor]
+
+export enum ResizeDirection {
+  Top = 1 << 0,
+  Bottom = 1 << 1,
+  Left = 1 << 2,
+  Right = 1 << 3,
+  All = ~(~0 << 4),
+}
+
+export type DraggableResizableOptions = {
+  resize?: {
+    direction?: ResizeDirection
+  }
+}
 
 const DRAG_CORNER_OFFSET_PX = 5
 
@@ -17,6 +31,12 @@ export function useDraggableResizable(
   initialPos: RelativePosition,
   initialSize: RelativeSize,
   el?: Ref<HTMLElement | undefined>,
+  parentEl?: Ref<HTMLElement | undefined>,
+  options: DraggableResizableOptions = {
+    resize: {
+      direction: ResizeDirection.All,
+    },
+  },
 ) {
   // Drag states
   let isDragging = false
@@ -42,6 +62,14 @@ export function useDraggableResizable(
   const dragStyle = ref<CSSProperties>({
     cursor: 'auto',
     userSelect: 'auto',
+  })
+
+  const parentElSize = computed(() => {
+    if (parentEl && parentEl.value) {
+      return new AbsoluteSize(parentEl.value.clientWidth, parentEl.value.clientHeight)
+    } else {
+      return new AbsoluteSize(window.innerWidth, window.innerHeight)
+    }
   })
 
   const onDragStart = (e: MouseEvent | TouchEvent) => {
@@ -83,6 +111,18 @@ export function useDraggableResizable(
 
       // If no corners are being selected, ignore and return
       if (!dragCorners.top && !dragCorners.bottom && !dragCorners.left && !dragCorners.right) {
+        return
+      }
+
+      if (
+        options.resize?.direction &&
+        !(
+          (dragCorners.top && !!(options.resize.direction & ResizeDirection.Top)) ||
+          (dragCorners.bottom && !!(options.resize.direction & ResizeDirection.Bottom)) ||
+          (dragCorners.left && !!(options.resize.direction & ResizeDirection.Left)) ||
+          (dragCorners.right && !!(options.resize.direction & ResizeDirection.Right))
+        )
+      ) {
         return
       }
 
@@ -160,13 +200,13 @@ export function useDraggableResizable(
 
   const onMouseMove = (e: MouseEvent) => {
     if (isDragging) {
-      const dx = ((e.clientX - startMouseX) / window.innerWidth) * 100
-      const dy = ((e.clientY - startMouseY) / window.innerHeight) * 100
+      const dx = ((e.clientX - startMouseX) / parentElSize.value.width) * 100
+      const dy = ((e.clientY - startMouseY) / parentElSize.value.height) * 100
       boxTop.value = startTop + dy
       boxLeft.value = startLeft + dx
     } else if (isResizing) {
-      const dx = ((e.clientX - startMouseX) / window.innerWidth) * 100
-      const dy = ((e.clientY - startMouseY) / window.innerHeight) * 100
+      const dx = ((e.clientX - startMouseX) / parentElSize.value.width) * 100
+      const dy = ((e.clientY - startMouseY) / parentElSize.value.height) * 100
       if (dragCorners.top) {
         boxTop.value = startTop + dy
         boxHeight.value = startHeight - dy
@@ -186,13 +226,13 @@ export function useDraggableResizable(
 
   const onTouchMove = (e: TouchEvent) => {
     if (isDragging) {
-      const dx = ((e.touches[0].clientX - startMouseX) / window.innerWidth) * 100
-      const dy = ((e.touches[0].clientY - startMouseY) / window.innerHeight) * 100
+      const dx = ((e.touches[0].clientX - startMouseX) / parentElSize.value.width) * 100
+      const dy = ((e.touches[0].clientY - startMouseY) / parentElSize.value.height) * 100
       boxTop.value = startTop + dy
       boxLeft.value = startLeft + dx
     } else if (isResizing) {
-      const dx = ((e.touches[0].clientX - startMouseX) / window.innerWidth) * 100
-      const dy = ((e.touches[0].clientY - startMouseY) / window.innerHeight) * 100
+      const dx = ((e.touches[0].clientX - startMouseX) / parentElSize.value.width) * 100
+      const dy = ((e.touches[0].clientY - startMouseY) / parentElSize.value.height) * 100
       if (dragCorners.top) {
         boxTop.value = startTop + dy
         boxHeight.value = startHeight - dy

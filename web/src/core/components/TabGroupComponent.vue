@@ -50,10 +50,16 @@ const isCurrentTab = (tabId: string) => {
 
 <style scoped lang="scss">
 @use '@/assets/colors';
+.tabs {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 
 .tabs > menu {
   padding: 0;
   margin: 0;
+  margin-bottom: 0.3em;
   user-select: none;
 
   .tab.selected {
@@ -61,5 +67,9 @@ const isCurrentTab = (tabId: string) => {
     color: colors.$white;
     border-top: 3px solid colors.$peach;
   }
+}
+
+.tabs > article {
+  flex: 1;
 }
 </style>

@@ -453,6 +453,60 @@ func (q *Queries) ListTransactions(ctx context.Context, db DBTX, userID uint32) 
 	return items, nil
 }
 
+const listTransactionsBetweenDates = `-- name: ListTransactionsBetweenDates :many
+SELECT
+  id, user_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
+FROM
+  cashbunny_transactions
+WHERE
+  user_id = ?
+  AND deleted_at IS NULL
+  AND transacted_at BETWEEN ? AND ?
+ORDER BY
+  transacted_at
+`
+
+type ListTransactionsBetweenDatesParams struct {
+	UserID           uint32
+	FromTransactedAt time.Time
+	ToTransactedAt   time.Time
+}
+
+func (q *Queries) ListTransactionsBetweenDates(ctx context.Context, db DBTX, arg ListTransactionsBetweenDatesParams) ([]*CashbunnyTransaction, error) {
+	rows, err := db.QueryContext(ctx, listTransactionsBetweenDates, arg.UserID, arg.FromTransactedAt, arg.ToTransactedAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*CashbunnyTransaction{}
+	for rows.Next() {
+		var i CashbunnyTransaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.SrcAccountID,
+			&i.DestAccountID,
+			&i.Description,
+			&i.Amount,
+			&i.Currency,
+			&i.TransactedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUserCurrencies = `-- name: ListUserCurrencies :many
 SELECT
   id, user_id, currency_code, created_at, updated_at

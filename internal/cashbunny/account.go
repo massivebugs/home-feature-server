@@ -18,7 +18,7 @@ const (
 
 	AccountCategoryAssets      AccountCategory = "assets"
 	AccountCategoryLiabilities AccountCategory = "liabilities"
-	AccountCategoryRevenue     AccountCategory = "revenue"
+	AccountCategoryRevenues    AccountCategory = "revenues"
 	AccountCategoryExpenses    AccountCategory = "expenses"
 )
 
@@ -26,7 +26,7 @@ func GetAccountTypeForCategory(c AccountCategory) (AccountType, error) {
 	switch c {
 	case AccountCategoryAssets, AccountCategoryExpenses:
 		return AccountTypeDebit, nil
-	case AccountCategoryLiabilities, AccountCategoryRevenue:
+	case AccountCategoryLiabilities, AccountCategoryRevenues:
 		return AccountTypeCredit, nil
 	}
 	return "", errors.New("failed to get account type as account category is invalid")
@@ -41,6 +41,9 @@ type Account struct {
 	Type        AccountType
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+
+	IncomingTransactions []*Transaction
+	OutgoingTransactions []*Transaction
 }
 
 func NewAccount(account *cashbunny_repository.CashbunnyAccount) (*Account, error) {
@@ -58,36 +61,66 @@ func NewAccount(account *cashbunny_repository.CashbunnyAccount) (*Account, error
 	return a, a.validate()
 }
 
-func (e *Account) validate() error {
+func (a *Account) validate() error {
 	return validation.ValidateStruct(
-		e,
+		a,
 		validation.Field(
-			&e.ID,
+			&a.ID,
 			validation.Required,
 		),
 		validation.Field(
-			&e.Category,
+			&a.Category,
 			validation.Required,
 			validation.In(
 				AccountCategoryAssets,
 				AccountCategoryLiabilities,
-				AccountCategoryRevenue,
+				AccountCategoryRevenues,
 				AccountCategoryExpenses,
 			),
 		),
 		validation.Field(
-			&e.Name,
+			&a.Name,
 			validation.Required,
 		),
 		validation.Field(
-			&e.Balance,
+			&a.Balance,
 			validation.Required,
-			validation.By(IsMoneyNotNegative(e.Balance)),
+			validation.By(IsMoneyNotNegative(a.Balance)),
 		),
 		validation.Field(
-			&e.Type,
+			&a.Type,
 			validation.Required,
 			validation.In(AccountTypeCredit, AccountTypeDebit),
 		),
 	)
+}
+
+func (a *Account) SumTransactions() CurrencySums {
+	cs := NewCurrencySums(nil)
+
+	for _, tr := range a.IncomingTransactions {
+		if a.Type == AccountTypeCredit {
+			cs.Subtract(tr.Amount)
+		} else {
+			cs.Add(tr.Amount)
+		}
+	}
+
+	for _, tr := range a.OutgoingTransactions {
+		if a.Type == AccountTypeCredit {
+			cs.Add(tr.Amount)
+		} else {
+			cs.Subtract(tr.Amount)
+		}
+	}
+
+	return cs
+}
+
+func (a *Account) AddIncomingTransaction(tr *Transaction) {
+	a.IncomingTransactions = append(a.IncomingTransactions, tr)
+}
+
+func (a *Account) AddOutgoingTransaction(tr *Transaction) {
+	a.OutgoingTransactions = append(a.OutgoingTransactions, tr)
 }

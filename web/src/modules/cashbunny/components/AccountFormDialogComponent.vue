@@ -25,7 +25,7 @@
       <SelectInputComponent
         name="accountCategory"
         :label="t('cashbunny.accountCategory')"
-        :options="['assets', 'liabilities', 'revenue', 'expenses']"
+        :options="['assets', 'liabilities', 'revenues', 'expenses']"
         :error-message="validationErrors.category"
         v-model:value="formValues.category"
       />

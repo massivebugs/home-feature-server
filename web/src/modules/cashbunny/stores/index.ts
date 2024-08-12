@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { APIResponse } from '@/core/models/dto'
+import { formatDateToDateOnly } from '@/core/utils/time'
 import { APIEndpoints, api } from '@/utils/api'
 import type { Currency } from '../models/currency'
 import {
@@ -8,6 +9,7 @@ import {
   type CreateAccountDto,
   type CreateTransactionDto,
   type GetAllCurrenciesDto,
+  type OverviewDto,
   type TransactionDto,
   type UpdateAccountDto,
   type UpdateTransactionDto,
@@ -23,6 +25,16 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
       currencies.value.push({ code: key, grapheme: value })
     }
   }
+
+  const getOverview = (dateRange?: { from: Date; to: Date }) =>
+    api.get<APIResponse<OverviewDto>>(APIEndpoints.v1.secure.cashbunny.overview, {
+      params: dateRange
+        ? {
+            from_date: formatDateToDateOnly(dateRange.from),
+            to_date: formatDateToDateOnly(dateRange.to),
+          }
+        : undefined,
+    })
 
   const getAllCurrencies = () =>
     api.get<APIResponse<GetAllCurrenciesDto>>(APIEndpoints.v1.secure.cashbunny.currencies)
@@ -63,6 +75,7 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     currencies,
     userPreferences,
     setCurrencies,
+    getOverview,
     getAllCurrencies,
     getUserPreferences,
     createUserPreferences,

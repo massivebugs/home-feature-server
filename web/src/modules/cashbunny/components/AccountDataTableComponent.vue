@@ -114,11 +114,8 @@ const columns: ConfigColumns[] = [
     title: t('cashbunny.accountDescription'),
   },
   {
-    data: 'balance',
+    data: 'balance_display',
     title: t('cashbunny.accountBalance'),
-    render: function (data: string) {
-      return Number(data).toLocaleString()
-    },
   },
   {
     data: 'currency',

@@ -25,6 +25,7 @@
     "lodash": "^4.17.21",
     "modern-normalize": "^2.0.0",
     "pinia": "^2.1.7",
+    "vanilla-calendar-pro": "^2.9.8",
     "vue": "^3.4.29",
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.3.3"
