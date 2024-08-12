@@ -22,7 +22,6 @@ export type CreateAccountDto = {
   name: string
   category: string
   description: string
-  balance: number
   currency: string
   order_index: number
 }

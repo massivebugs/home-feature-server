@@ -311,7 +311,7 @@ func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *Creat
 			Category:    req.Category,
 			Name:        req.Name,
 			Description: req.Description,
-			Balance:     req.Balance,
+			Balance:     0,
 			Currency:    req.Currency,
 			Type:        string(accountType),
 			OrderIndex:  req.OrderIndex,

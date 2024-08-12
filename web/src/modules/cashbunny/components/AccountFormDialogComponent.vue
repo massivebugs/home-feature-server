@@ -36,15 +36,12 @@
         :error-message="validationErrors.description"
         v-model="formValues.description"
       />
-      <NumberInputComponent
-        name="accountBalance"
-        :label="t('cashbunny.accountBalance')"
-        placeholder="0"
-        :min="0"
-        :units="store.userPreferences?.user_currencies"
-        :error-message="validationErrors.balance || validationErrors.currency"
-        v-model:value="formValues.balance"
-        v-model:unit="formValues.currency"
+      <SelectInputComponent
+        name="accountCurrency"
+        :label="t('cashbunny.transactionCurrency')"
+        :options="store.userPreferences?.user_currencies"
+        :error-message="validationErrors.currency"
+        v-model:value="formValues.currency"
       />
     </div>
   </DialogComponent>
@@ -55,7 +52,6 @@ import { AxiosError } from 'axios'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DialogComponent from '@/core/components/DialogComponent.vue'
-import NumberInputComponent from '@/core/components/NumberInputComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import TextInputComponent from '@/core/components/TextInputComponent.vue'
 import type { APIResponse } from '@/core/models/dto'
@@ -68,7 +64,6 @@ export type AccountFormValues = {
   name: string
   category: string
   description: string
-  balance: number
   currency: string
 }
 
@@ -92,14 +87,12 @@ const formValues = ref<AccountFormValues>(
         name: props.account.name,
         category: props.account.category,
         description: props.account.description,
-        balance: props.account.balance,
         currency: props.account.currency,
       }
     : {
         name: '',
         category: 'assets',
         description: '',
-        balance: 0,
         currency: 'CAD',
       },
 )
@@ -108,7 +101,6 @@ const validationErrors = ref<{ [k in keyof CreateAccountDto]: string }>({
   name: '',
   category: '',
   description: '',
-  balance: '',
   currency: '',
   order_index: '',
 })
@@ -123,7 +115,6 @@ const onClickSubmit = async () => {
         name: formValues.value.name,
         category: formValues.value.category,
         description: formValues.value.description,
-        balance: formValues.value.balance,
         currency: formValues.value.currency,
         order_index: props.nextAccountIndex,
       })

@@ -7,12 +7,11 @@ import (
 )
 
 type CreateAccountRequestDTO struct {
-	Name        string  `json:"name"`
-	Category    string  `json:"category"`
-	Description string  `json:"description"`
-	Balance     float64 `json:"balance"`
-	Currency    string  `json:"currency"`
-	OrderIndex  uint32  `json:"order_index"`
+	Name        string `json:"name"`
+	Category    string `json:"category"`
+	Description string `json:"description"`
+	Currency    string `json:"currency"`
+	OrderIndex  uint32 `json:"order_index"`
 }
 
 func (r *CreateAccountRequestDTO) Validate() error {
@@ -36,9 +35,6 @@ func (r *CreateAccountRequestDTO) Validate() error {
 		validation.Field(
 			&r.Description,
 			validation.Length(0, 255),
-		),
-		validation.Field(
-			&r.Balance,
 		),
 		validation.Field(
 			&r.Currency,
