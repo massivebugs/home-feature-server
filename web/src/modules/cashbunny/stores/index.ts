@@ -1,7 +1,7 @@
+import type { Dayjs } from 'dayjs'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { APIResponse } from '@/core/models/dto'
-import { formatDateToDateOnly } from '@/core/utils/time'
 import { APIEndpoints, api } from '@/utils/api'
 import type { Currency } from '../models/currency'
 import {
@@ -26,12 +26,12 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     }
   }
 
-  const getOverview = (dateRange?: { from: Date; to: Date }) =>
+  const getOverview = (dateRange?: { from: Dayjs; to: Dayjs }) =>
     api.get<APIResponse<OverviewDto>>(APIEndpoints.v1.secure.cashbunny.overview, {
       params: dateRange
         ? {
-            from_date: formatDateToDateOnly(dateRange.from),
-            to_date: formatDateToDateOnly(dateRange.to),
+            from_date: dateRange.from.format('YYYY-MM-DD'),
+            to_date: dateRange.to.format('YYYY-MM-DD'),
           }
         : undefined,
     })

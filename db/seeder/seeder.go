@@ -167,7 +167,7 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 		Description:   "Monthly wage for May",
 		Amount:        710000,
 		Currency:      "JPY",
-		TransactedAt:  time.Date(2024, 6, 15, 10, 0, 0, 0, time.Local),
+		TransactedAt:  time.Date(2024, 6, 15, 10, 0, 0, 0, time.UTC),
 	})
 	if err != nil {
 		return err
@@ -181,7 +181,7 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 		Description:   "Bought some groceries for 2 weeks",
 		Amount:        10000,
 		Currency:      "JPY",
-		TransactedAt:  time.Date(2024, 6, 28, 15, 0, 0, 0, time.Local),
+		TransactedAt:  time.Date(2024, 6, 28, 15, 0, 0, 0, time.UTC),
 	})
 	if err != nil {
 		return err
@@ -195,7 +195,7 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 		Description:   "Monthly wage for June",
 		Amount:        786000,
 		Currency:      "JPY",
-		TransactedAt:  time.Date(2024, 7, 15, 10, 0, 0, 0, time.Local),
+		TransactedAt:  time.Date(2024, 7, 15, 10, 0, 0, 0, time.UTC),
 	})
 	if err != nil {
 		return err

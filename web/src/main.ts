@@ -1,13 +1,15 @@
+import * as dayjs from 'dayjs'
+import * as objectSupport from 'dayjs/plugin/objectSupport'
 import 'modern-normalize/modern-normalize.css'
-import './assets/main.scss'
-
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 import { createI18n } from 'vue-i18n'
-
 import App from './App.vue'
-import router from './router'
+import './assets/main.scss'
 import { i18nOptions } from './i18n'
+import router from './router'
+
+dayjs.extend(objectSupport.default)
 
 const app = createApp(App)
 
