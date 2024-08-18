@@ -37,6 +37,7 @@ export function useDraggableResizable(
       direction: ResizeDirection.All,
     },
   },
+  onResizeEnd?: () => void,
 ) {
   // Drag states
   let isDragging = false
@@ -251,6 +252,10 @@ export function useDraggableResizable(
   }
 
   const onMouseUp = () => {
+    if (isResizing && onResizeEnd) {
+      onResizeEnd()
+    }
+
     isDragging = false
     isResizing = false
     dragStyle.value.cursor = 'auto'
@@ -260,6 +265,10 @@ export function useDraggableResizable(
   }
 
   const onTouchEnd = () => {
+    if (isResizing && onResizeEnd) {
+      onResizeEnd()
+    }
+
     isDragging = false
     isResizing = false
     dragStyle.value.cursor = 'auto'

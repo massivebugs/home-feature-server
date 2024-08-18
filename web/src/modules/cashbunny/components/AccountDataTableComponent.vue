@@ -66,20 +66,23 @@ const showAccountFormDialog = ref<boolean>(false)
 const clickedData = ref<AccountDto | null>(null)
 const selectedData = ref<AccountDto[]>([])
 
-const layoutOptions = {
-  topStart: {
-    pageLength: {},
-  },
-  topEnd: {
-    search: {},
-  },
-}
+const props = defineProps<{
+  windowEl: HTMLElement
+}>()
 
 const options: Config = {
+  drawCallback: (settings) => {
+    settings.api.responsive.recalc()
+  },
   responsive: true,
   select: true,
   layout: {
-    ...(layoutOptions as any),
+    topStart: {
+      pageLength: {},
+    },
+    topEnd: {
+      search: {},
+    },
   },
   columnDefs: [
     // {
@@ -192,9 +195,12 @@ onMounted(async () => {
   if (res.data.error === null) {
     data.value = res.data.data
   }
+
   dt = table.value.dt
-  // TODO: Add a hook to the window's context
-  dt.responsive.recalc()
+
+  props.windowEl.addEventListener('resize', () => {
+    dt.responsive.recalc()
+  })
 
   // Prevent right click and display custom context menu
   dt.on('contextmenu', 'tbody tr', function (e) {

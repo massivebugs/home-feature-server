@@ -1,6 +1,7 @@
 /* Default Colors */
 $black: #1f1f1f;
 $white: #ebebeb;
+$dark-grey: #474747;
 
 /* Theme Colors https://coolors.co/071e22-1d7874-679289-f4c095-ee2e31 */
 $rich-black: #071e22ff;
@@ -22,17 +23,93 @@ $gradient-right: linear-gradient(90deg, #071e22ff, #1d7874ff, #679289ff, #f4c095
 $gradient-bottom: linear-gradient(180deg, #071e22ff, #1d7874ff, #679289ff, #f4c095ff, #ee2e31ff);
 $gradient-left: linear-gradient(270deg, #071e22ff, #1d7874ff, #679289ff, #f4c095ff, #ee2e31ff);
 $gradient-top-right: linear-gradient(45deg, #071e22ff, #1d7874ff, #679289ff, #f4c095ff, #ee2e31ff);
-$gradient-bottom-right: linear-gradient(135deg, #071e22ff, #1d7874ff, #679289ff, #f4c095ff, #ee2e31ff);
+$gradient-bottom-right: linear-gradient(
+  135deg,
+  #071e22ff,
+  #1d7874ff,
+  #679289ff,
+  #f4c095ff,
+  #ee2e31ff
+);
 $gradient-top-left: linear-gradient(225deg, #071e22ff, #1d7874ff, #679289ff, #f4c095ff, #ee2e31ff);
-$gradient-bottom-left: linear-gradient(315deg, #071e22ff, #1d7874ff, #679289ff, #f4c095ff, #ee2e31ff);
+$gradient-bottom-left: linear-gradient(
+  315deg,
+  #071e22ff,
+  #1d7874ff,
+  #679289ff,
+  #f4c095ff,
+  #ee2e31ff
+);
 $gradient-radial: radial-gradient(#071e22ff, #1d7874ff, #679289ff, #f4c095ff, #ee2e31ff);
 
-$transparent-gradient-top: linear-gradient(0deg, $transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
-$transparent-gradient-right: linear-gradient(90deg, $transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
-$transparent-gradient-bottom: linear-gradient(180deg, $transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
-$transparent-gradient-left: linear-gradient(270deg, $transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
-$transparent-gradient-top-right: linear-gradient(45deg, $transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
-$transparent-gradient-bottom-right: linear-gradient(135deg, $transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
-$transparent-gradient-top-left: linear-gradient(225deg, $transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
-$transparent-gradient-bottom-left: linear-gradient(315deg, $transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
-$transparent-gradient-radial: radial-gradient($transparent-rich-black, $transparent-skobeloff, $transparent-viridian, $transparent-peach, $transparent-red-cmyk);
+$transparent-gradient-top: linear-gradient(
+  0deg,
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);
+$transparent-gradient-right: linear-gradient(
+  90deg,
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);
+$transparent-gradient-bottom: linear-gradient(
+  180deg,
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);
+$transparent-gradient-left: linear-gradient(
+  270deg,
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);
+$transparent-gradient-top-right: linear-gradient(
+  45deg,
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);
+$transparent-gradient-bottom-right: linear-gradient(
+  135deg,
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);
+$transparent-gradient-top-left: linear-gradient(
+  225deg,
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);
+$transparent-gradient-bottom-left: linear-gradient(
+  315deg,
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);
+$transparent-gradient-radial: radial-gradient(
+  $transparent-rich-black,
+  $transparent-skobeloff,
+  $transparent-viridian,
+  $transparent-peach,
+  $transparent-red-cmyk
+);

@@ -463,7 +463,7 @@ WHERE
   AND deleted_at IS NULL
   AND transacted_at BETWEEN ? AND ?
 ORDER BY
-  transacted_at
+  transacted_at ASC
 `
 
 type ListTransactionsBetweenDatesParams struct {

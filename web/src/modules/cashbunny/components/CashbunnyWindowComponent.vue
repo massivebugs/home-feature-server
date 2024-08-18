@@ -11,6 +11,7 @@
     :statusBarInfo="['Something goes here...', 'Something else here']"
     :isResizable="true"
     @click-close="emit('clickClose')"
+    v-slot="slotProps"
   >
     <div class="container">
       <TabGroupComponent
@@ -22,6 +23,9 @@
           },
           {
             id: Tabs.planner,
+          },
+          {
+            id: Tabs.schedule,
           },
           {
             id: Tabs.accounts,
@@ -53,6 +57,18 @@
           </div>
         </template>
         <template #planner> </template>
+        <template #schedule_label>
+          <div class="tab-label">
+            <ScheduleTabIconComponent
+              :color="currentTab === Tabs.schedule ? '#ebebeb' : undefined"
+              :day="today.getDate()"
+            />
+            {{ t('cashbunny.schedule') }}
+          </div>
+        </template>
+        <template #schedule>
+          <ScheduleComponent />
+        </template>
         <template #accounts_label>
           <div class="tab-label">
             <AccountsTabIconComponent
@@ -62,7 +78,7 @@
           </div>
         </template>
         <template #accounts>
-          <AccountDataTableComponent />
+          <AccountDataTableComponent v-if="slotProps.windowEl" :window-el="slotProps.windowEl" />
         </template>
         <template #transactions_label>
           <div class="tab-label">
@@ -73,7 +89,10 @@
           </div>
         </template>
         <template #transactions>
-          <TransactionDataTableComponent />
+          <TransactionDataTableComponent
+            v-if="slotProps.windowEl"
+            :window-el="slotProps.windowEl"
+          />
         </template>
       </TabGroupComponent>
     </div>
@@ -93,11 +112,14 @@ import OverviewTabIconComponent from '@/modules/cashbunny/components/OverviewTab
 import TransactionsTabIconComponent from '@/modules/cashbunny/components/TransactionsTabIconComponent.vue'
 import OverviewComponent from './OverviewComponent.vue'
 import PlannerTabIconComponent from './PlannerTabIconComponent.vue'
+import ScheduleComponent from './ScheduleComponent.vue'
+import ScheduleTabIconComponent from './ScheduleTabIconComponent.vue'
 import TransactionDataTableComponent from './TransactionDataTableComponent.vue'
 
 const Tabs = {
   overview: 'overview',
   planner: 'planner',
+  schedule: 'schedule',
   accounts: 'accounts',
   transactions: 'transactions',
 } as const
@@ -110,6 +132,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const currentTab = ref<string>(Tabs.overview)
+const today = new Date()
 const toolbarOptions = computed<WindowToolbarRow[]>(() => [
   {
     isMenu: true,

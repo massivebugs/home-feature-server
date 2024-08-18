@@ -3,6 +3,7 @@ export type OverviewDto = {
   expenses: { [key: string]: string }
   sums: { [key: string]: string }
   totals: { [key: string]: string }
+  transactions: TransactionDto[]
 }
 
 export type GetAllCurrenciesDto = {

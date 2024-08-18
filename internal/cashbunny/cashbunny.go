@@ -242,17 +242,7 @@ func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Ti
 		transactions[idx] = tr
 	}
 
-	for _, a := range accounts {
-		for _, tr := range transactions {
-			if tr.IsSourceAccount(a) {
-				a.AddOutgoingTransaction(tr)
-			} else if tr.IsDestinationAccount(a) {
-				a.AddIncomingTransaction(tr)
-			}
-		}
-	}
-
-	return NewLedger(accounts), nil
+	return NewLedger(accounts, transactions), nil
 }
 
 func (s *Cashbunny) GetAllCurrencies(ctx context.Context) map[string]string {

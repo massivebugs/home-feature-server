@@ -7,19 +7,21 @@ import (
 )
 
 type GetOverviewResponseDTO struct {
-	Revenues map[string]string `json:"revenues"`
-	Expenses map[string]string `json:"expenses"`
-	Sums     map[string]string `json:"sums"`
-	Totals   map[string]string `json:"totals"`
+	Revenues     map[string]string        `json:"revenues"`
+	Expenses     map[string]string        `json:"expenses"`
+	Sums         map[string]string        `json:"sums"`
+	Totals       map[string]string        `json:"totals"`
+	Transactions []*cashbunny.Transaction `json:"transactions"`
 }
 
 func NewGetOverviewResponseDTO(ledger *cashbunny.Ledger) *GetOverviewResponseDTO {
 	revenues, expenses, sums := ledger.GetProfitLoss()
 
 	return &GetOverviewResponseDTO{
-		Revenues: revenues.ToDefaultDisplayMap(),
-		Expenses: expenses.ToDefaultDisplayMap(),
-		Sums:     sums.ToDefaultDisplayMap(),
+		Revenues:     revenues.ToDefaultDisplayMap(),
+		Expenses:     expenses.ToDefaultDisplayMap(),
+		Sums:         sums.ToDefaultDisplayMap(),
+		Transactions: ledger.GetTransactions(),
 	}
 }
 

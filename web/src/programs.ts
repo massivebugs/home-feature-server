@@ -13,6 +13,12 @@ export const getPrograms = (
   coreStore: PiniaStore<typeof useCoreStore>,
   t: ComposerTranslation,
 ): Program[] => [
-  new Program(CASHBUNNY_PROGRAM_ID, t('cashbunny.name'), 'images/file_icon.svg', CashbunnyView, {}),
+  new Program(
+    CASHBUNNY_PROGRAM_ID,
+    t('cashbunny.name'),
+    'images/cashbunny_icon.svg',
+    CashbunnyView,
+    {},
+  ),
   new Program(PORTFOLIO_PROGRAM_ID, t('portfolio.name'), 'images/file_icon.svg', PortfolioView, {}),
 ]

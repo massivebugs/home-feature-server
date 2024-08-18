@@ -4,17 +4,25 @@
     :size="new RelativeSize(30, 30)"
     :hide-titlebar="true"
   >
-    <div class="container">
-      <div class="title">
-        <h1>Cashbunny</h1>
-        <p>Best home budget planner ever</p>
+    <div class="cashbunny-splash__container">
+      <div class="cashbunny-splash__background">
+        <CashbunnyIconComponent class="cashbunny-splash__image-back" />
+        <div>
+          <CashbunnyIconComponent class="cashbunny-splash__image-front" />
+        </div>
       </div>
-      <div class="footer">
-        <p>2024 @massivebugs</p>
-        <p class="loading">
-          <span>{{ loadMessage }}</span
-          ><span>{{ loadPercent }}%</span>
-        </p>
+      <div class="cashbunny-splash__contents">
+        <div class="cashbunny-splash__title">
+          <h1>Cashbunny</h1>
+          <p>Best home budget planner ever</p>
+        </div>
+        <div class="cashbunny-splash__footer">
+          <p>2024 @massivebugs</p>
+          <p class="cashbunny-splash__loading-message">
+            <span>{{ loadMessage }}</span
+            ><span>{{ loadPercent }}%</span>
+          </p>
+        </div>
       </div>
     </div>
   </WindowComponent>
@@ -29,6 +37,7 @@ import { RelativeSize } from '@/core/models/relative_size'
 import { sleep } from '@/core/utils/time'
 import { isAPIError } from '@/utils/api'
 import { useCashbunnyStore } from '../stores'
+import CashbunnyIconComponent from './CashbunnyIconComponent.vue'
 
 const emit = defineEmits<{
   (e: 'loaded'): void
@@ -93,30 +102,73 @@ onMounted(async () => {
       return
     }
   }
-  emit('loaded')
+  // emit('loaded')
 })
 </script>
 
 <style scoped lang="scss">
 @use '@/assets/colors';
 
-.container {
+.cashbunny-splash__container {
+  position: relative;
   height: 100%;
-  background-color: colors.$black;
-  color: colors.$white;
-  padding: 2em;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   user-select: none;
+  overflow: hidden;
 
-  .title {
+  .cashbunny-splash__background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50px;
+    background-color: colors.$viridian;
+
+    .cashbunny-splash__image-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform: scale(1.7) translate(9%, 3%);
+      fill: colors.$white;
+    }
+
+    :last-child {
+      overflow: hidden;
+      background-color: colors.$rich-black;
+      border-radius: 50px 100% 50px 50px;
+
+      position: absolute;
+      width: 100%;
+      height: 100%;
+
+      .cashbunny-splash__image-front {
+        width: 100%;
+        height: 100%;
+        transform: scale(1.7) translate(9%, 3%);
+        fill: colors.$dark-grey;
+      }
+    }
+  }
+
+  .cashbunny-splash__contents {
+    width: 100%;
+    height: 100%;
+    color: colors.$white;
+    padding: 2em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    > * {
+      z-index: 1;
+    }
+  }
+
+  .cashbunny-splash__title {
     h1 {
       margin: 0;
     }
   }
 
-  .loading {
+  .cashbunny-splash__loading-message {
     margin: 0;
     display: flex;
     justify-content: space-between;

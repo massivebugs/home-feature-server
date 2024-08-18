@@ -50,16 +50,17 @@
         @touchstart.stop="onRightSectionResizeStart"
       >
         <CalendarComponent
-          class="calendar"
+          class="overview-container__calendar"
           :config="{
             settings: {
-              selection: {
-                day: 'multiple-ranged',
-              },
               visibility: {
                 theme: 'light',
               },
+              selection: {
+                day: 'multiple-ranged',
+              },
             },
+            popups: calendarPopups as any,
           }"
           @change-date="onCalendarChangeDate"
         />
@@ -70,7 +71,7 @@
 
 <script setup lang="ts">
 import dayjs, { Dayjs } from 'dayjs'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ResizeDirection, useDraggableResizable } from '@/core/composables/useDragResize'
 import { RelativePosition } from '@/core/models/relative_position'
@@ -99,6 +100,22 @@ const {
     },
   },
 )
+
+// TODO
+const calendarPopups = computed(() => {
+  const result: { [key: string]: { html: string } } = {}
+
+  if (!overviewData.value) {
+    return result
+  }
+
+  // Object.entries(overviewData.value.transactions).forEach(([key, transactionInfos]) => {
+  //   result[key] = { html: transactionInfos.map((v) => `<p>${v}</p>`).join('') }
+  // })
+  result['2024-08-17'] = { html: 'foo' }
+
+  return result
+})
 
 const onCalendarChangeDate = async (payload: CalendarChangeDateEvent) => {
   calendarData.value = payload
@@ -144,8 +161,8 @@ const onCalendarChangeDate = async (payload: CalendarChangeDateEvent) => {
 
   > section > div {
     &:nth-child(2) {
-      margin-left: 0.5em;
-      padding-left: 0.5em;
+      margin-left: 1em;
+      padding-left: 1em;
       border-left: 3px double colors.$black;
       min-width: 272px;
     }
@@ -163,10 +180,8 @@ const onCalendarChangeDate = async (payload: CalendarChangeDateEvent) => {
   justify-content: space-between;
 }
 
-.calendar {
-  padding: 0;
+.overview-container__calendar {
   border-radius: 0;
   width: 100%;
-  background: none;
 }
 </style>

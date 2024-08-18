@@ -1,35 +1,25 @@
 <template>
-  <div class="container" @click.self="onContainerClick">
-    <div
-      class="file"
-      :class="{ selected: selectedFiles.includes(file.name) }"
+  <div class="file-list__container" @click.self="onContainerClick">
+    <FileShortcutIconComponent
       v-for="file in files"
       :key="file.name"
+      :selected="selectedFiles.includes(file.name)"
+      :option="file"
       @click="onFileClick(file)"
       @dblclick="onFileDblClick(file)"
       @touchend="onFileDblClick(file)"
-    >
-      <img class="file-icon" :src="file.icon" :alt="file.name + ' icon'" />
-      <div class="file-name">
-        {{ file.name }}
-      </div>
-    </div>
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { ContextMenuOptions } from './ContextMenuComponent.vue'
-
-export type FileOption = {
-  icon: string
-  name: string
-  onDblClick: () => void
-  contextMenuOptions?: ContextMenuOptions
-}
+import FileShortcutIconComponent, {
+  type FileShortcutIconOption,
+} from './FileShortcutIconComponent.vue'
 
 export type FileListProps = {
-  files: FileOption[]
+  files: FileShortcutIconOption[]
 }
 
 defineProps<FileListProps>()
@@ -40,46 +30,22 @@ const onContainerClick = () => {
   selectedFiles.value = []
 }
 
-const onFileClick = (file: FileOption) => {
+const onFileClick = (file: FileShortcutIconOption) => {
   selectedFiles.value = [file.name]
 }
 
-const onFileDblClick = (file: FileOption) => {
+const onFileDblClick = (file: FileShortcutIconOption) => {
   selectedFiles.value = []
   file.onDblClick()
 }
 </script>
 
 <style scoped lang="scss">
-.container {
+.file-list__container {
   padding: 1em;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
   gap: 1em;
-}
-
-.file {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  user-select: none;
-  width: 6em;
-  text-align: center;
-
-  &.selected .file-name {
-    background-color: black;
-    color: white;
-  }
-}
-
-.file-name {
-  padding: 0.2em;
-}
-
-.file-icon {
-  width: 4em;
 }
 </style>

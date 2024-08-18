@@ -35,9 +35,6 @@ const onDate = (c: IVanillaCalendar) => {
 onMounted(() => {
   vanillaCalendar.value = new VC(calendar.value, {
     ...{
-      CSSClasses: {
-        dayBtn: 'vanilla-calendar-day__btn_custom',
-      },
       actions: {
         clickDay: (_, c) => onDate(c),
         clickMonth: (_, c) => onDate(c),
@@ -57,21 +54,12 @@ onMounted(() => {
 </style>
 
 <style scoped lang="scss">
-:deep(.vanilla-calendar-day__btn_custom) {
+:deep(.vanilla-calendar-day__btn) {
   border: 0;
   border-radius: 0 !important;
-  flex: 1;
-  min-height: 1.875rem;
-  width: 100%;
-  min-width: 1.875rem;
-  cursor: pointer;
-  padding: 0;
-  font-size: 0.75rem;
-  line-height: 1rem;
-  font-weight: 400;
 }
 
-:deep(.vanilla-calendar-day__btn_custom:not([class$='_hover']):not([class$='_selected'])) {
-  background-color: transparent;
+:deep(.vanilla-calendar-day__popup_custom) {
+  //
 }
 </style>

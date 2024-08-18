@@ -42,7 +42,7 @@
     </div>
     <WindowToolbarComponent v-if="toolbar" :rows="toolbar" />
     <div class="window-body">
-      <slot />
+      <slot :window-el="windowEl" />
     </div>
     <div v-if="statusBarInfo" class="status-bar">
       <p v-for="info in statusBarInfo || []" :key="info">
@@ -103,6 +103,12 @@ const { boxWidth, boxHeight, boxTop, boxLeft, dragStyle, onDragStart, onResizeSt
       ),
     props.size,
     windowEl,
+    undefined,
+    undefined,
+    () => {
+      const event = new CustomEvent('resize')
+      windowEl.value?.dispatchEvent(event)
+    },
   )
 
 const blockWindow: IBlockWindowFunc = (blocked: boolean) => {
@@ -173,7 +179,6 @@ onUpdated(() => {
   min-height: 30px;
 
   background: colors.$white;
-  border: 1px solid colors.$black;
 
   &.focused {
     z-index: 999;
