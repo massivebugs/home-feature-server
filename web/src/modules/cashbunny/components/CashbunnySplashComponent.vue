@@ -3,14 +3,10 @@
     :pos="new RelativePosition(35, 35)"
     :size="new RelativeSize(30, 30)"
     :hide-titlebar="true"
+    :static="true"
   >
     <div class="cashbunny-splash__container">
-      <div class="cashbunny-splash__background">
-        <CashbunnyIconComponent class="cashbunny-splash__image-back" />
-        <div>
-          <CashbunnyIconComponent class="cashbunny-splash__image-front" />
-        </div>
-      </div>
+      <CashbunnyIconComponent class="cashbunny-splash__image" />
       <div class="cashbunny-splash__contents">
         <div class="cashbunny-splash__title">
           <h1>Cashbunny</h1>
@@ -102,7 +98,7 @@ onMounted(async () => {
       return
     }
   }
-  // emit('loaded')
+  emit('loaded')
 })
 </script>
 
@@ -114,41 +110,32 @@ onMounted(async () => {
   height: 100%;
   user-select: none;
   overflow: hidden;
+  border-radius: 50px;
+  background-color: colors.$viridian;
 
-  .cashbunny-splash__background {
+  .cashbunny-splash__image {
     position: absolute;
     width: 100%;
     height: 100%;
-    border-radius: 50px;
-    background-color: colors.$viridian;
+    transform: scale(1.7) translate(9%, 3%);
+    fill: colors.$white;
+  }
 
-    .cashbunny-splash__image-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      transform: scale(1.7) translate(9%, 3%);
-      fill: colors.$white;
-    }
+  &::after {
+    background-color: colors.$rich-black;
+    opacity: 0.6;
+    border-radius: 50px 100% 50px 50px;
 
-    :last-child {
-      overflow: hidden;
-      background-color: colors.$rich-black;
-      border-radius: 50px 100% 50px 50px;
-
-      position: absolute;
-      width: 100%;
-      height: 100%;
-
-      .cashbunny-splash__image-front {
-        width: 100%;
-        height: 100%;
-        transform: scale(1.7) translate(9%, 3%);
-        fill: colors.$dark-grey;
-      }
-    }
+    position: absolute;
+    content: '';
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .cashbunny-splash__contents {
+    position: relative;
     width: 100%;
     height: 100%;
     color: colors.$white;
@@ -156,10 +143,7 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-
-    > * {
-      z-index: 1;
-    }
+    z-index: 1;
   }
 
   .cashbunny-splash__title {

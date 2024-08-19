@@ -59,7 +59,7 @@ nav.window-toolbar {
   flex-direction: column;
   user-select: none;
   overflow: hidden;
-  border-bottom: 1px solid colors.$black;
+  font-size: 0.9em;
 
   > ul.window-menu {
     margin: 0;
@@ -71,7 +71,7 @@ nav.window-toolbar {
     padding: 0 7px;
     line-height: 24px;
     &:hover {
-      background-color: colors.$black;
+      background-color: colors.$dark-grey;
       color: colors.$white;
     }
   }

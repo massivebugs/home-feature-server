@@ -63,9 +63,9 @@ const isCurrentTab = (tabId: string) => {
   user-select: none;
 
   .tab.selected {
-    background-color: colors.$black;
+    background-color: colors.$dark-grey;
     color: colors.$white;
-    border-top: 3px solid colors.$peach;
+    border-top: 3px solid colors.$white;
   }
 }
 

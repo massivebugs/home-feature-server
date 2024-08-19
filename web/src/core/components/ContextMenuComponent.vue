@@ -1,7 +1,7 @@
 <template>
   <div
     ref="contextMenuEl"
-    class="context-menu context-menu"
+    class="hfs-context-menu"
     :style="{
       left: pos.x + '%',
       top: pos.y + '%',
@@ -11,11 +11,11 @@
       <ul>
         <template v-for="(item, idx) in itemGroup" :key="idx">
           <li v-if="item" @click="item.onClick">
-            <span class="context-menu__item-icon"> </span>
-            <span class="context-menu__item-label">
+            <span class="hfs-context-menu__item-icon"> </span>
+            <span class="hfs-context-menu__item-label">
               {{ item.label }}
             </span>
-            <span class="context-menu__item-suffix">
+            <span class="hfs-context-menu__item-suffix">
               {{ item.shortcutKey }}
             </span>
           </li>
@@ -54,22 +54,25 @@ const contextMenuEl = ref()
 <style scoped lang="scss">
 @use '@/assets/colors';
 
-.context-menu {
+.hfs-context-menu {
   z-index: 999;
   position: absolute;
   padding: 2px;
-  border: 1px solid colors.$black;
-  background-color: colors.$white;
-  // box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
-  // -webkit-box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
-  // -moz-box-shadow: 5px 5px 2px -3px rgba(0, 0, 0, 0.6);
   min-width: 100px;
   user-select: none;
+  border-radius: 0 5px 5px 5px;
+  background-color: colors.$high-opacity-white;
+  @supports (backdrop-filter: blur()) {
+    backdrop-filter: blur(10px);
+    background-color: colors.$high-opacity-white;
+  }
+  box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.4);
 
   hr {
     margin: 4px 2px;
-    border-color: colors.$black;
-    border-style: solid;
+    border: 1px solid colors.$light-grey;
     border-bottom: 0;
   }
 
@@ -81,22 +84,23 @@ const contextMenuEl = ref()
     list-style-type: none;
   }
   > ul > li {
+    font-size: 0.9em;
     padding: 2px 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     &:hover {
-      background-color: colors.$black;
+      background-color: colors.$dark-grey;
       color: colors.$white;
     }
-    > span.context-menu__item-icon {
+    > span.hfs-context-menu__item-icon {
       width: 17px;
     }
-    > span.context-menu__item-label {
+    > span.hfs-context-menu__item-label {
       flex-grow: 1;
       margin-right: 15px;
     }
-    > span.context-menu__item-suffix {
+    > span.hfs-context-menu__item-suffix {
       text-align: end;
       margin-right: 15px;
     }

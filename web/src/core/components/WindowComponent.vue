@@ -1,10 +1,11 @@
 <template>
   <div
     v-bind="$attrs"
-    class="window"
+    class="hfs-window"
     :class="{
       focused: store.focusedWindowUid === windowUid,
       blocked: isBlocked,
+      'hfs-window__static': static,
     }"
     ref="windowEl"
     @mousedown.stop="onWindowMouseDown"
@@ -17,34 +18,40 @@
       ...dragStyle,
     }"
   >
-    <div
-      v-if="!hideTitlebar"
-      class="title-bar"
-      @mousedown="!isMaximized ? onDragStart($event) : undefined"
-      @touchstart="!isMaximized ? onDragStart($event) : undefined"
-      @dblclick.self="onToolbarDblClick"
-      :style="{
-        borderRadius: isMaximized ? 0 : undefined,
-      }"
-    >
-      <div class="title-bar-title">{{ title }}</div>
-      <div class="title-bar-controls">
-        <button v-if="controls?.minimize" aria-label="Minimize">_</button>
-        <button
-          v-if="controls?.maximize"
-          @click="isMaximized ? restoreSize() : maximizeSize()"
-          :aria-label="isMaximized ? 'Restore' : 'Maximize'"
-        >
-          {{ isMaximized ? '■' : '□' }}
-        </button>
-        <button v-if="controls?.close" aria-label="Close" @click="emit('clickClose')">X</button>
+    <div v-if="!hideTitlebar && toolbar" class="hfs-window__header">
+      <div
+        v-if="!hideTitlebar"
+        class="hfs-window__title-bar"
+        @mousedown="!isMaximized ? onDragStart($event) : undefined"
+        @touchstart="!isMaximized ? onDragStart($event) : undefined"
+        @dblclick.self="onTitlebarDblClick"
+        :style="{
+          borderRadius: isMaximized ? 0 : undefined,
+        }"
+      >
+        <div class="hfs-window__title-bar__title">{{ title }}</div>
+        <div class="hfs-window__title-bar__controls">
+          <button v-if="controls?.minimize" aria-label="Minimize">
+            <CollapseIconComponent />
+          </button>
+          <button
+            v-if="controls?.maximize"
+            @click="isMaximized ? restoreSize() : maximizeSize()"
+            :aria-label="isMaximized ? 'Restore' : 'Maximize'"
+          >
+            <MinimizeMaximizeIconComponent :type="isMaximized ? 'minimize' : 'maximize'" />
+          </button>
+          <button v-if="controls?.close" aria-label="Close" @click="emit('clickClose')">
+            <CloseIconComponent />
+          </button>
+        </div>
       </div>
+      <WindowToolbarComponent v-if="toolbar" :rows="toolbar" />
     </div>
-    <WindowToolbarComponent v-if="toolbar" :rows="toolbar" />
-    <div class="window-body">
+    <div class="hfs-window__contents">
       <slot :window-el="windowEl" />
     </div>
-    <div v-if="statusBarInfo" class="status-bar">
+    <div v-if="statusBarInfo" class="hfs-window__status-bar">
       <p v-for="info in statusBarInfo || []" :key="info">
         {{ info }}
       </p>
@@ -59,6 +66,9 @@ import { useDraggableResizable } from '../composables/useDragResize'
 import { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
 import { useCoreStore } from '../stores'
+import CloseIconComponent from './CloseIconComponent.vue'
+import CollapseIconComponent from './CollapseIconComponent.vue'
+import MinimizeMaximizeIconComponent from './MinimizeMaximizeIconComponent.vue'
 import WindowToolbarComponent, { type WindowToolbarRow } from './WindowToolbarComponent.vue'
 
 export type IBlockWindowFunc = (block: boolean) => void
@@ -79,7 +89,8 @@ const props = defineProps<{
   }
   toolbar?: WindowToolbarRow[]
   statusBarInfo?: string[]
-  isResizable?: boolean
+  resizable?: boolean
+  static?: boolean
 }>()
 
 const store = useCoreStore()
@@ -147,13 +158,13 @@ const restoreSize = () => {
 
 const onWindowMouseDown = (e: MouseEvent | TouchEvent) => {
   store.focusedWindowUid = windowUid
-  if (props.isResizable) {
+  if (props.resizable) {
     isMaximized.value ? undefined : onResizeStart(e)
   }
 }
 
-const onToolbarDblClick = () => {
-  if (props.isResizable) {
+const onTitlebarDblClick = () => {
+  if (props.resizable) {
     isMaximized.value ? restoreSize() : maximizeSize()
   }
 }
@@ -170,15 +181,14 @@ onUpdated(() => {
 <style scoped lang="scss">
 @use '@/assets/colors';
 
-.window {
+.hfs-window {
   position: fixed;
   display: flex;
   flex-direction: column;
   // Just enough base size to display the title bar control buttons
   min-width: 100px;
   min-height: 30px;
-
-  background: colors.$white;
+  border-radius: 10px;
 
   &.focused {
     z-index: 999;
@@ -188,22 +198,32 @@ onUpdated(() => {
     pointer-events: none;
   }
 
-  .window {
+  .hfs-window {
     pointer-events: all;
   }
 }
 
-.title-bar {
-  background-color: colors.$black;
-  color: colors.$white;
+.hfs-window:not(.hfs-window__static) {
+  background-color: colors.$high-opacity-white;
+  @supports (backdrop-filter: blur()) {
+    backdrop-filter: blur(10px);
+    background-color: colors.$low-opacity-white;
+  }
+
+  box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
+}
+
+.hfs-window__title-bar {
   display: flex;
   justify-content: space-between;
-  padding: 3px;
+  padding: 3px 3px 3px 10px;
   font-weight: 500;
   user-select: none;
 }
 
-.title-bar-title {
+.hfs-window__title-bar__title {
   margin: 0;
   min-width: 0;
   text-wrap: nowrap;
@@ -214,21 +234,36 @@ onUpdated(() => {
   margin-top: 0.2em;
 }
 
-.window-body {
+.hfs-window__title-bar__controls {
+  & > button {
+    border: 0;
+    background: none;
+
+    &:hover {
+      border-radius: 5px;
+      background-color: colors.$light-grey;
+    }
+  }
+}
+
+.hfs-window__contents {
   overflow: auto;
   flex-grow: 1;
 }
 
-.status-bar {
+.hfs-window__status-bar {
   overflow: hidden;
   display: flex;
+  font-size: 0.9em;
+
   > p {
     margin: 0;
-    padding: 3px;
+    padding: 3px 3px 3px 10px;
     flex-grow: 1;
-    border-top: 1px solid colors.$black;
     &:not(:last-child) {
-      border-right: 1px solid colors.$black;
+      box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.4);
+      -webkit-box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.4);
+      -moz-box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.4);
     }
   }
 }

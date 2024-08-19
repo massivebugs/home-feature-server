@@ -16,7 +16,7 @@ export const getPrograms = (
   new Program(
     CASHBUNNY_PROGRAM_ID,
     t('cashbunny.name'),
-    'images/cashbunny_icon.svg',
+    'images/cashbunny_icon_round.svg',
     CashbunnyView,
     {},
   ),

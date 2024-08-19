@@ -21,6 +21,8 @@ defineProps<{ option: FileShortcutIconOption; selected: boolean }>()
 </script>
 
 <style scoped lang="scss">
+@use '@/assets/colors';
+
 .file-shortcut-icon {
   display: flex;
   flex-direction: column;
@@ -44,6 +46,6 @@ defineProps<{ option: FileShortcutIconOption; selected: boolean }>()
 }
 
 .file-shortcut-icon__img {
-  width: 4em;
+  width: 5em;
 }
 </style>

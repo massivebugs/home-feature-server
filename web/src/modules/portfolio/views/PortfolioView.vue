@@ -31,10 +31,10 @@
       },
     ]"
     :statusBarInfo="['Something goes here...', 'Something else here']"
-    :isResizable="true"
+    :resizable="true"
     @click-close="emit('clickClose')"
   >
-    <div class="portfolio-view">
+    <div class="hfs-portfolio__container">
       <h1>Portfolio</h1>
       <h2>About me</h2>
       <section>
@@ -71,9 +71,12 @@ const { t } = useI18n()
 </script>
 
 <style scoped lang="scss">
-.portfolio-view {
+@use '@/assets/colors';
+
+.hfs-portfolio__container {
   width: 100%;
   height: 100%;
   padding: 5px;
+  background-color: colors.$white;
 }
 </style>

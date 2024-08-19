@@ -1,5 +1,6 @@
 <template>
   <WindowComponent
+    class="cashbunny-window"
     :size="new RelativeSize(60, 70)"
     :title="t('cashbunny.title')"
     :controls="{
@@ -9,11 +10,11 @@
     }"
     :toolbar="toolbarOptions"
     :statusBarInfo="['Something goes here...', 'Something else here']"
-    :isResizable="true"
+    :resizable="true"
     @click-close="emit('clickClose')"
     v-slot="slotProps"
   >
-    <div class="container">
+    <div class="cashbunny-window__container">
       <TabGroupComponent
         @tab-click="(e) => (currentTab = e.tabId)"
         :selected-tab-id="currentTab"
@@ -274,10 +275,11 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
 <style scoped lang="scss">
 @use '@/assets/colors';
 
-.container {
+.cashbunny-window__container {
   width: 100%;
   height: 100%;
   padding: 5px;
+  background: colors.$light-grey;
 }
 
 .tab-label {

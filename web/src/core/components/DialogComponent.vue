@@ -8,7 +8,7 @@
       minimize: false,
       maximize: false,
     }"
-    :is-resizable="isResizable"
+    :resizable="isResizable"
     @click-close="emit('clickClose')"
   >
     <div class="container">
