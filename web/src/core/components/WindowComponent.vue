@@ -18,13 +18,13 @@
       ...dragStyle,
     }"
   >
-    <div v-if="!hideTitlebar && toolbar" class="hfs-window__header">
+    <div class="hfs-window__header">
       <div
         v-if="!hideTitlebar"
         class="hfs-window__title-bar"
         @mousedown="!isMaximized ? onDragStart($event) : undefined"
         @touchstart="!isMaximized ? onDragStart($event) : undefined"
-        @dblclick.self="onTitlebarDblClick"
+        @dblclick.self="onClickToggleSize"
         :style="{
           borderRadius: isMaximized ? 0 : undefined,
         }"
@@ -36,7 +36,7 @@
           </button>
           <button
             v-if="controls?.maximize"
-            @click="isMaximized ? restoreSize() : maximizeSize()"
+            @click="onClickToggleSize"
             :aria-label="isMaximized ? 'Restore' : 'Maximize'"
           >
             <MinimizeMaximizeIconComponent :type="isMaximized ? 'minimize' : 'maximize'" />
@@ -61,8 +61,8 @@
 
 <script setup lang="ts">
 import { uniqueId } from 'lodash'
-import { onMounted, onUpdated, provide, ref } from 'vue'
-import { useDraggableResizable } from '../composables/useDragResize'
+import { onMounted, provide, ref } from 'vue'
+import { ResizeDirection, useDraggableResizable } from '../composables/useDragResize'
 import { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
 import { useCoreStore } from '../stores'
@@ -72,6 +72,8 @@ import MinimizeMaximizeIconComponent from './MinimizeMaximizeIconComponent.vue'
 import WindowToolbarComponent, { type WindowToolbarRow } from './WindowToolbarComponent.vue'
 
 export type IBlockWindowFunc = (block: boolean) => void
+
+const TOGGLE_SIZE_SECONDS = 0.3
 
 const emit = defineEmits<{
   (e: 'clickClose'): void
@@ -97,64 +99,39 @@ const store = useCoreStore()
 const windowUid = uniqueId('window_')
 const windowEl = ref<HTMLElement>()
 const isBlocked = ref<boolean>(false)
-const isMaximized = ref<boolean>(false)
-const originalBoxValues = ref({
-  width: 0,
-  height: 0,
-  top: 0,
-  left: 0,
-})
 const windowIdx = store.processes.size
-const { boxWidth, boxHeight, boxTop, boxLeft, dragStyle, onDragStart, onResizeStart } =
-  useDraggableResizable(
-    props.pos ??
-      new RelativePosition(
-        windowIdx + 50 - props.size.width / 2,
-        windowIdx + 50 - props.size.height / 2,
-      ),
-    props.size,
-    windowEl,
-    undefined,
-    undefined,
-    () => {
-      const event = new CustomEvent('resize')
-      windowEl.value?.dispatchEvent(event)
-    },
-  )
+const {
+  boxWidth,
+  boxHeight,
+  boxTop,
+  boxLeft,
+  dragStyle,
+  isMaximized,
+  maximizeSize,
+  restoreSize,
+  onDragStart,
+  onResizeStart,
+} = useDraggableResizable(
+  props.pos ??
+    new RelativePosition(
+      windowIdx + 50 - props.size.width / 2,
+      windowIdx + 50 - props.size.height / 2,
+    ),
+  props.size,
+  windowEl,
+  undefined,
+  undefined,
+  () => {
+    const event = new CustomEvent('resize')
+    windowEl.value?.dispatchEvent(event)
+  },
+)
 
 const blockWindow: IBlockWindowFunc = (blocked: boolean) => {
   isBlocked.value = blocked
 }
 
 provide('blockParentWindow', blockWindow)
-
-const checkIsMaximized = () => {
-  const windowRect = windowEl.value?.getBoundingClientRect()
-  const parentRect = windowEl.value?.parentElement?.getBoundingClientRect()
-
-  return windowRect?.width === parentRect?.width && windowRect?.height === parentRect?.height
-}
-
-const maximizeSize = () => {
-  originalBoxValues.value = {
-    width: boxWidth.value,
-    height: boxHeight.value,
-    top: boxTop.value,
-    left: boxLeft.value,
-  }
-
-  boxLeft.value = 0
-  boxTop.value = 0
-  boxWidth.value = 100
-  boxHeight.value = 100
-}
-
-const restoreSize = () => {
-  boxLeft.value = originalBoxValues.value.left
-  boxTop.value = originalBoxValues.value.top
-  boxWidth.value = originalBoxValues.value.width
-  boxHeight.value = originalBoxValues.value.height
-}
 
 const onWindowMouseDown = (e: MouseEvent | TouchEvent) => {
   store.focusedWindowUid = windowUid
@@ -163,18 +140,16 @@ const onWindowMouseDown = (e: MouseEvent | TouchEvent) => {
   }
 }
 
-const onTitlebarDblClick = () => {
+const onClickToggleSize = () => {
   if (props.resizable) {
-    isMaximized.value ? restoreSize() : maximizeSize()
+    isMaximized.value
+      ? restoreSize(TOGGLE_SIZE_SECONDS)
+      : maximizeSize(ResizeDirection.All, TOGGLE_SIZE_SECONDS)
   }
 }
 
 onMounted(() => {
   store.focusedWindowUid = windowUid
-})
-
-onUpdated(() => {
-  isMaximized.value = checkIsMaximized()
 })
 </script>
 
@@ -235,13 +210,33 @@ onUpdated(() => {
 }
 
 .hfs-window__title-bar__controls {
+  display: flex;
   & > button {
     border: 0;
     background: none;
+    border-radius: 50%;
+    width: 1.5em;
+    height: 1.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    stroke: colors.$black;
 
     &:hover {
-      border-radius: 5px;
-      background-color: colors.$light-grey;
+      svg {
+        stroke: colors.$white;
+        fill: colors.$white;
+      }
+      &[aria-label='Minimize'] {
+        background-color: colors.$dark-grey;
+      }
+      &[aria-label='Restore'],
+      &[aria-label='Maximize'] {
+        background-color: colors.$skobeloff;
+      }
+      &[aria-label='Close'] {
+        background-color: colors.$red-cmyk;
+      }
     }
   }
 }

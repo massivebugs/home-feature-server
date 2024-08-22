@@ -35,9 +35,9 @@ defineProps<{ option: FileShortcutIconOption; selected: boolean }>()
 }
 
 .file-shortcut-icon_selected .file-shortcut-icon__name {
-  background-color: black;
-  color: white;
-  outline: 1px dotted white;
+  background-color: colors.$high-opacity-dark-grey;
+  color: colors.$white;
+  outline: 1px dotted colors.$white;
   outline-offset: -1px;
 }
 

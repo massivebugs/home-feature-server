@@ -54,6 +54,13 @@ export function useDraggableResizable(
     left: false,
     right: false,
   }
+  const originalBoxDimensions = ref({
+    width: 0,
+    height: 0,
+    top: 0,
+    left: 0,
+  })
+  const isMaximized = ref<boolean>(false)
 
   // Result
   const boxWidth = ref(initialSize.width) // percentage
@@ -277,6 +284,67 @@ export function useDraggableResizable(
     window.removeEventListener('touchend', onTouchEnd)
   }
 
+  const maximizeSize = (direction = ResizeDirection.All, lengthSeconds?: number) => {
+    if (direction === ResizeDirection.All) {
+      isMaximized.value = true
+
+      originalBoxDimensions.value = {
+        width: boxWidth.value,
+        height: boxHeight.value,
+        top: boxTop.value,
+        left: boxLeft.value,
+      }
+    }
+
+    if (direction & ResizeDirection.Left) {
+      boxWidth.value += boxLeft.value
+      boxLeft.value = 0
+    }
+    if (direction & ResizeDirection.Right) {
+      boxWidth.value += 100 - (boxLeft.value + boxWidth.value)
+    }
+    if (direction & ResizeDirection.Top) {
+      boxHeight.value += boxTop.value
+      boxTop.value = 0
+    }
+    if (direction & ResizeDirection.Bottom) {
+      boxHeight.value += 100 - (boxTop.value + boxHeight.value)
+    }
+
+    if (lengthSeconds) {
+      dragStyle.value.transition = `
+      width ${lengthSeconds}s, 
+      height ${lengthSeconds}s, 
+      top ${lengthSeconds}s, 
+      left ${lengthSeconds}s`
+
+      setTimeout(() => {
+        dragStyle.value.transition = undefined
+      }, lengthSeconds * 1000)
+    }
+  }
+
+  const restoreSize = (lengthSeconds?: number) => {
+    boxLeft.value = originalBoxDimensions.value.left
+    boxTop.value = originalBoxDimensions.value.top
+    boxWidth.value = originalBoxDimensions.value.width
+    boxHeight.value = originalBoxDimensions.value.height
+
+    if (lengthSeconds) {
+      dragStyle.value.transition = `
+      width ${lengthSeconds}s, 
+      height ${lengthSeconds}s, 
+      top ${lengthSeconds}s, 
+      left ${lengthSeconds}s`
+
+      setTimeout(() => {
+        dragStyle.value.transition = undefined
+      }, lengthSeconds * 1000)
+    }
+
+    isMaximized.value = false
+  }
+
   onMounted(() => {
     window.addEventListener('mouseup', onMouseUp)
   })
@@ -291,6 +359,9 @@ export function useDraggableResizable(
     boxTop,
     boxLeft,
     dragStyle,
+    isMaximized,
+    maximizeSize,
+    restoreSize,
     onDragStart,
     onResizeStart,
   }

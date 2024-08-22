@@ -1,5 +1,6 @@
 <template>
   <main ref="desktopViewEl">
+    <h1 class="hfs-desktop__logo">massivebugs.github.io</h1>
     <FileListComponent class="file-list" :files="fileOptions" />
     <template v-for="process in store.processes.values()" :key="process.id">
       <component
@@ -24,7 +25,8 @@ import { onMounted, onUnmounted, provide, ref } from 'vue'
 import ContextMenuComponent, {
   type ContextMenuOptions,
 } from '../components/ContextMenuComponent.vue'
-import FileListComponent, { type FileOption } from '../components/FileListComponent.vue'
+import FileListComponent from '../components/FileListComponent.vue'
+import type { FileShortcutIconOption } from '../components/FileShortcutIconComponent.vue'
 import type { AbsolutePosition } from '../models/absolute_position'
 import { Process } from '../models/process'
 import { RelativePosition } from '../models/relative_position'
@@ -41,7 +43,7 @@ const desktopViewEl = ref()
 const contextMenuEl = ref<HTMLElement>()
 const contextMenuOptions = ref<ContextMenuOptions | null>(null)
 const contextMenuPos = ref<RelativePosition>(new RelativePosition(0, 0))
-const fileOptions = ref<FileOption[]>([])
+const fileOptions = ref<FileShortcutIconOption[]>([])
 
 const setContextMenu: SetContextMenu = (
   options: ContextMenuOptions | null,
@@ -89,9 +91,26 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@/assets/colors';
+
 main {
+  position: relative;
   width: 100%;
   height: 100%;
+}
+
+.hfs-desktop__logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  color: colors.$light-grey;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 4em;
+  font-style: italic;
+  user-select: none;
+  pointer-events: none;
 }
 
 .file-list {

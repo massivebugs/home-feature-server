@@ -69,6 +69,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@/assets/colors';
+
 .container {
   height: 100%;
   padding: 1em;
@@ -77,6 +79,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   user-select: none;
+  background-color: colors.$white;
 }
 
 .button-container {
