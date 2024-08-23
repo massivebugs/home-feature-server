@@ -6,6 +6,7 @@
       <component
         :is="process.program.component"
         v-bind="process.program.componentProps"
+        @mousedown="setTopLevelProcess(process.id)"
         @click-close="onClickWindowClose(process.id)"
         @click-cancel="onClickWindowCancel(process.id)"
       />
@@ -22,6 +23,7 @@
 <script setup lang="ts">
 import { uniqueId } from 'lodash'
 import { onMounted, onUnmounted, provide, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import ContextMenuComponent, {
   type ContextMenuOptions,
 } from '../components/ContextMenuComponent.vue'
@@ -38,12 +40,21 @@ export type SetContextMenu = (
   pos?: AbsolutePosition,
 ) => void
 
+const route = useRoute()
 const store = useCoreStore()
 const desktopViewEl = ref()
 const contextMenuEl = ref<HTMLElement>()
 const contextMenuOptions = ref<ContextMenuOptions | null>(null)
 const contextMenuPos = ref<RelativePosition>(new RelativePosition(0, 0))
 const fileOptions = ref<FileShortcutIconOption[]>([])
+
+const setTopLevelProcess = (processId: string) => {
+  const process = store.processes.get(processId)
+  if (process) {
+    store.removeProcess(processId)
+    store.addProcess(process)
+  }
+}
 
 const setContextMenu: SetContextMenu = (
   options: ContextMenuOptions | null,
@@ -83,6 +94,20 @@ onMounted(() => {
       },
     })
   })
+
+  if (route.params.programId) {
+    const process = store.findProgramProcesses(route.params.programId as string)
+    const program = store.programs.get(route.params.programId as string)
+    if (process.length) {
+      console.log(process[0])
+    } else if (program) {
+      const process = new Process(uniqueId('pid_'), program)
+      store.addProcess(process)
+    } else {
+      console.log('No programs found!')
+      // Show an error dialog
+    }
+  }
 })
 
 onUnmounted(() => {
@@ -103,10 +128,9 @@ main {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -100%);
+  transform: translate(-50%, -150%);
   color: colors.$light-grey;
   font-family: monospace;
-  font-weight: 700;
   font-size: 4em;
   font-style: italic;
   user-select: none;

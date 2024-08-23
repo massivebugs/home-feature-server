@@ -70,6 +70,9 @@ nav.window-toolbar {
   > ul > li {
     padding: 0 7px;
     line-height: 24px;
+    transition:
+      background-color 0.1s,
+      color 0.1s;
     &:hover {
       background-color: colors.$dark-grey;
       color: colors.$white;

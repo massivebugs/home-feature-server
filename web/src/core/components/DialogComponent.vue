@@ -8,7 +8,7 @@
       minimize: false,
       maximize: false,
     }"
-    :resizable="isResizable"
+    :resizable="resizable"
     @click-close="emit('clickClose')"
   >
     <div class="container">
@@ -30,7 +30,7 @@ import { inject, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
-import WindowComponent, { type IBlockWindowFunc } from './WindowComponent.vue'
+import WindowComponent, { type BlockWindowFunc } from './WindowComponent.vue'
 
 const emit = defineEmits<{
   (e: 'clickSuccess'): void
@@ -47,12 +47,12 @@ const props = defineProps<{
     success: boolean | string
     cancel: boolean | string
   }
-  isResizable?: boolean
+  resizable?: boolean
 }>()
 
 const { t } = useI18n()
 const blockParentWindow = props.blocking
-  ? (inject('blockParentWindow') as IBlockWindowFunc)
+  ? (inject('blockParentWindow') as BlockWindowFunc)
   : undefined
 
 onMounted(() => {

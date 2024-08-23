@@ -41,9 +41,10 @@ import type { Api, Config, ConfigColumns } from 'datatables.net-dt'
 import 'datatables.net-responsive'
 import 'datatables.net-select'
 import DataTable from 'datatables.net-vue3'
-import { inject, onMounted, ref } from 'vue'
+import { inject, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ConfirmDialogComponent from '@/core/components/ConfirmDialogComponent.vue'
+import type { ToggleWindowResizeHandlerFunc } from '@/core/components/WindowComponent.vue'
 import { AbsolutePosition } from '@/core/models/absolute_position'
 import { RelativePosition } from '@/core/models/relative_position'
 import { RelativeSize } from '@/core/models/relative_size'
@@ -64,10 +65,10 @@ const showConfirmDeleteDialog = ref<boolean>(false)
 const showTransactionFormDialog = ref<boolean>(false)
 const clickedData = ref<TransactionDto | null>(null)
 const selectedData = ref<TransactionDto[]>([])
-
-const props = defineProps<{
-  windowEl: HTMLElement
-}>()
+const addWindowResizeListener = inject('addWindowResizeListener') as ToggleWindowResizeHandlerFunc
+const removeWindowResizeListener = inject(
+  'removeWindowResizeListener',
+) as ToggleWindowResizeHandlerFunc
 
 const options: Config = {
   drawCallback: (settings) => {
@@ -89,6 +90,13 @@ const columns: ConfigColumns[] = [
   {
     data: 'id',
     title: 'ID',
+  },
+  {
+    data: 'transacted_at',
+    title: 'Transacted at',
+    render: function (data: string) {
+      return new Date(data).toLocaleString(navigator.language)
+    },
   },
   {
     data: 'description',
@@ -196,10 +204,7 @@ onMounted(async () => {
     data.value = res.data.data
   }
   dt = table.value.dt
-
-  props.windowEl.addEventListener('resize', () => {
-    dt.responsive.recalc()
-  })
+  addWindowResizeListener(dt.responsive.recalc)
 
   // Prevent right click and display custom context menu
   dt.on('contextmenu', 'tbody tr', function (e) {
@@ -234,6 +239,10 @@ onMounted(async () => {
       contextMenuPos,
     )
   })
+})
+
+onUnmounted(() => {
+  removeWindowResizeListener(dt.responsive.recalc)
 })
 </script>
 

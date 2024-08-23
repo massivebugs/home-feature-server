@@ -30,8 +30,8 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     api.get<APIResponse<OverviewDto>>(APIEndpoints.v1.secure.cashbunny.overview, {
       params: dateRange
         ? {
-            from_date: dateRange.from.format('YYYY-MM-DD'),
-            to_date: dateRange.to.format('YYYY-MM-DD'),
+            from: dateRange.from.unix(),
+            to: dateRange.to.unix(),
           }
         : undefined,
     })

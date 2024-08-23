@@ -3,13 +3,12 @@
     v-bind="$attrs"
     class="hfs-window"
     :class="{
-      focused: store.focusedWindowUid === windowUid,
-      blocked: isBlocked,
-      'hfs-window__static': static,
+      'hfs-window_blocked': isBlocked,
+      'hfs-window_static': static,
     }"
     ref="windowEl"
-    @mousedown.stop="onWindowMouseDown"
-    @touchstart.stop="onWindowMouseDown"
+    @mousedown="onWindowMouseDown"
+    @touchstart="onWindowMouseDown"
     :style="{
       width: boxWidth + '%',
       height: boxHeight + '%',
@@ -60,8 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { uniqueId } from 'lodash'
-import { onMounted, provide, ref } from 'vue'
+import { provide, ref } from 'vue'
 import { ResizeDirection, useDraggableResizable } from '../composables/useDragResize'
 import { RelativePosition } from '../models/relative_position'
 import type { RelativeSize } from '../models/relative_size'
@@ -71,7 +69,9 @@ import CollapseIconComponent from './CollapseIconComponent.vue'
 import MinimizeMaximizeIconComponent from './MinimizeMaximizeIconComponent.vue'
 import WindowToolbarComponent, { type WindowToolbarRow } from './WindowToolbarComponent.vue'
 
-export type IBlockWindowFunc = (block: boolean) => void
+export type WindowUID = string
+export type BlockWindowFunc = (block: boolean) => void
+export type ToggleWindowResizeHandlerFunc = (handlerFunc: () => void) => void
 
 const TOGGLE_SIZE_SECONDS = 0.3
 
@@ -96,7 +96,6 @@ const props = defineProps<{
 }>()
 
 const store = useCoreStore()
-const windowUid = uniqueId('window_')
 const windowEl = ref<HTMLElement>()
 const isBlocked = ref<boolean>(false)
 const windowIdx = store.processes.size
@@ -127,15 +126,24 @@ const {
   },
 )
 
-const blockWindow: IBlockWindowFunc = (blocked: boolean) => {
+const addWindowResizeListener: ToggleWindowResizeHandlerFunc = (handlerFunc: () => void) => {
+  windowEl.value?.addEventListener('resize', handlerFunc)
+}
+
+const removeWindowResizeListener: ToggleWindowResizeHandlerFunc = (handlerFunc: () => void) => {
+  windowEl.value?.removeEventListener('resize', handlerFunc)
+}
+
+const blockWindow: BlockWindowFunc = (blocked: boolean) => {
   isBlocked.value = blocked
 }
 
+provide('addWindowResizeListener', addWindowResizeListener)
+provide('removeWindowResizeListener', removeWindowResizeListener)
 provide('blockParentWindow', blockWindow)
 
 const onWindowMouseDown = (e: MouseEvent | TouchEvent) => {
-  store.focusedWindowUid = windowUid
-  if (props.resizable) {
+  if (props.resizable && !isBlocked.value) {
     isMaximized.value ? undefined : onResizeStart(e)
   }
 }
@@ -147,10 +155,6 @@ const onClickToggleSize = () => {
       : maximizeSize(ResizeDirection.All, TOGGLE_SIZE_SECONDS)
   }
 }
-
-onMounted(() => {
-  store.focusedWindowUid = windowUid
-})
 </script>
 
 <style scoped lang="scss">
@@ -164,21 +168,21 @@ onMounted(() => {
   min-width: 100px;
   min-height: 30px;
   border-radius: 10px;
+  z-index: 1;
 
-  &.focused {
-    z-index: 999;
-  }
-
-  &.blocked {
-    pointer-events: none;
-  }
-
-  .hfs-window {
-    pointer-events: all;
+  &.hfs-window_blocked::after {
+    border-radius: inherit;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: colors.$low-opacity-dark-grey;
   }
 }
 
-.hfs-window:not(.hfs-window__static) {
+.hfs-window:not(.hfs-window_static) {
   background-color: colors.$high-opacity-white;
   @supports (backdrop-filter: blur()) {
     backdrop-filter: blur(10px);
@@ -221,6 +225,7 @@ onMounted(() => {
     justify-content: center;
     align-items: center;
     stroke: colors.$black;
+    transition: background-color 0.2s;
 
     &:hover {
       svg {
@@ -247,6 +252,7 @@ onMounted(() => {
 }
 
 .hfs-window__status-bar {
+  user-select: none;
   overflow: hidden;
   display: flex;
   font-size: 0.9em;

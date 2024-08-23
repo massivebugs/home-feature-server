@@ -37,7 +37,7 @@
         ]"
       >
         <template #overview_label>
-          <div class="tab-label">
+          <div class="cashbunny__tab-label">
             <OverviewTabIconComponent
               :fill="currentTab === Tabs.overview ? '#ebebeb' : undefined"
             />
@@ -45,10 +45,12 @@
           </div>
         </template>
         <template #overview>
-          <OverviewComponent />
+          <div class="cashbunny__tab-body">
+            <OverviewComponent />
+          </div>
         </template>
         <template #planner_label>
-          <div class="tab-label">
+          <div class="cashbunny__tab-label">
             <PlannerTabIconComponent
               width="30"
               height="30"
@@ -57,9 +59,11 @@
             {{ t('cashbunny.planner') }}
           </div>
         </template>
-        <template #planner> </template>
+        <template #planner>
+          <div class="cashbunny__tab-body"></div>
+        </template>
         <template #schedule_label>
-          <div class="tab-label">
+          <div class="cashbunny__tab-label">
             <ScheduleTabIconComponent
               :color="currentTab === Tabs.schedule ? '#ebebeb' : undefined"
               :day="today.getDate()"
@@ -68,10 +72,12 @@
           </div>
         </template>
         <template #schedule>
-          <ScheduleComponent />
+          <div class="cashbunny__tab-body">
+            <ScheduleComponent />
+          </div>
         </template>
         <template #accounts_label>
-          <div class="tab-label">
+          <div class="cashbunny__tab-label">
             <AccountsTabIconComponent
               :fill="currentTab === Tabs.accounts ? '#ebebeb' : undefined"
             />
@@ -79,10 +85,12 @@
           </div>
         </template>
         <template #accounts>
-          <AccountDataTableComponent v-if="slotProps.windowEl" :window-el="slotProps.windowEl" />
+          <div class="cashbunny__tab-body">
+            <AccountDataTableComponent v-if="slotProps.windowEl" :window-el="slotProps.windowEl" />
+          </div>
         </template>
         <template #transactions_label>
-          <div class="tab-label">
+          <div class="cashbunny__tab-label">
             <TransactionsTabIconComponent
               :fill="currentTab === Tabs.transactions ? '#ebebeb' : undefined"
             />
@@ -90,10 +98,12 @@
           </div>
         </template>
         <template #transactions>
-          <TransactionDataTableComponent
-            v-if="slotProps.windowEl"
-            :window-el="slotProps.windowEl"
-          />
+          <div class="cashbunny__tab-body">
+            <TransactionDataTableComponent
+              v-if="slotProps.windowEl"
+              :window-el="slotProps.windowEl"
+            />
+          </div>
         </template>
       </TabGroupComponent>
     </div>
@@ -282,11 +292,16 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
   background: colors.$light-grey;
 }
 
-.tab-label {
+.cashbunny__tab-label {
   padding: 5px 0;
   display: flex;
   align-items: center;
   gap: 5px;
   font-weight: bold;
+}
+
+.cashbunny__tab-body {
+  background-color: colors.$white;
+  padding: 0.5em;
 }
 </style>

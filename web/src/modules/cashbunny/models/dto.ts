@@ -1,7 +1,5 @@
 export type OverviewDto = {
-  revenues: { [key: string]: string }
-  expenses: { [key: string]: string }
-  sums: { [key: string]: string }
+  summaries: { [key: string]: { revenue: string; expense: string; profit: string } }
   totals: { [key: string]: string }
   transactions: TransactionDto[]
 }

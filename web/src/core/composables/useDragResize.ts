@@ -320,7 +320,14 @@ export function useDraggableResizable(
 
       setTimeout(() => {
         dragStyle.value.transition = undefined
+        if (onResizeEnd) {
+          onResizeEnd()
+        }
       }, lengthSeconds * 1000)
+    }
+
+    if (!lengthSeconds && onResizeEnd) {
+      onResizeEnd()
     }
   }
 
@@ -339,10 +346,17 @@ export function useDraggableResizable(
 
       setTimeout(() => {
         dragStyle.value.transition = undefined
+        if (onResizeEnd) {
+          onResizeEnd()
+        }
       }, lengthSeconds * 1000)
     }
 
     isMaximized.value = false
+
+    if (!lengthSeconds && onResizeEnd) {
+      onResizeEnd()
+    }
   }
 
   onMounted(() => {

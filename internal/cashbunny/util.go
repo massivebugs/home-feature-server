@@ -16,16 +16,6 @@ func NewCurrencySums(sums []*money.Money) CurrencySums {
 	return CurrencySums(csMap)
 }
 
-func (m *CurrencySums) ToDefaultDisplayMap() map[string]string {
-	result := map[string]string{}
-
-	for k, v := range *m {
-		result[k] = v.Display()
-	}
-
-	return result
-}
-
 func (m *CurrencySums) Add(amount *money.Money) error {
 	cc := amount.Currency().Code
 	csMap := map[string]*money.Money(*m)

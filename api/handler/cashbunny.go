@@ -31,29 +31,23 @@ func (h *CashbunnyHandler) GetOverview(ctx echo.Context) *api.APIResponse {
 	token := ctx.Get("user").(*jwt.Token)
 	claims := token.Claims.(*auth.JWTClaims)
 
-	qFrom := ctx.QueryParam("from_date")
-	qTo := ctx.QueryParam("to_date")
+	qFrom, _ := strconv.Atoi(ctx.QueryParam("from"))
+
+	qTo, _ := strconv.Atoi(ctx.QueryParam("to"))
 
 	var from time.Time
 	var to time.Time
-	var err error
 
-	if qFrom == "" {
+	if qFrom == 0 {
 		from = time.Time{}
 	} else {
-		from, err = time.Parse(time.DateOnly, qFrom)
-	}
-	if err != nil {
-		return api.NewAPIResponse(err, "")
+		from = time.Unix(int64(qFrom), 0)
 	}
 
-	if qTo == "" {
+	if qTo == 0 {
 		to = time.Now()
 	} else {
-		to, err = time.Parse(time.DateOnly, qTo)
-	}
-	if err != nil {
-		return api.NewAPIResponse(err, "")
+		to = time.Unix(int64(qTo), 0)
 	}
 
 	ledger, err := h.cashbunny.GetOverview(ctx.Request().Context(), claims.UserID, from, to)

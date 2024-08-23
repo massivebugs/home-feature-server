@@ -15,6 +15,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@fullcalendar/vue3": "^6.1.15",
     "axios": "^1.7.2",
     "datatables.net-dt": "^2.1.0",
     "datatables.net-responsive": "^3.0.2",
@@ -26,7 +31,6 @@
     "lodash": "^4.17.21",
     "modern-normalize": "^2.0.0",
     "pinia": "^2.1.7",
-    "vanilla-calendar-pro": "^2.9.8",
     "vue": "^3.4.29",
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.3.3"

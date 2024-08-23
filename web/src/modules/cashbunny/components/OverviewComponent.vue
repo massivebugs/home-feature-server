@@ -1,46 +1,43 @@
 <template>
   <div ref="overviewContainer" class="overview-container" :style="dragStyle">
-    <h2 v-if="calendarData">
+    <h2 v-if="dateStart && dateEnd">
       {{
-        calendarData.dates.length === 1
+        dateEnd.diff(dateStart, 'd') > 0
           ? t('cashbunny.overviewForDate', {
-              v: dayjs(calendarData.dates[0]).format('YYYY-MM-DD'),
+              v: `${dayjs(dateStart).format('YYYY-MM-DD')} ~ ${dayjs(dateEnd).format('YYYY-MM-DD')}`,
             })
-          : calendarData.dates.length > 1
-            ? t('cashbunny.overviewForDate', {
-                v: `${dayjs(calendarData.dates[0]).format('YYYY-MM-DD')} ~ ${dayjs(calendarData.dates[calendarData.dates.length - 1]).format('YYYY-MM-DD')}`,
-              })
-            : t('cashbunny.overviewForMonth', {
-                m: calendarData.month + 1,
-                y: calendarData.year,
-              })
+          : t('cashbunny.overviewForDate', {
+              v: dayjs(dateStart).format('YYYY-MM-DD'),
+            })
       }}
     </h2>
     <section>
       <div :style="{ width: 100 - rightSectionWidth + '%' }">
-        <div v-if="overviewData" class="revenue-expense">
-          <div>
-            <div class="overview-section-header">
-              {{ t('cashbunny.overviewRevenueAndExpense') }}
-            </div>
-            <div
-              v-for="currency in new Set([
-                ...Object.keys(overviewData.revenues),
-                ...Object.keys(overviewData.expenses),
-              ])"
-              :key="currency"
-            >
-              {{ currency }}
-              {{ overviewData.revenues[currency] }} / {{ overviewData.expenses[currency] }}
-            </div>
-          </div>
-          <div>
-            <div class="overview-section-header">{{ t('cashbunny.overviewProfit') }}</div>
-            <div v-for="(sum, currency) in overviewData.sums" :key="currency">
-              {{ currency }}
-              {{ sum }}
-            </div>
-          </div>
+        <h3 class="overview-section-header">
+          {{ t('cashbunny.overviewSummary') }}
+        </h3>
+        <div v-if="overviewData">
+          <DataTable
+            :columns="[
+              { data: 'currency', title: 'Currency' },
+              { data: 'revenue', title: 'Revenue' },
+              { data: 'expense', title: 'Expense' },
+              { data: 'profit', title: 'Profit' },
+            ]"
+            :data="
+              Object.entries(overviewData.summaries).map(([key, value]) => {
+                return { currency: key, ...value }
+              })
+            "
+            :options="{
+              info: false,
+              paging: false,
+              searching: false,
+              ordering: false,
+            }"
+            ref="summaryTable"
+            class="table display nowrap compact"
+          />
         </div>
       </div>
       <div
@@ -50,19 +47,10 @@
         @touchstart.stop="onRightSectionResizeStart"
       >
         <CalendarComponent
-          class="overview-container__calendar"
-          :config="{
-            settings: {
-              visibility: {
-                theme: 'light',
-              },
-              selection: {
-                day: 'multiple-ranged',
-              },
-            },
-            popups: calendarPopups as any,
-          }"
-          @change-date="onCalendarChangeDate"
+          :tabs="[CalendarTabs.year, CalendarTabs.month]"
+          height="400px"
+          @loaded="onCalendarLoaded"
+          @select-dates="onCalendarSelectDates"
         />
       </div>
     </section>
@@ -70,21 +58,37 @@
 </template>
 
 <script setup lang="ts">
+import DataTablesCore from 'datatables.net'
+import { DataTable } from 'datatables.net-vue3'
 import dayjs, { Dayjs } from 'dayjs'
-import { computed, ref } from 'vue'
+import { inject, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { ToggleWindowResizeHandlerFunc } from '@/core/components/WindowComponent.vue'
 import { ResizeDirection, useDraggableResizable } from '@/core/composables/useDragResize'
 import { RelativePosition } from '@/core/models/relative_position'
 import { RelativeSize } from '@/core/models/relative_size'
 import type { OverviewDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
-import CalendarComponent, { type CalendarChangeDateEvent } from './CalendarComponent.vue'
+import CalendarComponent, {
+  type CalendarLoadedEvent,
+  type CalendarSelectDatesEvent,
+  CalendarTabs,
+} from './CalendarComponent.vue'
+
+DataTable.use(DataTablesCore)
 
 const { t } = useI18n()
 const store = useCashbunnyStore()
 const overviewContainer = ref()
+const rightSection = ref()
 const overviewData = ref<OverviewDto | null>(null)
-const calendarData = ref<CalendarChangeDateEvent>()
+const dateStart = ref<Dayjs>()
+const dateEnd = ref<Dayjs>()
+let calendarResizeFunc: () => void
+const addWindowResizeListener = inject('addWindowResizeListener') as ToggleWindowResizeHandlerFunc
+const removeWindowResizeListener = inject(
+  'removeWindowResizeListener',
+) as ToggleWindowResizeHandlerFunc
 const {
   boxWidth: rightSectionWidth,
   onResizeStart: onRightSectionResizeStart,
@@ -92,52 +96,39 @@ const {
 } = useDraggableResizable(
   new RelativePosition(0, 0),
   new RelativeSize(30, 0),
-  undefined,
+  rightSection,
   overviewContainer,
   {
     resize: {
       direction: ResizeDirection.Left,
     },
   },
+  () => {
+    calendarResizeFunc()
+  },
 )
 
-// TODO
-const calendarPopups = computed(() => {
-  const result: { [key: string]: { html: string } } = {}
+const onCalendarLoaded = (payload: CalendarLoadedEvent) => {
+  calendarResizeFunc = payload.resizeFunc
+  addWindowResizeListener(calendarResizeFunc)
+}
 
-  if (!overviewData.value) {
-    return result
-  }
+const onCalendarSelectDates = async (payload: CalendarSelectDatesEvent) => {
+  dateStart.value = dayjs(payload.dateStart)
+  dateEnd.value = dayjs(payload.dateEnd)
 
-  // Object.entries(overviewData.value.transactions).forEach(([key, transactionInfos]) => {
-  //   result[key] = { html: transactionInfos.map((v) => `<p>${v}</p>`).join('') }
-  // })
-  result['2024-08-17'] = { html: 'foo' }
-
-  return result
-})
-
-const onCalendarChangeDate = async (payload: CalendarChangeDateEvent) => {
-  calendarData.value = payload
-  let dateFrom: Dayjs
-  let dateTo: Dayjs
-
-  if (payload.dates.length) {
-    dateFrom = dayjs(payload.dates[0])
-    dateTo = dayjs(payload.dates[payload.dates.length > 1 ? payload.dates.length - 1 : 0]).add(
-      1,
-      'day',
-    )
-  } else {
-    dateFrom = dayjs({ year: payload.year, month: payload.month, day: 1 })
-    dateTo = dayjs({ year: payload.year, month: payload.month + 1 })
-  }
-
-  const res = await store.getOverview({ from: dateFrom, to: dateTo })
+  const res = await store.getOverview({
+    from: dateStart.value.startOf('day'),
+    to: dateEnd.value.endOf('day'),
+  })
   if (res.data.error === null) {
     overviewData.value = res.data.data
   }
 }
+
+onBeforeUnmount(() => {
+  removeWindowResizeListener(calendarResizeFunc)
+})
 </script>
 
 <style scoped lang="scss">
@@ -149,9 +140,9 @@ const onCalendarChangeDate = async (payload: CalendarChangeDateEvent) => {
   flex-direction: column;
   width: 100%;
   min-height: 100%;
-  padding: 0.5em;
 
   h2 {
+    user-select: none;
     margin-top: 0;
   }
 
@@ -173,15 +164,6 @@ const onCalendarChangeDate = async (payload: CalendarChangeDateEvent) => {
   user-select: none;
   font-weight: 700;
   font-size: 1.1em;
-}
-
-.revenue-expense {
-  display: flex;
-  justify-content: space-between;
-}
-
-.overview-container__calendar {
-  border-radius: 0;
-  width: 100%;
+  margin-bottom: 0.3em;
 }
 </style>

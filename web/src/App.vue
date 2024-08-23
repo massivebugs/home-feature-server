@@ -11,7 +11,7 @@ const { t } = useI18n()
 const store = useCoreStore()
 
 // Register all programs to system
-const programs = getPrograms(store, t)
+const programs = getPrograms(t)
 programs.forEach((program) => {
   store.addProgram(program)
 })

@@ -6,21 +6,42 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
+type Summaries map[string]struct {
+	Revenue string `json:"revenue"`
+	Expense string `json:"expense"`
+	Profit  string `json:"profit"`
+}
+
 type GetOverviewResponseDTO struct {
-	Revenues     map[string]string        `json:"revenues"`
-	Expenses     map[string]string        `json:"expenses"`
-	Sums         map[string]string        `json:"sums"`
-	Totals       map[string]string        `json:"totals"`
+	Summaries    Summaries                `json:"summaries"`
 	Transactions []*cashbunny.Transaction `json:"transactions"`
 }
 
 func NewGetOverviewResponseDTO(ledger *cashbunny.Ledger) *GetOverviewResponseDTO {
 	revenues, expenses, sums := ledger.GetProfitLoss()
 
+	result := Summaries{}
+
+	for k, money := range revenues {
+		values := result[k]
+		values.Revenue = money.Display()
+		result[k] = values
+	}
+
+	for k, money := range expenses {
+		values := result[k]
+		values.Expense = money.Display()
+		result[k] = values
+	}
+
+	for k, money := range sums {
+		values := result[k]
+		values.Profit = money.Display()
+		result[k] = values
+	}
+
 	return &GetOverviewResponseDTO{
-		Revenues:     revenues.ToDefaultDisplayMap(),
-		Expenses:     expenses.ToDefaultDisplayMap(),
-		Sums:         sums.ToDefaultDisplayMap(),
+		Summaries:    result,
 		Transactions: ledger.GetTransactions(),
 	}
 }
