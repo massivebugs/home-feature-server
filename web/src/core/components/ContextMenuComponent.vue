@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { RelativePosition } from '../models/relative_position'
+import type { RelativePosition } from '../models/relativePosition'
 
 export type ContextMenuItem = {
   icon?: string

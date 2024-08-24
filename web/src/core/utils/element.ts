@@ -1,7 +1,7 @@
-import { AbsolutePosition } from '../models/absolute_position'
-import { AbsoluteSize } from '../models/absolute_size'
-import { RelativePosition } from '../models/relative_position'
-import { RelativeSize } from '../models/relative_size'
+import { AbsolutePosition } from '../models/absolutePosition'
+import { AbsoluteSize } from '../models/absoluteSize'
+import { RelativePosition } from '../models/relativePosition'
+import { RelativeSize } from '../models/relativeSize'
 
 export const getRelativeClientPosition = (absPos: AbsolutePosition) => {
   const relPos = new RelativePosition(0, 0)
@@ -36,8 +36,8 @@ export const getElementMetrics = (htmlEl: HTMLElement, parentEl: HTMLElement) =>
   if (parentRect) {
     relPos.x = ((rect.left - parentRect.left) / parentRect.width) * 100
     relPos.y = ((rect.top - parentRect.top) / parentRect.height) * 100
-    relSize.width = (rect.width / parentRect.width) * 100
-    relSize.height = (rect.height / parentRect.height) * 100
+    relSize.w = (rect.width / parentRect.width) * 100
+    relSize.h = (rect.height / parentRect.height) * 100
   }
 
   return {
@@ -59,8 +59,8 @@ export const getMouseMetrics = (clientX: number, clientY: number, parentEl: HTML
   if (parentRect) {
     relPos.x = ((clientX - parentRect.left) / parentRect.width) * 100
     relPos.y = ((clientY - parentRect.top) / parentRect.height) * 100
-    relSize.width = (clientX / parentRect.width) * 100
-    relSize.height = (clientY / parentRect.height) * 100
+    relSize.w = (clientX / parentRect.width) * 100
+    relSize.h = (clientY / parentRect.height) * 100
   }
 
   return {

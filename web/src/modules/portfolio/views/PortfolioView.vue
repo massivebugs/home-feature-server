@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import WindowComponent from '@/core/components/WindowComponent.vue'
-import { RelativeSize } from '@/core/models/relative_size'
+import { RelativeSize } from '@/core/models/relativeSize'
 
 const emit = defineEmits<{
   (e: 'clickClose'): void

@@ -8,7 +8,7 @@
       cancel: true,
     }"
     :blocking="true"
-    :is-resizable="true"
+    :resizable="true"
     @click-success="onClickSubmit"
   >
     <div class="container">
@@ -55,8 +55,8 @@ import DialogComponent from '@/core/components/DialogComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import TextInputComponent from '@/core/components/TextInputComponent.vue'
 import type { APIResponse } from '@/core/models/dto'
-import type { RelativePosition } from '@/core/models/relative_position'
-import type { RelativeSize } from '@/core/models/relative_size'
+import type { RelativePosition } from '@/core/models/relativePosition'
+import type { RelativeSize } from '@/core/models/relativeSize'
 import type { AccountDto, CreateAccountDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 

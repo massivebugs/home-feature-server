@@ -1,4 +1,4 @@
-import { AbsolutePosition } from '../models/absolute_position'
+import { AbsolutePosition } from '../models/absolutePosition'
 
 export const ClientArea = {
   top: 'top',

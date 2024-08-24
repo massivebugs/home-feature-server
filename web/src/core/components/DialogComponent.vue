@@ -28,8 +28,8 @@
 <script setup lang="ts">
 import { inject, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { RelativePosition } from '../models/relative_position'
-import type { RelativeSize } from '../models/relative_size'
+import type { RelativePosition } from '../models/relativePosition'
+import type { RelativeSize } from '../models/relativeSize'
 import WindowComponent, { type BlockWindowFunc } from './WindowComponent.vue'
 
 const emit = defineEmits<{

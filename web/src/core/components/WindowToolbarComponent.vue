@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { type Ref, inject } from 'vue'
-import { AbsolutePosition } from '../models/absolute_position'
+import { AbsolutePosition } from '../models/absolutePosition'
 import type { SetContextMenu } from '../views/DesktopView.vue'
 import type { ContextMenuOptions } from './ContextMenuComponent.vue'
 

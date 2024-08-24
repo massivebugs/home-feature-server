@@ -29,9 +29,9 @@ import ContextMenuComponent, {
 } from '../components/ContextMenuComponent.vue'
 import FileListComponent from '../components/FileListComponent.vue'
 import type { FileShortcutIconOption } from '../components/FileShortcutIconComponent.vue'
-import type { AbsolutePosition } from '../models/absolute_position'
+import type { AbsolutePosition } from '../models/absolutePosition'
 import { Process } from '../models/process'
-import { RelativePosition } from '../models/relative_position'
+import { RelativePosition } from '../models/relativePosition'
 import { useCoreStore } from '../stores'
 import { getRelativeParentPosition } from '../utils/element'
 

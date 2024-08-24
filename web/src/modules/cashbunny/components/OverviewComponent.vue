@@ -12,7 +12,7 @@
       }}
     </h2>
     <section>
-      <div :style="{ width: 100 - rightSectionWidth + '%' }">
+      <div :style="{ width: 100 - currentSize.w + '%' }">
         <h3 class="overview-section-header">
           {{ t('cashbunny.overviewSummary') }}
         </h3>
@@ -42,7 +42,7 @@
       </div>
       <div
         ref="rightSection"
-        :style="{ width: rightSectionWidth + '%' }"
+        :style="{ width: currentSize.w + '%' }"
         @mousedown.stop="onRightSectionResizeStart"
         @touchstart.stop="onRightSectionResizeStart"
       >
@@ -64,9 +64,9 @@ import dayjs, { Dayjs } from 'dayjs'
 import { inject, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ToggleWindowResizeHandlerFunc } from '@/core/components/WindowComponent.vue'
-import { ResizeDirection, useDraggableResizable } from '@/core/composables/useDragResize'
-import { RelativePosition } from '@/core/models/relative_position'
-import { RelativeSize } from '@/core/models/relative_size'
+import { ResizeDirection, useDragResize } from '@/core/composables/useDragResize'
+import { RelativePosition } from '@/core/models/relativePosition'
+import { RelativeSize } from '@/core/models/relativeSize'
 import type { OverviewDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 import CalendarComponent, {
@@ -90,10 +90,10 @@ const removeWindowResizeListener = inject(
   'removeWindowResizeListener',
 ) as ToggleWindowResizeHandlerFunc
 const {
-  boxWidth: rightSectionWidth,
+  currentSize,
   onResizeStart: onRightSectionResizeStart,
   dragStyle,
-} = useDraggableResizable(
+} = useDragResize(
   new RelativePosition(0, 0),
   new RelativeSize(30, 0),
   rightSection,
@@ -151,6 +151,8 @@ onBeforeUnmount(() => {
   }
 
   > section > div {
+    overflow: hidden;
+
     &:nth-child(2) {
       margin-left: 1em;
       padding-left: 1em;

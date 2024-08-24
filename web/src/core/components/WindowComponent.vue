@@ -10,10 +10,10 @@
     @mousedown="onWindowMouseDown"
     @touchstart="onWindowMouseDown"
     :style="{
-      width: boxWidth + '%',
-      height: boxHeight + '%',
-      top: boxTop + '%',
-      left: boxLeft + '%',
+      width: currentSize.w + '%',
+      height: currentSize.h + '%',
+      top: currentPos.y + '%',
+      left: currentPos.x + '%',
       ...dragStyle,
     }"
   >
@@ -60,9 +60,9 @@
 
 <script setup lang="ts">
 import { provide, ref } from 'vue'
-import { ResizeDirection, useDraggableResizable } from '../composables/useDragResize'
-import { RelativePosition } from '../models/relative_position'
-import type { RelativeSize } from '../models/relative_size'
+import { ResizeDirection, useDragResize } from '../composables/useDragResize'
+import { RelativePosition } from '../models/relativePosition'
+import type { RelativeSize } from '../models/relativeSize'
 import { useCoreStore } from '../stores'
 import CloseIconComponent from './CloseIconComponent.vue'
 import CollapseIconComponent from './CollapseIconComponent.vue'
@@ -100,22 +100,17 @@ const windowEl = ref<HTMLElement>()
 const isBlocked = ref<boolean>(false)
 const windowIdx = store.processes.size
 const {
-  boxWidth,
-  boxHeight,
-  boxTop,
-  boxLeft,
+  currentSize,
+  currentPos,
   dragStyle,
   isMaximized,
   maximizeSize,
   restoreSize,
   onDragStart,
   onResizeStart,
-} = useDraggableResizable(
+} = useDragResize(
   props.pos ??
-    new RelativePosition(
-      windowIdx + 50 - props.size.width / 2,
-      windowIdx + 50 - props.size.height / 2,
-    ),
+    new RelativePosition(windowIdx + 50 - props.size.w / 2, windowIdx + 50 - props.size.h / 2),
   props.size,
   windowEl,
   undefined,
@@ -169,6 +164,7 @@ const onClickToggleSize = () => {
   min-height: 30px;
   border-radius: 10px;
   z-index: 1;
+  overflow: hidden;
 
   &.hfs-window_blocked::after {
     border-radius: inherit;
@@ -183,15 +179,26 @@ const onClickToggleSize = () => {
 }
 
 .hfs-window:not(.hfs-window_static) {
+  box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
+}
+
+// https://stackoverflow.com/questions/77143569/position-fixed-not-working-when-backdrop-filter-is-used
+.hfs-window:not(.hfs-window_static)::before {
+  border-radius: 10px;
+  position: absolute;
+  content: '';
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-color: colors.$high-opacity-white;
   @supports (backdrop-filter: blur()) {
     backdrop-filter: blur(10px);
     background-color: colors.$low-opacity-white;
   }
-
-  box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.4);
+  z-index: -1;
 }
 
 .hfs-window__title-bar {
