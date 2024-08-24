@@ -7,8 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/massivebugs/home-feature-server/api/config"
 	"github.com/massivebugs/home-feature-server/api/response"
-	"github.com/massivebugs/home-feature-server/db/service/user"
-	"github.com/massivebugs/home-feature-server/db/service/user_password"
+	"github.com/massivebugs/home-feature-server/db/service/auth_repository"
 	"github.com/massivebugs/home-feature-server/internal/api"
 	"github.com/massivebugs/home-feature-server/internal/auth"
 )
@@ -23,8 +22,7 @@ func NewAuthHandler(cfg *config.Config, db *sql.DB) *AuthHandler {
 		cfg: cfg,
 		auth: auth.NewAuth(
 			db,
-			user.New(),
-			user_password.New(),
+			auth_repository.New(),
 		),
 	}
 }

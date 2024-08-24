@@ -1,16 +1,7 @@
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
-import type { RelativePosition } from '../models/relative_position'
-import type { RelativeSize } from '../models/relative_size'
-
-type DraggableResizable = {
-  boxWidth: Ref<number>
-  boxHeight: Ref<number>
-  boxTop: Ref<number>
-  boxLeft: Ref<number>
-  resizeCursor: Ref<ResizeCursor | null> // values are changed on mousedown for performance considerations
-  onDragStart: (e: MouseEvent | TouchEvent) => void
-  onResizeStart: (e: MouseEvent | TouchEvent) => void
-}
+import { type CSSProperties, type Ref, onMounted, onUnmounted, ref } from 'vue'
+import { AbsoluteSize } from '../models/absoluteSize'
+import type { RelativePosition } from '../models/relativePosition'
+import { RelativeSize } from '../models/relativeSize'
 
 const ResizeCursor = {
   ew: 'ew-resize',
@@ -18,38 +9,62 @@ const ResizeCursor = {
   nesw: 'nesw-resize',
   nwse: 'nwse-resize',
 } as const
-
 export type ResizeCursor = (typeof ResizeCursor)[keyof typeof ResizeCursor]
 
-const DRAG_CORNER_OFFSET_PX = 10
+export enum ResizeDirection {
+  Top = 1 << 0,
+  Bottom = 1 << 1,
+  Left = 1 << 2,
+  Right = 1 << 3,
+  All = ~(~0 << 4),
+}
 
-export function useDraggableResizable(
+export type DragResizeOptions = {
+  resize?: {
+    direction?: ResizeDirection
+  }
+}
+
+const DRAG_CORNER_OFFSET_PX = 5
+
+export function useDragResize(
   initialPos: RelativePosition,
   initialSize: RelativeSize,
   el?: Ref<HTMLElement | undefined>,
-): DraggableResizable {
+  parentEl?: Ref<HTMLElement | undefined>,
+  options: DragResizeOptions = {
+    resize: {
+      direction: ResizeDirection.All,
+    },
+  },
+  onResizeEnd?: () => void,
+) {
   // Drag states
   let isDragging = false
   let isResizing = false
   let startMouseX = 0
   let startMouseY = 0
-  let startWidth = 0
-  let startHeight = 0
-  let startTop = 0
-  let startLeft = 0
+  let startSize = initialSize.clone()
+  let startPos = initialPos.clone()
   const dragCorners = {
     top: false,
     bottom: false,
     left: false,
     right: false,
   }
+  const originalBoxDimensions = ref({
+    size: initialSize.clone(),
+    pos: initialPos.clone(),
+  })
+  const isMaximized = ref<boolean>(false)
 
   // Result
-  const boxWidth = ref(initialSize.width) // percentage
-  const boxHeight = ref(initialSize.height) // percentage
-  const boxTop = ref(initialPos.x) // percentage
-  const boxLeft = ref(initialPos.y) // percentage
-  const resizeCursor = ref<ResizeCursor | null>(null)
+  const currentSize = ref(initialSize.clone())
+  const currentPos = ref(initialPos.clone())
+  const dragStyle = ref<CSSProperties>({
+    cursor: 'auto',
+    userSelect: 'auto',
+  })
 
   const onDragStart = (e: MouseEvent | TouchEvent) => {
     if (e.type === 'mousedown') {
@@ -57,8 +72,7 @@ export function useDraggableResizable(
       isDragging = true
       startMouseX = e.clientX
       startMouseY = e.clientY
-      startTop = boxTop.value
-      startLeft = boxLeft.value
+      startPos = currentPos.value.clone()
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     } else {
@@ -66,170 +80,209 @@ export function useDraggableResizable(
       isDragging = true
       startMouseX = e.touches[0].clientX
       startMouseY = e.touches[0].clientY
-      startTop = boxTop.value
-      startLeft = boxLeft.value
-      window.addEventListener('touchmove', onTouchMove)
-      window.addEventListener('touchend', onTouchEnd)
+      startPos = currentPos.value.clone()
+      window.addEventListener('touchmove', onMouseMove)
+      window.addEventListener('touchend', onMouseUp)
     }
   }
 
   const onResizeStart = (e: MouseEvent | TouchEvent) => {
+    const target = el?.value ? el.value : (e.target as HTMLElement)
+    let clientX: number
+    let clientY: number
     if (e.type === 'mousedown') {
       e = e as MouseEvent
-      const target = el?.value ? el.value : (e.target as HTMLElement)
-      // We need to use getBoundingClientRect() for pixel values
-      const viewportRect = target.getBoundingClientRect()
-      dragCorners.top, dragCorners.bottom, dragCorners.left, (dragCorners.right = false)
+      clientX = e.clientX
+      clientY = e.clientY
+    } else {
+      e = e as TouchEvent
+      clientX = e.touches[0].clientX
+      clientY = e.touches[0].clientY
+    }
 
-      // Check which corners are being selected at the moment
-      dragCorners.top = viewportRect.top > e.clientY - DRAG_CORNER_OFFSET_PX
-      dragCorners.bottom =
-        viewportRect.top + viewportRect.height < e.clientY + DRAG_CORNER_OFFSET_PX
-      dragCorners.left = viewportRect.left > e.clientX - DRAG_CORNER_OFFSET_PX
-      dragCorners.right = viewportRect.left + viewportRect.width < e.clientX + DRAG_CORNER_OFFSET_PX
+    // We need to use getBoundingClientRect() for pixel values
+    const viewportRect = target.getBoundingClientRect()
+    dragCorners.top, dragCorners.bottom, dragCorners.left, (dragCorners.right = false)
 
-      // If no corners are being selected, ignore and return
-      if (!dragCorners.top && !dragCorners.bottom && !dragCorners.left && !dragCorners.right) {
-        return
-      }
+    // Check which corners are being selected at the moment
+    dragCorners.top = viewportRect.top > clientY - DRAG_CORNER_OFFSET_PX
+    dragCorners.bottom = viewportRect.top + viewportRect.height < clientY + DRAG_CORNER_OFFSET_PX
+    dragCorners.left = viewportRect.left > clientX - DRAG_CORNER_OFFSET_PX
+    dragCorners.right = viewportRect.left + viewportRect.width < clientX + DRAG_CORNER_OFFSET_PX
 
-      // Set which cursor should be displayed, based on the selected corners
-      if ((dragCorners.top && dragCorners.left) || (dragCorners.bottom && dragCorners.right)) {
-        resizeCursor.value = ResizeCursor.nwse
-      } else if (
-        (dragCorners.top && dragCorners.right) ||
-        (dragCorners.bottom && dragCorners.left)
-      ) {
-        resizeCursor.value = ResizeCursor.nesw
-      } else if (dragCorners.top || dragCorners.bottom) {
-        resizeCursor.value = ResizeCursor.ns
-      } else {
-        resizeCursor.value = ResizeCursor.ew
-      }
+    // If no corners are being selected, ignore and return
+    if (!dragCorners.top && !dragCorners.bottom && !dragCorners.left && !dragCorners.right) {
+      return
+    }
 
-      isResizing = true
-      isDragging = false // Resizing overrides dragging behaviors
-      startMouseX = e.clientX
-      startMouseY = e.clientY
-      startTop = boxTop.value
-      startLeft = boxLeft.value
-      startWidth = boxWidth.value
-      startHeight = boxHeight.value
+    if (
+      options.resize?.direction &&
+      !(
+        (dragCorners.top && !!(options.resize.direction & ResizeDirection.Top)) ||
+        (dragCorners.bottom && !!(options.resize.direction & ResizeDirection.Bottom)) ||
+        (dragCorners.left && !!(options.resize.direction & ResizeDirection.Left)) ||
+        (dragCorners.right && !!(options.resize.direction & ResizeDirection.Right))
+      )
+    ) {
+      return
+    }
+
+    // Set which cursor should be displayed, based on the selected corners
+    if ((dragCorners.top && dragCorners.left) || (dragCorners.bottom && dragCorners.right)) {
+      dragStyle.value.cursor = ResizeCursor.nwse
+    } else if ((dragCorners.top && dragCorners.right) || (dragCorners.bottom && dragCorners.left)) {
+      dragStyle.value.cursor = ResizeCursor.nesw
+    } else if (dragCorners.top || dragCorners.bottom) {
+      dragStyle.value.cursor = ResizeCursor.ns
+    } else {
+      dragStyle.value.cursor = ResizeCursor.ew
+    }
+    dragStyle.value.userSelect = 'none'
+
+    isResizing = true
+    isDragging = false // Resizing overrides dragging behaviors
+    startMouseX = clientX
+    startMouseY = clientY
+    startPos = currentPos.value.clone()
+    startSize = currentSize.value.clone()
+
+    if (e.type === 'mousedown') {
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     } else {
+      window.addEventListener('touchmove', onMouseMove)
+      window.addEventListener('touchend', onMouseUp)
+    }
+  }
+
+  const onMouseMove = (e: MouseEvent | TouchEvent) => {
+    let clientX: number
+    let clientY: number
+    if (e.type === 'mousemove') {
+      e = e as MouseEvent
+      clientX = e.clientX
+      clientY = e.clientY
+    } else {
       e = e as TouchEvent
-      const target = el?.value ? el.value : (e.target as HTMLElement)
-      // We need to use getBoundingClientRect() for pixel values
-      const viewportRect = target.getBoundingClientRect()
-      dragCorners.top, dragCorners.bottom, dragCorners.left, (dragCorners.right = false)
-
-      // Check which corners are being selected at the moment
-      dragCorners.top = viewportRect.top > e.touches[0].clientY - DRAG_CORNER_OFFSET_PX
-      dragCorners.bottom =
-        viewportRect.top + viewportRect.height < e.touches[0].clientY + DRAG_CORNER_OFFSET_PX
-      dragCorners.left = viewportRect.left > e.touches[0].clientX - DRAG_CORNER_OFFSET_PX
-      dragCorners.right =
-        viewportRect.left + viewportRect.width < e.touches[0].clientX + DRAG_CORNER_OFFSET_PX
-
-      // If no corners are being selected, ignore and return
-      if (!dragCorners.top && !dragCorners.bottom && !dragCorners.left && !dragCorners.right) {
-        return
-      }
-
-      // Set which cursor should be displayed, based on the selected corners
-      if ((dragCorners.top && dragCorners.left) || (dragCorners.bottom && dragCorners.right)) {
-        resizeCursor.value = ResizeCursor.nwse
-      } else if (
-        (dragCorners.top && dragCorners.right) ||
-        (dragCorners.bottom && dragCorners.left)
-      ) {
-        resizeCursor.value = ResizeCursor.nesw
-      } else if (dragCorners.top || dragCorners.bottom) {
-        resizeCursor.value = ResizeCursor.ns
-      } else {
-        resizeCursor.value = ResizeCursor.ew
-      }
-
-      isResizing = true
-      isDragging = false // Resizing overrides dragging behaviors
-      startMouseX = e.touches[0].clientX
-      startMouseY = e.touches[0].clientY
-      startTop = boxTop.value
-      startLeft = boxLeft.value
-      startWidth = boxWidth.value
-      startHeight = boxHeight.value
-      window.addEventListener('touchmove', onTouchMove)
-      window.addEventListener('touchend', onTouchEnd)
+      clientX = e.touches[0].clientX
+      clientY = e.touches[0].clientY
     }
-  }
 
-  const onMouseMove = (e: MouseEvent) => {
+    let parentElSize: AbsoluteSize
+    if (parentEl && parentEl.value) {
+      parentElSize = new AbsoluteSize(parentEl.value.clientWidth, parentEl.value.clientHeight)
+    } else {
+      parentElSize = new AbsoluteSize(window.innerWidth, window.innerHeight)
+    }
+
+    const dx = ((clientX - startMouseX) / parentElSize.w) * 100
+    const dy = ((clientY - startMouseY) / parentElSize.h) * 100
+
     if (isDragging) {
-      const dx = ((e.clientX - startMouseX) / window.innerWidth) * 100
-      const dy = ((e.clientY - startMouseY) / window.innerHeight) * 100
-      boxTop.value = startTop + dy
-      boxLeft.value = startLeft + dx
+      currentPos.value.y = startPos.y + dy
+      currentPos.value.x = startPos.x + dx
     } else if (isResizing) {
-      const dx = ((e.clientX - startMouseX) / window.innerWidth) * 100
-      const dy = ((e.clientY - startMouseY) / window.innerHeight) * 100
       if (dragCorners.top) {
-        boxTop.value = startTop + dy
-        boxHeight.value = startHeight - dy
+        currentPos.value.y = startPos.y + dy
+        currentSize.value.h = startSize.h - dy
       }
       if (dragCorners.bottom) {
-        boxHeight.value = startHeight + dy
+        currentSize.value.h = startSize.h + dy
       }
       if (dragCorners.left) {
-        boxLeft.value = startLeft + dx
-        boxWidth.value = startWidth - dx
+        currentPos.value.x = startPos.x + dx
+        currentSize.value.w = startSize.w - dx
       }
       if (dragCorners.right) {
-        boxWidth.value = startWidth + dx
-      }
-    }
-  }
-
-  const onTouchMove = (e: TouchEvent) => {
-    if (isDragging) {
-      const dx = ((e.touches[0].clientX - startMouseX) / window.innerWidth) * 100
-      const dy = ((e.touches[0].clientY - startMouseY) / window.innerHeight) * 100
-      boxTop.value = startTop + dy
-      boxLeft.value = startLeft + dx
-    } else if (isResizing) {
-      const dx = ((e.touches[0].clientX - startMouseX) / window.innerWidth) * 100
-      const dy = ((e.touches[0].clientY - startMouseY) / window.innerHeight) * 100
-      if (dragCorners.top) {
-        boxTop.value = startTop + dy
-        boxHeight.value = startHeight - dy
-      }
-      if (dragCorners.bottom) {
-        boxHeight.value = startHeight + dy
-      }
-      if (dragCorners.left) {
-        boxLeft.value = startLeft + dx
-        boxWidth.value = startWidth - dx
-      }
-      if (dragCorners.right) {
-        boxWidth.value = startWidth + dx
+        currentSize.value.w = startSize.w + dx
       }
     }
   }
 
   const onMouseUp = () => {
+    if (isResizing && onResizeEnd) {
+      onResizeEnd()
+    }
+
     isDragging = false
     isResizing = false
-    resizeCursor.value = null
+    dragStyle.value.cursor = 'auto'
+    dragStyle.value.userSelect = 'auto'
     window.removeEventListener('mousemove', onMouseMove)
     window.removeEventListener('mouseup', onMouseUp)
+    window.removeEventListener('touchmove', onMouseMove)
+    window.removeEventListener('touchend', onMouseUp)
   }
 
-  const onTouchEnd = () => {
-    isDragging = false
-    isResizing = false
-    resizeCursor.value = null
-    window.removeEventListener('touchmove', onTouchMove)
-    window.removeEventListener('touchend', onTouchEnd)
+  const maximizeSize = (direction = ResizeDirection.All, lengthSeconds?: number) => {
+    if (direction === ResizeDirection.All) {
+      isMaximized.value = true
+
+      originalBoxDimensions.value = {
+        size: currentSize.value.clone(),
+        pos: currentPos.value.clone(),
+      }
+    }
+
+    if (direction & ResizeDirection.Left) {
+      currentSize.value.w += currentPos.value.x
+      currentPos.value.x = 0
+    }
+    if (direction & ResizeDirection.Right) {
+      currentSize.value.w += 100 - (currentPos.value.x + currentSize.value.w)
+    }
+    if (direction & ResizeDirection.Top) {
+      currentSize.value.h += currentPos.value.y
+      currentPos.value.y = 0
+    }
+    if (direction & ResizeDirection.Bottom) {
+      currentSize.value.h += 100 - (currentPos.value.y + currentSize.value.h)
+    }
+
+    if (lengthSeconds) {
+      dragStyle.value.transition = `
+      width ${lengthSeconds}s, 
+      height ${lengthSeconds}s, 
+      top ${lengthSeconds}s, 
+      left ${lengthSeconds}s`
+
+      setTimeout(() => {
+        dragStyle.value.transition = undefined
+        if (onResizeEnd) {
+          onResizeEnd()
+        }
+      }, lengthSeconds * 1000)
+    }
+
+    if (!lengthSeconds && onResizeEnd) {
+      onResizeEnd()
+    }
+  }
+
+  const restoreSize = (lengthSeconds?: number) => {
+    currentPos.value = originalBoxDimensions.value.pos.clone()
+    currentSize.value = originalBoxDimensions.value.size.clone()
+
+    if (lengthSeconds) {
+      dragStyle.value.transition = `
+      width ${lengthSeconds}s, 
+      height ${lengthSeconds}s, 
+      top ${lengthSeconds}s, 
+      left ${lengthSeconds}s`
+
+      setTimeout(() => {
+        dragStyle.value.transition = undefined
+        if (onResizeEnd) {
+          onResizeEnd()
+        }
+      }, lengthSeconds * 1000)
+    }
+
+    isMaximized.value = false
+
+    if (!lengthSeconds && onResizeEnd) {
+      onResizeEnd()
+    }
   }
 
   onMounted(() => {
@@ -241,11 +294,12 @@ export function useDraggableResizable(
   })
 
   return {
-    boxWidth,
-    boxHeight,
-    boxTop,
-    boxLeft,
-    resizeCursor,
+    currentSize,
+    currentPos,
+    dragStyle,
+    isMaximized,
+    maximizeSize,
+    restoreSize,
     onDragStart,
     onResizeStart,
   }

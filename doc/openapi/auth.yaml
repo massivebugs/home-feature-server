@@ -37,7 +37,7 @@ paths:
                 password:
                   type: string
                   description: must be between 8 to 72 characters, and contain a letter, number and a special character
-                  example: Somepassword12#
+                  example: test_password_123
               required:
                 - username
                 - password
@@ -74,7 +74,7 @@ paths:
                 password:
                   type: string
                   description: must be between 8 to 72 characters, and contain a letter, number and a special character
-                  example: Somepassword12#
+                  example: test_password_123
               required:
                 - username
                 - password
@@ -92,7 +92,7 @@ paths:
                     type: string
                     example: ""
   /api/v1/secure/auth:
-    post:
+    get:
       tags: 
         - v1
       operationId: secure/auth

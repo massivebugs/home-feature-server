@@ -3,6 +3,8 @@ module github.com/massivebugs/home-feature-server
 go 1.22.4
 
 require (
+	github.com/Rhymond/go-money v1.0.13
+	github.com/deckarep/golang-set/v2 v2.6.0
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwt/v5 v5.2.1

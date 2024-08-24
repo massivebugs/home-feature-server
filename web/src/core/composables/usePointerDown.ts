@@ -1,6 +1,6 @@
 import { type Ref } from 'vue'
-import { AbsolutePosition } from '../models/absolute_position'
-import { RelativePosition } from '../models/relative_position'
+import { AbsolutePosition } from '../models/absolutePosition'
+import { RelativePosition } from '../models/relativePosition'
 
 export function usePointerDown(el: Ref<HTMLElement | undefined>) {
   const absPosition = new AbsolutePosition(0, 0)

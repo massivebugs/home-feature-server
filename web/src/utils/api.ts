@@ -1,26 +1,52 @@
-import { camelize } from '@/core/utils/object'
-import axios from 'axios'
-import type { AccountingSummaryDto } from '../modules/budget_planner/models/dto'
+import axios, { AxiosError } from 'axios'
+
+export const isAPIError = (e: any) => {
+  return axios.isAxiosError(e)
+}
 
 const api = axios.create({
-  baseURL: 'http://localhost:8888/api/',
-  timeout: 1000,
+  baseURL: 'http://localhost:1323/api/',
+  timeout: 10000,
+  headers: {},
 })
+
+api.interceptors.request.use(
+  (config) => {
+    config.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
 
 api.interceptors.response.use(
   (res) => {
-    res.data = camelize(res.data.Data)
     return res
   },
-  (err) => {
+  (err: AxiosError) => {
+    if (err.response?.status === 401 && location.pathname !== '/login') {
+      window.location.replace('/login')
+    }
     return Promise.reject(err)
   },
 )
 
 export const APIEndpoints = {
-  v1: { accountingSummary: 'v1/accounting' },
+  v1: {
+    auth: 'v1/auth',
+    authToken: 'v1/auth/token',
+    secure: {
+      authUser: 'v1/secure/auth',
+      cashbunny: {
+        overview: 'v1/secure/cashbunny/overview',
+        currencies: 'v1/secure/cashbunny/currencies',
+        userPreferences: 'v1/secure/cashbunny/user_preferences',
+        accounts: 'v1/secure/cashbunny/accounts',
+        transactions: 'v1/secure/cashbunny/transactions',
+      },
+    },
+  },
 }
-
-export type V1AccountingSummaryResponse = AccountingSummaryDto
 
 export { api }

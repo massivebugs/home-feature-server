@@ -7,26 +7,22 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/massivebugs/home-feature-server/db/service/user"
-	"github.com/massivebugs/home-feature-server/db/service/user_password"
+	"github.com/massivebugs/home-feature-server/db/service/auth_repository"
 	"github.com/massivebugs/home-feature-server/internal/api"
 )
 
 type Auth struct {
-	db               *sql.DB
-	userRepo         user.Querier
-	userPasswordRepo user_password.Querier
+	db       *sql.DB
+	authRepo auth_repository.Querier
 }
 
 func NewAuth(
 	db *sql.DB,
-	userRepo user.Querier,
-	userPasswordRepo user_password.Querier,
+	authRepo auth_repository.Querier,
 ) *Auth {
 	return &Auth{
-		db:               db,
-		userRepo:         userRepo,
-		userPasswordRepo: userPasswordRepo,
+		db:       db,
+		authRepo: authRepo,
 	}
 }
 
@@ -35,19 +31,18 @@ func (s *Auth) CreateAuthUser(ctx context.Context, req *UserAuthRequestDTO) erro
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
 	// Check if user already exists
-	existingUser, err := s.userRepo.GetUserByName(ctx, s.db, req.Username)
-	if err != nil {
+	_, err = s.authRepo.GetUserByName(ctx, s.db, req.Username)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
-	}
-	if existingUser != nil {
+	} else if err == nil {
 		return api.NewAPIError(api.CodeBadRequest, errors.New("user already exists"))
 	}
 
-	defer tx.Rollback()
 	// Create new user
-	result, err := s.userRepo.CreateUser(ctx, tx, req.Username)
+	result, err := s.authRepo.CreateUser(ctx, tx, req.Username)
 	if err != nil {
 		return err
 	}
@@ -65,11 +60,11 @@ func (s *Auth) CreateAuthUser(ctx context.Context, req *UserAuthRequestDTO) erro
 	}
 
 	// Create user password
-	p := user_password.CreateUserPasswordParams{
+	p := auth_repository.CreateUserPasswordParams{
 		UserID:       uint32(id),
 		PasswordHash: hashedPassword,
 	}
-	_, err = s.userPasswordRepo.CreateUserPassword(ctx, tx, p)
+	_, err = s.authRepo.CreateUserPassword(ctx, tx, p)
 	if err != nil {
 		return err
 	}
@@ -79,7 +74,7 @@ func (s *Auth) CreateAuthUser(ctx context.Context, req *UserAuthRequestDTO) erro
 
 func (s *Auth) CreateJWTToken(ctx context.Context, jwtSecret string, req *UserAuthRequestDTO) (string, error) {
 	// Retrieve user
-	u, err := s.userRepo.GetUserByName(ctx, s.db, req.Username)
+	u, err := s.authRepo.GetUserByName(ctx, s.db, req.Username)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
 	} else if err != nil {
@@ -87,7 +82,7 @@ func (s *Auth) CreateJWTToken(ctx context.Context, jwtSecret string, req *UserAu
 	}
 
 	// Retrieve user password
-	up, err := s.userPasswordRepo.GetUserPasswordByUserID(ctx, s.db, u.ID)
+	up, err := s.authRepo.GetUserPasswordByUserID(ctx, s.db, u.ID)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
 	} else if err != nil {
@@ -113,7 +108,7 @@ func (s *Auth) CreateJWTToken(ctx context.Context, jwtSecret string, req *UserAu
 }
 
 func (s *Auth) GetAuthUser(ctx context.Context, jwtClaims *JWTClaims) (AuthUser, error) {
-	u, err := s.userRepo.GetUser(ctx, s.db, jwtClaims.UserID)
+	u, err := s.authRepo.GetUser(ctx, s.db, jwtClaims.UserID)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return AuthUser{}, api.NewAPIError(api.CodeForbidden, errors.New("user does not exist"))
 	} else if err != nil {

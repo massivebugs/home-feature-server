@@ -1,9 +1,15 @@
 export class Program {
+  id: string
+  name: string
+  icon: string
   component: Object
-  props: Object
+  componentProps: Object
 
-  constructor(component: Object, props: Object) {
+  constructor(id: string, name: string, icon: string, component: Object, componentProps: Object) {
+    this.id = id
+    this.name = name
+    this.icon = icon
     this.component = component
-    this.props = props
+    this.componentProps = componentProps
   }
 }

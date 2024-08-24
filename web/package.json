@@ -15,21 +15,29 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@fullcalendar/vue3": "^6.1.15",
     "axios": "^1.7.2",
-    "datatables.net-buttons": "^3.0.2",
+    "datatables.net-dt": "^2.1.0",
     "datatables.net-responsive": "^3.0.2",
+    "datatables.net-responsive-dt": "^3.0.2",
     "datatables.net-select": "^2.0.3",
+    "datatables.net-select-dt": "^2.0.3",
     "datatables.net-vue3": "^3.0.1",
+    "dayjs": "^1.11.12",
     "lodash": "^4.17.21",
     "modern-normalize": "^2.0.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.29",
     "vue-i18n": "^9.13.1",
-    "vue-router": "^4.3.3",
-    "xp.css": "^0.2.6"
+    "vue-router": "^4.3.3"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/jsdom": "^21.1.7",
     "@types/lodash": "^4.17.6",
