@@ -83,7 +83,7 @@ func (r *CreateTransactionRequestDTO) Validate() error {
 		validation.Field(
 			&r.TransactedAt,
 			validation.Required,
-			validation.Date(time.DateTime),
+			validation.Date(time.RFC3339Nano).Error("Must be a valid RFC3339Nano Date"),
 		),
 	)
 }

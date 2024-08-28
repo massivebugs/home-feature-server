@@ -255,7 +255,7 @@ const onClickToggleSize = () => {
 
 .hfs-window__contents {
   overflow: auto;
-  flex-grow: 1;
+  flex: 1;
 }
 
 .hfs-window__status-bar {

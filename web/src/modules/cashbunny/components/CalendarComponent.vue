@@ -1,5 +1,13 @@
 <template>
-  <FullCalendarComponent ref="fullCalendar" :options="calendarOptions" />
+  <div>
+    <FullCalendarComponent
+      :class="{
+        'hfs-calendar__small': small,
+      }"
+      ref="fullCalendar"
+      :options="calendarOptions"
+    />
+  </div>
 </template>
 
 <script lang="ts">
@@ -45,6 +53,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   tabs: CalendarTab[]
   height?: string
+  small?: boolean
 }>()
 
 const fullCalendar = ref()
@@ -73,7 +82,6 @@ const onSelect = (arg: DatesSetArg | DateSelectArg) => {
 }
 
 const calendarOptions: CalendarOptions = {
-  height: props.height,
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
   initialView: 'dayGridMonth',
   headerToolbar: {
@@ -117,43 +125,53 @@ onMounted(() => {
 @use '@/assets/colors';
 :deep() {
   user-select: none;
-}
 
-:deep(.fc-header-toolbar) {
-  flex-direction: column;
-  gap: 5px;
+  .fc {
+    height: 100%;
+  }
 
-  .fc-button {
-    padding: 0 0.4em;
-    font-size: 0.9em;
-    background-color: colors.$dark-grey;
-    text-transform: capitalize;
+  &.hfs-calendar__small .fc-header-toolbar {
+    flex-direction: column;
 
-    &.fc-button-active {
-      background-color: colors.$black;
+    .fc-button {
+      padding: 0 0.4em;
+      font-size: 0.9em;
+    }
+
+    .fc-toolbar-title {
+      font-size: 1em;
     }
   }
 
-  .fc-toolbar-title {
-    font-size: 1em;
-  }
-}
+  .fc-header-toolbar {
+    gap: 5px;
 
-:deep(.fc-daygrid-day) {
-  .fc-highlight {
-    background-color: colors.$high-opacity-viridian;
+    .fc-button {
+      background-color: colors.$dark-grey;
+      text-transform: capitalize;
+
+      &.fc-button-active {
+        background-color: colors.$black;
+      }
+    }
   }
 
-  &.fc-day-today {
-    background-color: colors.$high-opacity-peach;
-  }
+  .fc-daygrid-day {
+    .fc-highlight {
+      background-color: colors.$high-opacity-viridian;
+    }
 
-  .fc-daygrid-month-start {
-    font-size: 0.8em;
-    text-align: center;
-    width: 100%;
-    background-color: colors.$dark-grey;
-    color: colors.$white;
+    &.fc-day-today {
+      background-color: colors.$high-opacity-peach;
+    }
+
+    .fc-daygrid-month-start {
+      font-size: 0.8em;
+      text-align: center;
+      width: 100%;
+      background-color: colors.$dark-grey;
+      color: colors.$white;
+    }
   }
 }
 </style>

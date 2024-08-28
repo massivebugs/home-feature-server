@@ -213,11 +213,7 @@ func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Ti
 
 	accounts := make([]*Account, len(accountListData))
 	for idx, ad := range accountListData {
-		a, err := NewAccount(ad)
-		if err != nil {
-			return nil, err
-		}
-		accounts[idx] = a
+		accounts[idx] = NewAccount(ad)
 	}
 
 	transactionListData, err := s.cashbunnyRepo.ListTransactionsBetweenDates(
@@ -372,11 +368,7 @@ func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]*Account
 
 	accounts := make([]*Account, len(data))
 	for idx, d := range data {
-		a, err := NewAccount(d)
-		if err != nil {
-			return nil, err
-		}
-		accounts[idx] = a
+		accounts[idx] = NewAccount(d)
 	}
 
 	return accounts, nil
@@ -421,10 +413,7 @@ func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *C
 		return err
 	}
 
-	sa, err := NewAccount(saResult)
-	if err != nil {
-		return err
-	}
+	sa := NewAccount(saResult)
 
 	// Check if destination account belong to this user
 	daResult, err := s.cashbunnyRepo.GetAccountByID(ctx, s.db, cashbunny_repository.GetAccountByIDParams{
@@ -438,18 +427,13 @@ func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *C
 		return err
 	}
 
-	da, err := NewAccount(daResult)
-	if err != nil {
-		return err
+	da := NewAccount(daResult)
+
+	if sa.Balance.Currency().Code != req.Currency || da.Balance.Currency().Code != req.Currency {
+		return api.NewAPIError(api.CodeBadRequest, errors.New("currency does not match the currency of either account"))
 	}
 
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	transactedAt, err := time.Parse(time.DateTime, req.TransactedAt)
+	transactedAt, err := time.Parse(time.RFC3339Nano, req.TransactedAt)
 	if err != nil {
 		return err
 	}
@@ -481,6 +465,22 @@ func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *C
 		}
 		da.Balance = m
 	}
+
+	err = sa.Validate()
+	if err != nil {
+		return err
+	}
+
+	err = da.Validate()
+	if err != nil {
+		return err
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 
 	err = s.cashbunnyRepo.UpdateAccountBalance(ctx, tx, cashbunny_repository.UpdateAccountBalanceParams{
 		UserID:  userID,
@@ -547,15 +547,9 @@ func (s *Cashbunny) ListTransactions(ctx context.Context, userID uint32) ([]*Tra
 			return nil, err
 		}
 
-		sa, err := NewAccount(*srcAccountDa)
-		if err != nil {
-			return nil, err
-		}
+		sa := NewAccount(*srcAccountDa)
 
-		da, err := NewAccount(*destAccountDa)
-		if err != nil {
-			return nil, err
-		}
+		da := NewAccount(*destAccountDa)
 
 		a.SourceAccount = sa
 		a.DestinationAccount = da
@@ -584,10 +578,7 @@ func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transa
 		return err
 	}
 
-	sa, err := NewAccount(saResult)
-	if err != nil {
-		return err
-	}
+	sa := NewAccount(saResult)
 
 	// Check if destination account belong to this user
 	daResult, err := s.cashbunnyRepo.GetAccountByID(ctx, s.db, cashbunny_repository.GetAccountByIDParams{
@@ -598,16 +589,7 @@ func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transa
 		return err
 	}
 
-	da, err := NewAccount(daResult)
-	if err != nil {
-		return err
-	}
-
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	da := NewAccount(daResult)
 
 	if sa.Type == AccountTypeCredit {
 		m, err := sa.Balance.Subtract(money.NewFromFloat(trResult.Amount, trResult.Currency))
@@ -636,6 +618,22 @@ func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transa
 		}
 		da.Balance = m
 	}
+
+	err = sa.Validate()
+	if err != nil {
+		return err
+	}
+
+	err = da.Validate()
+	if err != nil {
+		return err
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 
 	err = s.cashbunnyRepo.UpdateAccountBalance(ctx, tx, cashbunny_repository.UpdateAccountBalanceParams{
 		UserID:  userID,

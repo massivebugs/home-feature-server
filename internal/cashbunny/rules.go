@@ -9,7 +9,7 @@ import (
 func IsMoneyNotNegative(m *money.Money) func(v interface{}) error {
 	return func(v interface{}) error {
 		if m.IsNegative() {
-			return errors.New("money amount must not be negative")
+			return errors.New("accounts/transactions cannot have negative balance/amount")
 		}
 		return nil
 	}

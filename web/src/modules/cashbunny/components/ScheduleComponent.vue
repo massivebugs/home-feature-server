@@ -1,31 +1,38 @@
 <template>
   <div class="cashbunny__schedule-container">
-    <div class="cashbunny__schedule__controls">
-      <div></div>
-    </div>
+    <CalendarComponent
+      class="cashbunny__schedule-calendar"
+      :tabs="[CalendarTabs.year, CalendarTabs.month, CalendarTabs.week, CalendarTabs.day]"
+      @loaded="onCalendarLoaded"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import dayjs, { Dayjs } from 'dayjs'
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useCashbunnyStore } from '../stores'
+import { inject, onBeforeUnmount } from 'vue'
+import type { ToggleWindowResizeHandlerFunc } from '@/core/components/WindowComponent.vue'
+import CalendarComponent, { type CalendarLoadedEvent, CalendarTabs } from './CalendarComponent.vue'
 
-const { t } = useI18n()
-const store = useCashbunnyStore()
+let calendarResizeFunc: () => void
+const addWindowResizeListener = inject('addWindowResizeListener') as ToggleWindowResizeHandlerFunc
+const removeWindowResizeListener = inject(
+  'removeWindowResizeListener',
+) as ToggleWindowResizeHandlerFunc
+
+const onCalendarLoaded = (payload: CalendarLoadedEvent) => {
+  calendarResizeFunc = payload.resizeFunc
+  addWindowResizeListener(calendarResizeFunc)
+}
+
+onBeforeUnmount(() => {
+  removeWindowResizeListener(calendarResizeFunc)
+})
 </script>
 
 <style scoped lang="scss">
 @use '@/assets/colors';
 
-.cashbunny__schedule__controls {
-  display: flex;
-  justify-content: space-between;
-}
-
-.cashbunny__schedule__calendar {
-  border-radius: 0;
-  width: 100%;
+.cashbunny__schedule-calendar {
+  height: 500px;
 }
 </style>

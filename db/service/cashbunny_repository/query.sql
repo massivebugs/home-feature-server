@@ -69,6 +69,22 @@ WHERE
 ORDER BY
   order_index;
 
+-- name: ListAccountsWithRelatedTransactions :many
+SELECT DISTINCT
+  cashbunny_accounts.*
+FROM
+  cashbunny_accounts
+  JOIN cashbunny_transactions ON cashbunny_accounts.id = cashbunny_transactions.src_account_id
+  OR cashbunny_accounts.id = cashbunny_transactions.dest_account_id
+WHERE
+  (
+    cashbunny_transactions.src_account_id = sqlc.arg (id)
+    OR cashbunny_transactions.dest_account_id = sqlc.arg (id)
+  )
+  AND cashbunny_transactions.user_id = sqlc.arg (user_id)
+  AND cashbunny_accounts.user_id = sqlc.arg (user_id)
+  AND cashbunny_accounts.id <> sqlc.arg (id);
+
 -- name: GetAccountByID :one
 SELECT
   *

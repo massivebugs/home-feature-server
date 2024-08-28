@@ -47,8 +47,9 @@
         @touchstart.stop="onRightSectionResizeStart"
       >
         <CalendarComponent
+          class="cashbunny__overview__calendar"
           :tabs="[CalendarTabs.year, CalendarTabs.month]"
-          height="400px"
+          :small="true"
           @loaded="onCalendarLoaded"
           @select-dates="onCalendarSelectDates"
         />
@@ -167,5 +168,9 @@ onBeforeUnmount(() => {
   font-weight: 700;
   font-size: 1.1em;
   margin-bottom: 0.3em;
+}
+
+.cashbunny__overview__calendar {
+  height: 400px;
 }
 </style>

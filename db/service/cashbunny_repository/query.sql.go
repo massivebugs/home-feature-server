@@ -406,6 +406,70 @@ func (q *Queries) ListAccountsByIDs(ctx context.Context, db DBTX, arg ListAccoun
 	return items, nil
 }
 
+const listAccountsWithRelatedTransactions = `-- name: ListAccountsWithRelatedTransactions :many
+SELECT DISTINCT
+  cashbunny_accounts.id, cashbunny_accounts.user_id, cashbunny_accounts.category, cashbunny_accounts.name, cashbunny_accounts.description, cashbunny_accounts.balance, cashbunny_accounts.currency, cashbunny_accounts.type, cashbunny_accounts.order_index, cashbunny_accounts.created_at, cashbunny_accounts.updated_at, cashbunny_accounts.deleted_at
+FROM
+  cashbunny_accounts
+  JOIN cashbunny_transactions ON cashbunny_accounts.id = cashbunny_transactions.src_account_id
+  OR cashbunny_accounts.id = cashbunny_transactions.dest_account_id
+WHERE
+  (
+    cashbunny_transactions.src_account_id = ?
+    OR cashbunny_transactions.dest_account_id = ?
+  )
+  AND cashbunny_transactions.user_id = ?
+  AND cashbunny_accounts.user_id = ?
+  AND cashbunny_accounts.id <> ?
+`
+
+type ListAccountsWithRelatedTransactionsParams struct {
+	ID     uint32
+	UserID uint32
+}
+
+func (q *Queries) ListAccountsWithRelatedTransactions(ctx context.Context, db DBTX, arg ListAccountsWithRelatedTransactionsParams) ([]*CashbunnyAccount, error) {
+	rows, err := db.QueryContext(ctx, listAccountsWithRelatedTransactions,
+		arg.ID,
+		arg.ID,
+		arg.UserID,
+		arg.UserID,
+		arg.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*CashbunnyAccount{}
+	for rows.Next() {
+		var i CashbunnyAccount
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Category,
+			&i.Name,
+			&i.Description,
+			&i.Balance,
+			&i.Currency,
+			&i.Type,
+			&i.OrderIndex,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransactions = `-- name: ListTransactions :many
 SELECT
   id, user_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at

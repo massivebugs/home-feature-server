@@ -46,10 +46,9 @@
         :error-message="validationErrors.destination_account_id"
         v-model:value="formValues.destinationAccountId"
       />
-      <TextInputComponent
+      <DateTimeInputComponent
         name="transactedAt"
         :label="t('cashbunny.transactionTransactedAt')"
-        :placeholder="t('cashbunny.transactionTransactedAtPlaceholder')"
         :error-message="validationErrors.transacted_at"
         v-model="formValues.transactedAt"
       />
@@ -59,8 +58,10 @@
 
 <script setup lang="ts">
 import { AxiosError } from 'axios'
+import dayjs from 'dayjs'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import DateTimeInputComponent from '@/core/components/DateTimeInputComponent.vue'
 import DialogComponent from '@/core/components/DialogComponent.vue'
 import NumberInputComponent from '@/core/components/NumberInputComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
@@ -77,7 +78,7 @@ export type TransactionFormValues = {
   currency: string
   sourceAccountId: number
   destinationAccountId: number
-  transactedAt: string
+  transactedAt: Date
 }
 
 const emit = defineEmits<{
@@ -101,7 +102,7 @@ const formValues = ref<TransactionFormValues>(
         currency: props.transaction.currency,
         sourceAccountId: props.transaction.source_account_id,
         destinationAccountId: props.transaction.destination_account_id,
-        transactedAt: props.transaction.transacted_at,
+        transactedAt: new Date(props.transaction.transacted_at),
       }
     : {
         description: '',
@@ -109,7 +110,7 @@ const formValues = ref<TransactionFormValues>(
         currency: 'CAD',
         sourceAccountId: 0,
         destinationAccountId: 0,
-        transactedAt: '',
+        transactedAt: new Date(),
       },
 )
 const errorMessage = ref<string>('')
@@ -128,7 +129,7 @@ const onClickSubmit = async () => {
     ? store.updateTransaction(props.transaction.id, {
         description: formValues.value.description,
         amount: formValues.value.amount,
-        transacted_at: formValues.value.transactedAt,
+        transacted_at: dayjs(formValues.value.transactedAt).toISOString(),
       })
     : store.createTransaction({
         description: formValues.value.description,
@@ -136,7 +137,7 @@ const onClickSubmit = async () => {
         currency: formValues.value.currency,
         source_account_id: formValues.value.sourceAccountId,
         destination_account_id: formValues.value.destinationAccountId,
-        transacted_at: formValues.value.transactedAt.toString(),
+        transacted_at: dayjs(formValues.value.transactedAt).toISOString(),
       })
 
   await request

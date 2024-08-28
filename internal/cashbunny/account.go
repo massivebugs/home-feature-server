@@ -46,7 +46,7 @@ type Account struct {
 	OutgoingTransactions []*Transaction
 }
 
-func NewAccount(account *cashbunny_repository.CashbunnyAccount) (*Account, error) {
+func NewAccount(account *cashbunny_repository.CashbunnyAccount) *Account {
 	a := &Account{
 		ID:          account.ID,
 		Category:    AccountCategory(account.Category),
@@ -58,10 +58,10 @@ func NewAccount(account *cashbunny_repository.CashbunnyAccount) (*Account, error
 		UpdatedAt:   account.UpdatedAt,
 	}
 
-	return a, a.validate()
+	return a
 }
 
-func (a *Account) validate() error {
+func (a *Account) Validate() error {
 	return validation.ValidateStruct(
 		a,
 		validation.Field(
