@@ -18,7 +18,7 @@ export const getPrograms = (t: ComposerTranslation): Program[] => [
   new Program(
     PORTFOLIO_PROGRAM_ID,
     t('portfolio.name'),
-    '/images/file_icon.svg',
+    '/images/portfolio_icon_normal.png',
     PortfolioView,
     {},
   ),

@@ -28,7 +28,10 @@
           borderRadius: isMaximized ? 0 : undefined,
         }"
       >
-        <div class="hfs-window__title-bar__title">{{ title }}</div>
+        <div class="hfs-window__title-bar__title">
+          <img v-if="titleBarIcon" class="hfs-window__title-bar__icon" :src="titleBarIcon" />
+          {{ title }}
+        </div>
         <div class="hfs-window__title-bar__controls">
           <button v-if="controls?.minimize" aria-label="Minimize">
             <CollapseIconComponent />
@@ -93,6 +96,7 @@ const props = defineProps<{
   statusBarInfo?: string[]
   resizable?: boolean
   static?: boolean
+  titleBarIcon?: string
 }>()
 
 const store = useCoreStore()
@@ -218,6 +222,13 @@ const onClickToggleSize = () => {
   pointer-events: none;
   user-select: none;
   margin-top: 0.2em;
+  display: flex;
+}
+
+.hfs-window__title-bar__icon {
+  height: 1em;
+  max-width: 1em;
+  margin-right: 0.3em;
 }
 
 .hfs-window__title-bar__controls {

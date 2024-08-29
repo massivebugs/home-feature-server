@@ -12,7 +12,6 @@
     :statusBarInfo="['Something goes here...', 'Something else here']"
     :resizable="true"
     @click-close="emit('clickClose')"
-    v-slot="slotProps"
   >
     <div class="cashbunny-window__container">
       <TabGroupComponent
@@ -86,7 +85,7 @@
         </template>
         <template #accounts>
           <div class="cashbunny__tab-body">
-            <AccountDataTableComponent v-if="slotProps.windowEl" :window-el="slotProps.windowEl" />
+            <AccountDataTableComponent />
           </div>
         </template>
         <template #transactions_label>
@@ -99,10 +98,7 @@
         </template>
         <template #transactions>
           <div class="cashbunny__tab-body">
-            <TransactionDataTableComponent
-              v-if="slotProps.windowEl"
-              :window-el="slotProps.windowEl"
-            />
+            <TransactionDataTableComponent />
           </div>
         </template>
       </TabGroupComponent>

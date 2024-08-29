@@ -76,9 +76,13 @@ export const i18nOptions: I18nOptions = {
       portfolio: {
         name: 'Portfolio',
         title: "Portfolio - {'@'}massivebugs",
+        exit: 'Exit',
         help: 'Help',
+        contact: 'Contact me',
         about: 'About Portfolio',
         githubLinkTitle: 'Check out my GitHub',
+        sendContactMessage: 'Send message',
+        aboutDialogTitle: 'About',
       },
     },
     ja: {
@@ -151,9 +155,13 @@ export const i18nOptions: I18nOptions = {
       portfolio: {
         name: 'ポートフォリオ',
         title: "ポートフォリオ - {'@'}massivebugs",
+        exit: '閉じる',
         help: 'ヘルプ',
+        contact: '開発者に連絡する',
         about: 'ポートフォリオについて',
         githubLinkTitle: 'GitHubを見てみる',
+        sendContactMessage: 'メッセージを送信する',
+        aboutDialogTitle: "ポートフォリオ - {'@'}massivebugs について",
       },
     },
   },
