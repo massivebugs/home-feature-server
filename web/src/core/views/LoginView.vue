@@ -1,6 +1,7 @@
 <template>
   <div class="login">
     <LoginDialogComponent
+      v-if="showLoginDialog"
       :size="new RelativeSize(25, 30)"
       :disabled="isSubmitting"
       :loading-spinner="isSubmitting && SpinnerTypes.dots"
@@ -27,6 +28,7 @@ import type { ValidationErrors } from '../utils/types'
 
 const store = useCoreStore()
 const router = useRouter()
+const showLoginDialog = ref<boolean>(false)
 const isSubmitting = ref<boolean>(false)
 const errorMessage = ref<string>('')
 const validationErrors = ref<ValidationErrors<CreateAuthTokenDto>>({
@@ -60,10 +62,14 @@ const onSubmit = async (payload: LoginSubmitEvent) => {
 }
 
 const checkAuth = async () => {
-  const res = await store.getAuthUser()
-  if (res.data.error === null) {
-    store.authUser = new AuthUser(res.data.data)
-    router.push({ name: 'desktop' })
+  try {
+    const res = await store.getAuthUser()
+    if (res.data.error === null) {
+      store.authUser = new AuthUser(res.data.data)
+      router.push({ name: 'desktop' })
+    }
+  } catch (_) {
+    showLoginDialog.value = true
   }
 }
 </script>
