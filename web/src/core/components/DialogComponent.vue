@@ -3,23 +3,38 @@
     :pos="pos"
     :size="size"
     :title="title"
-    :controls="{
-      close: true,
-      minimize: false,
-      maximize: false,
-    }"
+    :controls="
+      controls ?? {
+        close: true,
+        minimize: false,
+        maximize: false,
+      }
+    "
     :resizable="resizable"
     @click-close="emit('clickClose')"
   >
-    <div class="container">
+    <template #title>
+      <slot name="title" />
+    </template>
+    <div class="hfs-dialog__container">
       <slot />
-      <div class="button-container">
-        <button v-if="buttons.success" @click="emit('clickSuccess')">
+      <div class="hfs-dialog__buttons">
+        <ButtonComponent
+          v-if="buttons.success"
+          :disabled="disabled"
+          :loading-spinner="loadingSpinner"
+          @click="emit('clickSuccess')"
+        >
           {{ typeof buttons.success === 'string' ? buttons.success : t('ui.success') }}
-        </button>
-        <button v-if="buttons.cancel" @click="emit('clickCancel')">
+        </ButtonComponent>
+        <ButtonComponent
+          v-if="buttons.cancel"
+          :disabled="disabled"
+          :loading-spinner="loadingSpinner"
+          @click="emit('clickCancel')"
+        >
           {{ typeof buttons.cancel === 'string' ? buttons.cancel : t('ui.cancel') }}
-        </button>
+        </ButtonComponent>
       </div>
     </div>
   </WindowComponent>
@@ -29,8 +44,13 @@
 import { inject, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RelativePosition } from '../models/relativePosition'
-import type { RelativeSize } from '../models/relativeSize'
-import WindowComponent, { type BlockWindowFunc } from './WindowComponent.vue'
+import { RelativeSize } from '../models/relativeSize'
+import ButtonComponent from './ButtonComponent.vue'
+import type { SpinnerType } from './SpinnerIconComponent.vue'
+import WindowComponent, {
+  type BlockWindowFunc,
+  type WindowTitleBarControls,
+} from './WindowComponent.vue'
 
 const emit = defineEmits<{
   (e: 'clickSuccess'): void
@@ -41,13 +61,16 @@ const emit = defineEmits<{
 const props = defineProps<{
   pos: RelativePosition
   size: RelativeSize
-  title: string
+  title?: string
   blocking?: boolean
   buttons: {
     success: boolean | string
     cancel: boolean | string
   }
+  disabled?: boolean
+  controls?: WindowTitleBarControls
   resizable?: boolean
+  loadingSpinner?: SpinnerType
 }>()
 
 const { t } = useI18n()
@@ -71,7 +94,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 @use '@/assets/colors';
 
-.container {
+.hfs-dialog__container {
   height: 100%;
   padding: 1em;
   display: flex;
@@ -82,7 +105,7 @@ onUnmounted(() => {
   background-color: colors.$white;
 }
 
-.button-container {
+.hfs-dialog__buttons {
   width: 80%;
   display: flex;
   flex-wrap: wrap;

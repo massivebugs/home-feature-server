@@ -1,5 +1,6 @@
 @use 'variables';
 @use 'colors';
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@200..800&display=swap');
 
 html,
 body {
@@ -24,6 +25,9 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;
-  font-family: Helvetica, sans-serif;
+  font-family: 'Assistant', Helvetica, sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
   color: colors.$black;
 }

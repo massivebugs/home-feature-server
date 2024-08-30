@@ -2,11 +2,15 @@ export type APIResponse<T> = {
   error: null | {
     code: string
     message: string
-    validation_errors: {[key: string]:string}
+    validation_errors: { [key: string]: string }
   }
   data: T
 }
 
+export type CreateAuthTokenDto = {
+  username: string
+  password: string
+}
 export type AuthTokenDto = string
 export type AuthTokenResponse = APIResponse<AuthTokenDto>
 

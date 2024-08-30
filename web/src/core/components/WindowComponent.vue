@@ -31,6 +31,7 @@
         <div class="hfs-window__title-bar__title">
           <img v-if="titleBarIcon" class="hfs-window__title-bar__icon" :src="titleBarIcon" />
           {{ title }}
+          <slot name="title" />
         </div>
         <div class="hfs-window__title-bar__controls">
           <button v-if="controls?.minimize" aria-label="Minimize">
@@ -75,6 +76,11 @@ import WindowToolbarComponent, { type WindowToolbarRow } from './WindowToolbarCo
 export type WindowUID = string
 export type BlockWindowFunc = (block: boolean) => void
 export type ToggleWindowResizeHandlerFunc = (handlerFunc: () => void) => void
+export type WindowTitleBarControls = {
+  minimize: boolean
+  maximize: boolean
+  close: boolean
+}
 
 const TOGGLE_SIZE_SECONDS = 0.3
 
@@ -87,11 +93,7 @@ const props = defineProps<{
   size: RelativeSize
   title?: string
   hideTitlebar?: boolean
-  controls?: {
-    minimize: boolean
-    maximize: boolean
-    close: boolean
-  }
+  controls?: WindowTitleBarControls
   toolbar?: WindowToolbarRow[]
   statusBarInfo?: string[]
   resizable?: boolean
@@ -221,8 +223,10 @@ const onClickToggleSize = () => {
   text-overflow: ellipsis;
   pointer-events: none;
   user-select: none;
-  margin-top: 0.2em;
+  padding-top: 0.2em;
   display: flex;
+  align-items: center;
+  gap: 0.3em;
 }
 
 .hfs-window__title-bar__icon {
