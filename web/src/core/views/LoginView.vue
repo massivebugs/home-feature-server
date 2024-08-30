@@ -1,11 +1,11 @@
 <template>
-  <div class="login">
+  <div class="hfs-login-view">
     <LoginDialogComponent
+      pos="center"
+      class="hfs-login-view__login-dialog"
       v-if="showLoginDialog"
-      :size="new RelativeSize(25, 30)"
       :disabled="isSubmitting"
       :loading-spinner="isSubmitting && SpinnerTypes.dots"
-      :pos="new RelativePosition(39, 36)"
       :error-message="errorMessage"
       :validation-errors="validationErrors"
       @submit="onSubmit"
@@ -21,8 +21,6 @@ import LoginDialogComponent, { type LoginSubmitEvent } from '../components/Login
 import { SpinnerTypes } from '../components/SpinnerIconComponent.vue'
 import { AuthUser } from '../models/auth_user'
 import type { APIResponse, CreateAuthTokenDto } from '../models/dto'
-import { RelativePosition } from '../models/relativePosition'
-import { RelativeSize } from '../models/relativeSize'
 import { useCoreStore } from '../stores'
 import type { ValidationErrors } from '../utils/types'
 
@@ -75,8 +73,12 @@ const checkAuth = async () => {
 </script>
 
 <style scoped lang="scss">
-.login {
+.hfs-login-view {
   width: 100vw;
   height: 100vh;
+}
+
+.hfs-login-view__login-dialog {
+  min-width: 350px;
 }
 </style>

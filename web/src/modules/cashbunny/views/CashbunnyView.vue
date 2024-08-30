@@ -1,8 +1,7 @@
 <template>
   <ErrorDialogComponent
     v-if="errorTitle && errorMessage"
-    :pos="new RelativePosition(40, 40)"
-    :size="new RelativeSize(20, 20)"
+    pos="center"
     :title="errorTitle"
     :message="errorMessage"
   />
@@ -18,8 +17,6 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ErrorDialogComponent from '@/core/components/ErrorDialogComponent.vue'
-import { RelativePosition } from '@/core/models/relativePosition'
-import { RelativeSize } from '@/core/models/relativeSize'
 import { useCoreStore } from '@/core/stores'
 import CashbunnySplashComponent from '../components/CashbunnySplashComponent.vue'
 import CashbunnyWindowComponent from '../components/CashbunnyWindowComponent.vue'

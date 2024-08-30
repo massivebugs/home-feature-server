@@ -32,8 +32,8 @@ const emit = defineEmits<{
 }>()
 
 defineProps<{
-  pos: RelativePosition
-  size: RelativeSize
+  pos?: RelativePosition | 'center'
+  size?: RelativeSize
 }>()
 
 const { t } = useI18n()

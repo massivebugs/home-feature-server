@@ -9,13 +9,15 @@
     ref="windowEl"
     @mousedown="onWindowMouseDown"
     @touchstart="onWindowMouseDown"
-    :style="{
-      width: currentSize.w + '%',
-      height: currentSize.h + '%',
-      top: currentPos.y + '%',
-      left: currentPos.x + '%',
-      ...dragStyle,
-    }"
+    :style="
+      isDragResizeReady && {
+        width: currentSize.w + '%',
+        height: currentSize.h + '%',
+        top: currentPos.y + '%',
+        left: currentPos.x + '%',
+        ...dragStyle,
+      }
+    "
   >
     <div class="hfs-window__header">
       <div
@@ -89,8 +91,8 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps<{
-  pos?: RelativePosition
-  size: RelativeSize
+  pos?: RelativePosition | 'center'
+  size?: RelativeSize
   title?: string
   hideTitlebar?: boolean
   controls?: WindowTitleBarControls
@@ -106,6 +108,7 @@ const windowEl = ref<HTMLElement>()
 const isBlocked = ref<boolean>(false)
 const windowIdx = store.processes.size
 const {
+  isDragResizeReady,
   currentSize,
   currentPos,
   dragStyle,
@@ -115,10 +118,13 @@ const {
   onDragStart,
   onResizeStart,
 } = useDragResize(
-  props.pos ??
-    new RelativePosition(windowIdx + 50 - props.size.w / 2, windowIdx + 50 - props.size.h / 2),
-  props.size,
   windowEl,
+  props.pos
+    ? props.pos
+    : !props.pos && props.size
+      ? new RelativePosition(windowIdx + 50 - props.size.w / 2, windowIdx + 50 - props.size.h / 2)
+      : undefined,
+  props.size,
   undefined,
   undefined,
   () => {

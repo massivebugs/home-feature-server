@@ -1,7 +1,6 @@
 <template>
   <DialogComponent
     :pos="pos"
-    :size="size"
     :buttons="{
       success: t('login.login'),
       cancel: false,
@@ -12,7 +11,7 @@
       maximize: false,
     }"
     :blocking="false"
-    :resizable="false"
+    :resizable="true"
     :disabled="disabled"
     @click-success="onClickSuccess"
   >
@@ -50,7 +49,6 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DialogComponent from '@/core/components/DialogComponent.vue'
 import type { RelativePosition } from '@/core/models/relativePosition'
-import type { RelativeSize } from '@/core/models/relativeSize'
 import type { CreateAuthTokenDto } from '../models/dto'
 import type { ValidationErrors } from '../utils/types'
 import LockIconComponent from './LockIconComponent.vue'
@@ -66,8 +64,7 @@ const emit = defineEmits<{
 }>()
 
 defineProps<{
-  pos: RelativePosition
-  size: RelativeSize
+  pos?: RelativePosition | 'center'
   disabled?: boolean
   errorMessage?: string
   validationErrors?: ValidationErrors<CreateAuthTokenDto>
@@ -87,7 +84,7 @@ const onClickSuccess = () => {
 
 .hfs-login-dialog__container {
   width: 100%;
-  height: 100%;
+  margin-bottom: 1em;
   display: flex;
   flex-direction: column;
   gap: 0.5em;

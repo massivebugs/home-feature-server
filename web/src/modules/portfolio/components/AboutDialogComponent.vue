@@ -21,8 +21,8 @@ import type { RelativePosition } from '@/core/models/relativePosition'
 import type { RelativeSize } from '@/core/models/relativeSize'
 
 defineProps<{
-  pos: RelativePosition
-  size: RelativeSize
+  pos?: RelativePosition | 'center'
+  size?: RelativeSize
 }>()
 
 const { t } = useI18n()

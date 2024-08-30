@@ -56,7 +56,7 @@ export const i18nOptions: I18nOptions = {
         accountUpdatedAt: 'Updated at',
         accountDeleteConfirmTitle: 'Confirm deletion',
         accountDeleteConfirmMessage:
-          'Deleting this account will affect your transactions and balances. Would you really like to delete this account? | Deleting this account will affect your transactions and balances. Would you really like to delete these ({count}) accounts?',
+          'Deleting this account will affect your transactions and balances. \nWould you really like to delete this account? | Deleting this account will affect your transactions and balances. Would you really like to delete these ({count}) accounts?',
         createTransaction: 'Create Transaction',
         editTransaction: 'Edit Transaction',
         transactionDescription: 'Description',
@@ -135,7 +135,7 @@ export const i18nOptions: I18nOptions = {
         accountUpdatedAt: '更新日',
         accountDeleteConfirmTitle: '本当にこのアカウントを削除しますか？',
         accountDeleteConfirmMessage:
-          'アカウントを削除すると金額情報や取引記録も影響されます。本当に削除しますか？',
+          'アカウントを削除すると金額情報や\n取引記録も影響されます。\n本当に削除しますか？',
         createTransaction: '取引を作成',
         editTransaction: '取引を修正',
         transactionDescription: '説明',

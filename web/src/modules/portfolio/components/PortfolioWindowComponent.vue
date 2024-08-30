@@ -90,15 +90,13 @@
     </div>
     <ContactFormDialogComponent
       v-if="showContactFormDialog"
-      :pos="new RelativePosition(40, 40)"
-      :size="new RelativeSize(20, 20)"
+      pos="center"
       @submit="onClickSuccessContactFormDialog"
       @click-close="onClickCloseContactFormDialog"
     />
     <AboutDialogComponent
       v-if="showAboutDialog"
-      :pos="new RelativePosition(40, 40)"
-      :size="new RelativeSize(20, 20)"
+      pos="center"
       @click-close="onClickCloseAboutDialog"
     />
   </WindowComponent>
