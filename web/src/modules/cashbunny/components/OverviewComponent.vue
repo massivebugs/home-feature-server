@@ -95,9 +95,9 @@ const {
   onResizeStart: onRightSectionResizeStart,
   dragStyle,
 } = useDragResize(
+  rightSection,
   new RelativePosition(0, 0),
   new RelativeSize(30, 0),
-  rightSection,
   overviewContainer,
   {
     resize: {

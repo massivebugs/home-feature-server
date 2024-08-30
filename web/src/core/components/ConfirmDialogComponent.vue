@@ -19,8 +19,8 @@ import type { RelativeSize } from '../models/relativeSize'
 import DialogComponent from './DialogComponent.vue'
 
 defineProps<{
-  pos: RelativePosition
-  size: RelativeSize
+  pos?: RelativePosition | 'center'
+  size?: RelativeSize
   title: string
   message: string
   blocking?: boolean
@@ -31,5 +31,7 @@ defineProps<{
 .message {
   text-align: center;
   margin: 0;
+  padding-bottom: 2em;
+  white-space: pre-line;
 }
 </style>

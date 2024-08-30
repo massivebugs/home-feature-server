@@ -15,16 +15,14 @@
       @click-success="onSuccessConfirmDeleteDialog"
       @click-close="onCloseConfirmDeleteDialog"
       @click-cancel="onCloseConfirmDeleteDialog"
-      :pos="new RelativePosition(40, 40)"
-      :size="new RelativeSize(20, 20)"
+      pos="center"
       :title="t('cashbunny.transactionDeleteConfirmTitle')"
       :message="t('cashbunny.transactionDeleteConfirmMessage', rowsToDelete.length)"
       :blocking="true"
     />
     <TransactionFormDialogComponent
       v-if="isCreate || rowToEdit"
-      :pos="new RelativePosition(25, 25)"
-      :size="new RelativeSize(50, 50)"
+      pos="center"
       :title="t('cashbunny.addTransaction')"
       :transaction="clickedData ?? undefined"
       @success="onTransactionFormSuccess"
@@ -47,8 +45,6 @@ import DataTableComponent, {
   type DataTableRowDeleteEvent,
   type DataTableRowEditEvent,
 } from '@/core/components/DataTableComponent.vue'
-import { RelativePosition } from '@/core/models/relativePosition'
-import { RelativeSize } from '@/core/models/relativeSize'
 import type { TransactionDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 import TransactionFormDialogComponent from './TransactionFormDialogComponent.vue'

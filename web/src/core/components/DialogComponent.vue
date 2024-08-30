@@ -59,8 +59,8 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps<{
-  pos: RelativePosition
-  size: RelativeSize
+  pos?: RelativePosition | 'center'
+  size?: RelativeSize
   title?: string
   blocking?: boolean
   buttons: {

@@ -1,6 +1,7 @@
 import { type CSSProperties, type Ref, onMounted, onUnmounted, ref } from 'vue'
+import { AbsolutePosition } from '../models/absolutePosition'
 import { AbsoluteSize } from '../models/absoluteSize'
-import type { RelativePosition } from '../models/relativePosition'
+import { RelativePosition } from '../models/relativePosition'
 import { RelativeSize } from '../models/relativeSize'
 
 const ResizeCursor = {
@@ -28,9 +29,9 @@ export type DragResizeOptions = {
 const DRAG_CORNER_OFFSET_PX = 5
 
 export function useDragResize(
-  initialPos: RelativePosition,
-  initialSize: RelativeSize,
-  el?: Ref<HTMLElement | undefined>,
+  el: Ref<HTMLElement | undefined>,
+  initialPos?: RelativePosition | 'center',
+  initialSize?: RelativeSize,
   parentEl?: Ref<HTMLElement | undefined>,
   options: DragResizeOptions = {
     resize: {
@@ -40,12 +41,13 @@ export function useDragResize(
   onResizeEnd?: () => void,
 ) {
   // Drag states
+  const isDragResizeReady = ref<boolean>(false)
   let isDragging = false
   let isResizing = false
   let startMouseX = 0
   let startMouseY = 0
-  let startSize = initialSize.clone()
-  let startPos = initialPos.clone()
+  let startSize = new RelativeSize(0, 0)
+  let startPos = new RelativePosition(0, 0)
   const dragCorners = {
     top: false,
     bottom: false,
@@ -53,19 +55,34 @@ export function useDragResize(
     right: false,
   }
   const originalBoxDimensions = ref({
-    size: initialSize.clone(),
-    pos: initialPos.clone(),
+    size: startSize.clone(),
+    pos: startPos.clone(),
   })
   const isMaximized = ref<boolean>(false)
 
   // Result
-  const currentSize = ref(initialSize.clone())
-  const currentPos = ref(initialPos.clone())
+  const currentSize = ref(startSize.clone())
+  const currentPos = ref(startPos.clone())
   const dragStyle = ref<CSSProperties>({
     cursor: 'auto',
     userSelect: 'auto',
   })
 
+  const getParentElDimensions = () => {
+    let parentElSize: AbsoluteSize
+    let parentElPos: AbsolutePosition
+
+    if (parentEl && parentEl.value) {
+      const rect = parentEl.value.getBoundingClientRect()
+      parentElSize = new AbsoluteSize(rect.width, rect.height)
+      parentElPos = new AbsolutePosition(rect.left, rect.top)
+    } else {
+      parentElSize = new AbsoluteSize(window.innerWidth, window.innerHeight)
+      parentElPos = new AbsolutePosition(0, 0)
+    }
+
+    return { size: parentElSize, pos: parentElPos }
+  }
   const onDragStart = (e: MouseEvent | TouchEvent) => {
     if (e.type === 'mousedown') {
       e = e as MouseEvent
@@ -87,7 +104,7 @@ export function useDragResize(
   }
 
   const onResizeStart = (e: MouseEvent | TouchEvent) => {
-    const target = el?.value ? el.value : (e.target as HTMLElement)
+    const target = el.value ? el.value : (e.target as HTMLElement)
     let clientX: number
     let clientY: number
     if (e.type === 'mousedown') {
@@ -168,15 +185,10 @@ export function useDragResize(
       clientY = e.touches[0].clientY
     }
 
-    let parentElSize: AbsoluteSize
-    if (parentEl && parentEl.value) {
-      parentElSize = new AbsoluteSize(parentEl.value.clientWidth, parentEl.value.clientHeight)
-    } else {
-      parentElSize = new AbsoluteSize(window.innerWidth, window.innerHeight)
-    }
+    const parentElDimensions = getParentElDimensions()
 
-    const dx = ((clientX - startMouseX) / parentElSize.w) * 100
-    const dy = ((clientY - startMouseY) / parentElSize.h) * 100
+    const dx = ((clientX - startMouseX) / parentElDimensions.size.w) * 100
+    const dy = ((clientY - startMouseY) / parentElDimensions.size.h) * 100
 
     if (isDragging) {
       currentPos.value.y = startPos.y + dy
@@ -286,7 +298,44 @@ export function useDragResize(
   }
 
   onMounted(() => {
+    // Initialize size by using either arguments, or calculating from element's defined size/pos
+    if (el.value) {
+      const elRect = el.value?.getBoundingClientRect()
+      const parentElDimensions = getParentElDimensions()
+
+      startSize =
+        initialSize ??
+        new RelativeSize(
+          (elRect.width / parentElDimensions.size.w) * 100,
+          (elRect.height / parentElDimensions.size.h) * 100,
+        )
+
+      if (initialPos instanceof RelativePosition) {
+        startPos = initialPos
+      } else if (initialPos === 'center') {
+        startPos = new RelativePosition(
+          ((parentElDimensions.size.w / 2 - elRect.width / 2) / parentElDimensions.size.w) * 100,
+          ((parentElDimensions.size.h / 2 - elRect.height / 2) / parentElDimensions.size.h) * 100,
+        )
+      } else {
+        startPos = new RelativePosition(
+          ((elRect.left - parentElDimensions.pos.x) / parentElDimensions.size.w) * 100,
+          ((elRect.top - parentElDimensions.pos.y) / parentElDimensions.size.h) * 100,
+        )
+      }
+
+      // TODO - DRY
+      originalBoxDimensions.value = {
+        size: startSize.clone(),
+        pos: startPos.clone(),
+      }
+
+      currentSize.value = startSize.clone()
+      currentPos.value = startPos.clone()
+    }
+
     window.addEventListener('mouseup', onMouseUp)
+    isDragResizeReady.value = true
   })
 
   onUnmounted(() => {
@@ -294,6 +343,7 @@ export function useDragResize(
   })
 
   return {
+    isDragResizeReady,
     currentSize,
     currentPos,
     dragStyle,

@@ -86,8 +86,8 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps<{
-  pos: RelativePosition
-  size: RelativeSize
+  pos?: RelativePosition | 'center'
+  size?: RelativeSize
   title: string
   transaction?: TransactionDto
 }>()
@@ -163,11 +163,11 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .container {
-  width: 100%;
-  height: 100%;
+  min-width: 300px;
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+  margin-bottom: 1em;
 }
 
 .title {
