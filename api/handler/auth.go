@@ -28,7 +28,7 @@ func NewAuthHandler(cfg *config.Config, db *sql.DB) *AuthHandler {
 }
 
 func (h *AuthHandler) CreateUser(ctx echo.Context) *api.APIResponse {
-	req := new(auth.UserAuthRequestDTO)
+	req := new(auth.CreateUserRequestDTO)
 
 	if err := ctx.Bind(req); err != nil {
 		return api.NewAPIResponse(err, "")

@@ -26,7 +26,7 @@ func NewAuth(
 	}
 }
 
-func (s *Auth) CreateAuthUser(ctx context.Context, req *UserAuthRequestDTO) error {
+func (s *Auth) CreateAuthUser(ctx context.Context, req *CreateUserRequestDTO) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
