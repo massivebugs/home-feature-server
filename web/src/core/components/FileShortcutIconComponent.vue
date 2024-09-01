@@ -1,7 +1,14 @@
 <template>
   <div class="file-shortcut-icon" :class="{ 'file-shortcut-icon_selected': selected }">
-    <img class="file-shortcut-icon__img" :src="option.icon" :alt="option.name + ' icon'" />
-    <div class="file-shortcut-icon__name">
+    <slot name="icon">
+      <div
+        class="file-shortcut-icon__img"
+        :style="{
+          backgroundImage: `url(${option.icon})`,
+        }"
+      />
+    </slot>
+    <div v-if="option.name && !hideName" class="file-shortcut-icon__name">
       {{ option.name }}
     </div>
   </div>
@@ -13,11 +20,15 @@ import type { ContextMenuOptions } from './ContextMenuComponent.vue'
 export type FileShortcutIconOption = {
   icon: string
   name: string
-  onDblClick: () => void
+  onDblClick?: () => void
   contextMenuOptions?: ContextMenuOptions
 }
 
-defineProps<{ option: FileShortcutIconOption; selected: boolean }>()
+defineProps<{
+  option: FileShortcutIconOption
+  selected?: boolean
+  hideName?: boolean
+}>()
 </script>
 
 <style scoped lang="scss">
@@ -28,9 +39,10 @@ defineProps<{ option: FileShortcutIconOption; selected: boolean }>()
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  justify-content: center;
   gap: 2px;
   user-select: none;
-  width: 6em;
+  height: 6em;
   text-align: center;
 }
 
@@ -43,9 +55,14 @@ defineProps<{ option: FileShortcutIconOption; selected: boolean }>()
 
 .file-shortcut-icon__name {
   padding: 0.2em;
+  max-width: 100%;
 }
 
 .file-shortcut-icon__img {
-  width: 5em;
+  flex: 1;
+  width: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 </style>

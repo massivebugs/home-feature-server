@@ -23,12 +23,9 @@
       <div
         v-if="!hideTitlebar"
         class="hfs-window__title-bar"
-        @mousedown="!isMaximized ? onDragStart($event) : undefined"
-        @touchstart="!isMaximized ? onDragStart($event) : undefined"
+        @mousedown="onDragStart($event)"
+        @touchstart="onDragStart($event)"
         @dblclick.self="onClickToggleSize"
-        :style="{
-          borderRadius: isMaximized ? 0 : undefined,
-        }"
       >
         <div class="hfs-window__title-bar__title">
           <img v-if="titleBarIcon" class="hfs-window__title-bar__icon" :src="titleBarIcon" />
@@ -36,7 +33,7 @@
           <slot name="title" />
         </div>
         <div class="hfs-window__title-bar__controls">
-          <button v-if="controls?.minimize" aria-label="Minimize">
+          <button v-if="controls?.minimize" @click="emit('clickMinimize')" aria-label="Minimize">
             <CollapseIconComponent />
           </button>
           <button
@@ -88,6 +85,7 @@ const TOGGLE_SIZE_SECONDS = 0.3
 
 const emit = defineEmits<{
   (e: 'clickClose'): void
+  (e: 'clickMinimize'): void
 }>()
 
 const props = defineProps<{
@@ -152,7 +150,7 @@ provide('blockParentWindow', blockWindow)
 
 const onWindowMouseDown = (e: MouseEvent | TouchEvent) => {
   if (props.resizable && !isBlocked.value) {
-    isMaximized.value ? undefined : onResizeStart(e)
+    onResizeStart(e)
   }
 }
 

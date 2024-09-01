@@ -1,5 +1,6 @@
 <template>
   <DialogComponent
+    class="hfs-login-dialog"
     :pos="pos"
     :fit-content="true"
     :buttons="{
@@ -82,6 +83,15 @@ const onClickSuccess = () => {
 
 <style scoped lang="scss">
 @use '@/assets/colors';
+.hfs-login-dialog {
+  transition: box-shadow 0.2s;
+}
+
+.hfs-login-dialog:hover {
+  box-shadow: 1px 1px 25px 2px rgba(0, 0, 0, 0.4) !important;
+  -webkit-box-shadow: 1px 1px 25px 2px rgba(0, 0, 0, 0.4) !important;
+  -moz-box-shadow: 1px 1px 25px 2px rgba(0, 0, 0, 0.4) !important;
+}
 
 .hfs-login-dialog__container {
   width: 100%;

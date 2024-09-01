@@ -1,16 +1,36 @@
 <template>
-  <main ref="desktopViewEl">
+  <main ref="desktopViewEl" class="hfs-desktop">
     <h1 class="hfs-desktop__logo">massivebugs.github.io</h1>
-    <FileListComponent class="file-list" :files="fileOptions" />
+    <FileListComponent class="hfs-desktop__file-list" :files="fileOptions" />
+    <div class="hfs-desktop__taskbar-container">
+      <TaskbarComponent
+        class="hfs-desktop__taskbar"
+        :running-processes="store.processesByInsertOrder"
+        :selected-process-id="store.topLevelProcessId"
+        @click-log-out="onClickLogOut"
+        @select-process="onSelectProcess"
+      />
+    </div>
     <template v-for="process in store.processes.values()" :key="process.id">
       <component
+        v-show="!hiddenWindowPIDs.has(process.id)"
         :is="process.program.component"
         v-bind="process.program.componentProps"
-        @mousedown="setTopLevelProcess(process.id)"
+        @mousedown="store.setTopLevelProcess(process.id)"
         @click-close="onClickWindowClose(process.id)"
         @click-cancel="onClickWindowCancel(process.id)"
+        @click-minimize="onClickWindowMinimize(process.id)"
       />
     </template>
+    <ConfirmDialogComponent
+      v-if="showLogOutConfirmDialog"
+      @click-success="onSuccessConfirmLogOutDialog"
+      @click-close="onCloseConfirmLogOutDialog"
+      @click-cancel="onCloseConfirmLogOutDialog"
+      pos="center"
+      :title="t('desktop.logOutDialogTitle')"
+      :message="t('desktop.logOutConfirmMessage')"
+    />
     <ContextMenuComponent
       ref="contextMenuEl"
       v-if="contextMenuOptions"
@@ -23,12 +43,17 @@
 <script setup lang="ts">
 import { uniqueId } from 'lodash'
 import { onMounted, onUnmounted, provide, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
+import ConfirmDialogComponent from '../components/ConfirmDialogComponent.vue'
 import ContextMenuComponent, {
   type ContextMenuOptions,
 } from '../components/ContextMenuComponent.vue'
 import FileListComponent from '../components/FileListComponent.vue'
 import type { FileShortcutIconOption } from '../components/FileShortcutIconComponent.vue'
+import TaskbarComponent, {
+  type TaskbarSelectProcessEvent,
+} from '../components/TaskbarComponent.vue'
 import type { AbsolutePosition } from '../models/absolutePosition'
 import { Process } from '../models/process'
 import { RelativePosition } from '../models/relativePosition'
@@ -40,21 +65,17 @@ export type SetContextMenu = (
   pos?: AbsolutePosition,
 ) => void
 
+const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const store = useCoreStore()
 const desktopViewEl = ref()
 const contextMenuEl = ref<HTMLElement>()
 const contextMenuOptions = ref<ContextMenuOptions | null>(null)
 const contextMenuPos = ref<RelativePosition>(new RelativePosition(0, 0))
 const fileOptions = ref<FileShortcutIconOption[]>([])
-
-const setTopLevelProcess = (processId: string) => {
-  const process = store.processes.get(processId)
-  if (process) {
-    store.removeProcess(processId)
-    store.addProcess(process)
-  }
-}
+const showLogOutConfirmDialog = ref<boolean>(false)
+const hiddenWindowPIDs = ref<Set<string>>(new Set())
 
 const setContextMenu: SetContextMenu = (
   options: ContextMenuOptions | null,
@@ -79,6 +100,33 @@ const onClickWindowClose = (processId: string) => {
 
 const onClickWindowCancel = (processId: string) => {
   store.removeProcess(processId)
+}
+
+const onClickWindowMinimize = (processId: string) => {
+  hiddenWindowPIDs.value.add(processId)
+  store.topLevelProcessId = null
+}
+
+const onClickLogOut = () => {
+  showLogOutConfirmDialog.value = true
+}
+
+const onSuccessConfirmLogOutDialog = async () => {
+  showLogOutConfirmDialog.value = false
+
+  // Remove API token and reload login page
+  localStorage.removeItem('token')
+  await router.push({ name: 'login' })
+  router.go(0)
+}
+
+const onCloseConfirmLogOutDialog = () => {
+  showLogOutConfirmDialog.value = false
+}
+
+const onSelectProcess = (payload: TaskbarSelectProcessEvent) => {
+  hiddenWindowPIDs.value.delete(payload.processId)
+  store.setTopLevelProcess(payload.processId)
 }
 
 onMounted(() => {
@@ -117,11 +165,17 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 @use '@/assets/colors';
+$taskbarHeight: 5em;
+$taskbarBottom: 1em;
 
-main {
+.hfs-desktop {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: calc(100% - $taskbarHeight - $taskbarBottom - 0.2em);
+
+  > .hfs-window:not(.hfs-dialog) {
+    position: absolute !important;
+  }
 }
 
 .hfs-desktop__logo {
@@ -137,8 +191,24 @@ main {
   pointer-events: none;
 }
 
-.file-list {
+.hfs-desktop__file-list {
   height: 100%;
   width: 100%;
+}
+
+// Make height shorter on smaller screens!
+.hfs-desktop__taskbar-container {
+  position: fixed;
+  bottom: $taskbarBottom;
+  left: 5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  width: 90%;
+
+  > .hfs-desktop__taskbar {
+    height: $taskbarHeight;
+  }
 }
 </style>

@@ -170,6 +170,8 @@ export function useDragResize(
       window.addEventListener('touchmove', onMouseMove)
       window.addEventListener('touchend', onMouseUp)
     }
+
+    isMaximized.value = false
   }
 
   const onMouseMove = (e: MouseEvent | TouchEvent) => {

@@ -2,6 +2,7 @@
   <div class="file-list__container" @click.self="onContainerClick">
     <FileShortcutIconComponent
       v-for="file in files"
+      class="file-list__shortcut-icon"
       :key="file.name"
       :selected="selectedFiles.includes(file.name)"
       :option="file"
@@ -36,7 +37,9 @@ const onFileClick = (file: FileShortcutIconOption) => {
 
 const onFileDblClick = (file: FileShortcutIconOption) => {
   selectedFiles.value = []
-  file.onDblClick()
+  if (file.onDblClick) {
+    file.onDblClick()
+  }
 }
 </script>
 
@@ -47,5 +50,9 @@ const onFileDblClick = (file: FileShortcutIconOption) => {
   flex-direction: column;
   flex-wrap: wrap;
   gap: 1em;
+}
+
+.file-list__shortcut-icon {
+  width: 5em;
 }
 </style>

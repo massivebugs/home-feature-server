@@ -1,6 +1,6 @@
 <template>
   <div class="input-group">
-    <label v-if="label" :for="name">{{ label }}{{ model }}</label>
+    <label v-if="label" :for="name">{{ label }}</label>
     <input type="datetime-local" :name="name" v-model="model" :list="`${name}_suggestions`" />
     <datalist v-if="list" :id="`${name}_suggestions`">
       <option v-for="value in list" :key="value" :value="value"></option>
