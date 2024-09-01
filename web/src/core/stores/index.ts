@@ -14,6 +14,8 @@ export const useCoreStore = defineStore('core', () => {
   const authUser = ref<AuthUser | null>(null)
   const processes = shallowRef<Map<string, Process>>(new Map())
   const programs = shallowRef<Map<string, Program>>(new Map())
+  const topLevelProcessId = ref<string | null>(null)
+  const processesByInsertOrder = shallowRef<Map<string, Process>>(new Map())
 
   const getAuthUser = () => api.get<AuthUserResponse>(APIEndpoints.v1.secure.authUser)
 
@@ -22,11 +24,29 @@ export const useCoreStore = defineStore('core', () => {
 
   const addProcess = (process: Process) => {
     processes.value.set(process.id, process)
+    processesByInsertOrder.value.set(process.id, process)
+    topLevelProcessId.value = process.id
     triggerRef(processes)
+    triggerRef(processesByInsertOrder)
   }
 
   const removeProcess = (processId: string) => {
     processes.value.delete(processId)
+    processesByInsertOrder.value.delete(processId)
+    if (processId === topLevelProcessId.value) {
+      topLevelProcessId.value = null
+    }
+    triggerRef(processes)
+    triggerRef(processesByInsertOrder)
+  }
+
+  const setTopLevelProcess = (processId: string) => {
+    const process = processes.value.get(processId)
+    if (process) {
+      processes.value.delete(processId)
+      processes.value.set(process.id, process)
+    }
+    topLevelProcessId.value = processId
     triggerRef(processes)
   }
 
@@ -45,10 +65,13 @@ export const useCoreStore = defineStore('core', () => {
     authUser,
     processes,
     programs,
+    topLevelProcessId,
+    processesByInsertOrder,
     getAuthUser,
     getAuthToken,
     addProcess,
     removeProcess,
+    setTopLevelProcess,
     addProgram,
     findProgramProcesses,
   }

@@ -1,5 +1,6 @@
 <template>
   <WindowComponent
+    class="hfs-dialog"
     :pos="pos"
     :size="size"
     :title="title"
@@ -22,6 +23,7 @@
       <div class="hfs-dialog__buttons">
         <ButtonComponent
           v-if="buttons.success"
+          type="success"
           :disabled="disabled"
           :loading-spinner="loadingSpinner"
           @click="emit('clickSuccess')"

@@ -23,7 +23,7 @@
     <TransactionFormDialogComponent
       v-if="isCreate || rowToEdit"
       pos="center"
-      :title="t('cashbunny.addTransaction')"
+      :title="t('cashbunny.createTransaction')"
       :transaction="clickedData ?? undefined"
       @success="onTransactionFormSuccess"
       @click-cancel="onTransactionFormCancel"

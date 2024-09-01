@@ -58,6 +58,7 @@ const value = defineModel()
   border-radius: 5px;
   padding: 0.5em 0.3em;
   border: 1px solid colors.$light-grey;
+  transition: box-shadow 0.2s;
 
   &:focus:not(:disabled):not(.hfs-input-group_has-error) {
     outline: none;

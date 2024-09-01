@@ -13,10 +13,21 @@ export const i18nOptions: I18nOptions = {
         title: 'Log into @:app.name',
         login: 'Login',
       },
+      desktop: {
+        logOutDialogTitle: 'Log out',
+        logOutConfirmMessage: 'Are you sure you want to log out?',
+      },
       home: 'Home',
       ui: {
         success: 'Ok',
         cancel: 'Cancel',
+      },
+      systemSettings: {
+        name: 'System Settings',
+        file: 'File',
+        exit: 'Exit',
+        help: 'Help',
+        about: 'About Massivebugs Systems',
       },
       cashbunny: {
         name: 'Cashbunny',
@@ -93,10 +104,21 @@ export const i18nOptions: I18nOptions = {
         title: '@:app.name にログインする',
         login: 'ログイン',
       },
+      desktop: {
+        logOutDialogTitle: 'ログアウト',
+        logOutConfirmMessage: '本当にログアウトしますか？',
+      },
       home: 'ホーム',
       ui: {
         success: 'Ok',
         cancel: 'キャンセル',
+      },
+      systemSettings: {
+        name: 'システム設定',
+        file: 'ファイル',
+        exit: '閉じる',
+        help: 'ヘルプ',
+        about: 'massivebugsシステムについて',
       },
       cashbunny: {
         name: 'Cashbunny',
