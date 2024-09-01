@@ -11,8 +11,8 @@
     @touchstart="onWindowMouseDown"
     :style="
       isDragResizeReady && {
-        width: currentSize.w + '%',
-        height: currentSize.h + '%',
+        width: fitContent ? undefined : currentSize.w + '%',
+        height: fitContent ? undefined : currentSize.h + '%',
         top: currentPos.y + '%',
         left: currentPos.x + '%',
         ...dragStyle,
@@ -93,6 +93,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   pos?: RelativePosition | 'center'
   size?: RelativeSize
+  fitContent?: boolean
   title?: string
   hideTitlebar?: boolean
   controls?: WindowTitleBarControls
