@@ -1,10 +1,6 @@
 <template>
   <div class="hfs-taskbar">
-    <LogOutIconComponent
-      class="hfs-taskbar__log-out-icon"
-      stroke="#1f1f1f"
-      @click="emit('clickLogOut')"
-    />
+    <LogOutIconComponent class="hfs-taskbar__log-out-icon" @click="emit('clickLogOut')" />
     <FileShortcutIconComponent
       v-for="process in runningProcesses.values()"
       class="hfs-taskbar__file-icon"
@@ -58,6 +54,11 @@ defineProps<{
   height: 4em;
   width: 4em;
   transition: transform 1s;
+  stroke: colors.$black;
+
+  &:hover {
+    stroke: desaturate(colors.$red-cmyk, 20);
+  }
 }
 
 .hfs-taskbar__log-out-icon,
