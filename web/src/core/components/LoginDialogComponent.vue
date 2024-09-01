@@ -1,6 +1,7 @@
 <template>
   <DialogComponent
     :pos="pos"
+    :fit-content="true"
     :buttons="{
       success: t('login.login'),
       cancel: false,
@@ -11,7 +12,7 @@
       maximize: false,
     }"
     :blocking="false"
-    :resizable="true"
+    :resizable="false"
     :disabled="disabled"
     @click-success="onClickSuccess"
   >

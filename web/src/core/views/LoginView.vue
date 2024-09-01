@@ -51,7 +51,7 @@ const onSubmit = async (payload: LoginSubmitEvent) => {
       if (error.code === AxiosError.ERR_BAD_REQUEST) {
         const res = error.response?.data as APIResponse<null>
         errorMessage.value = res.error?.message || ''
-        validationErrors.value = { ...validationErrors.value, ...res.error?.validation_errors }
+        validationErrors.value = { username: '', password: '', ...res.error?.validation_errors }
       }
     }
   } finally {

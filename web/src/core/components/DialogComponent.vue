@@ -11,6 +11,7 @@
       }
     "
     :resizable="resizable"
+    :fit-content="fitContent"
     @click-close="emit('clickClose')"
   >
     <template #title>
@@ -61,6 +62,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   pos?: RelativePosition | 'center'
   size?: RelativeSize
+  fitContent?: boolean
   title?: string
   blocking?: boolean
   buttons: {
