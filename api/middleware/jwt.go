@@ -1,4 +1,4 @@
-package config
+package middleware
 
 import (
 	"github.com/golang-jwt/jwt/v5"
@@ -8,13 +8,26 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/auth"
 )
 
-func GetEchoJWTMiddleware(cfg *config.Config) echo.MiddlewareFunc {
+func NewJWTMiddleware(cfg *config.Config) echo.MiddlewareFunc {
 	return echojwt.WithConfig(
 		echojwt.Config{
 			NewClaimsFunc: func(c echo.Context) jwt.Claims {
 				return new(auth.JWTClaims)
 			},
-			SigningKey: []byte(cfg.JWTSecret),
+			SigningKey:  []byte(cfg.AuthJWTSecret),
+			TokenLookup: "header:Authorization:Bearer ,cookie:" + cfg.AuthJWTCookieName,
+		},
+	)
+}
+
+func NewJWTRefreshMiddleware(cfg *config.Config) echo.MiddlewareFunc {
+	return echojwt.WithConfig(
+		echojwt.Config{
+			NewClaimsFunc: func(c echo.Context) jwt.Claims {
+				return new(auth.JWTClaims)
+			},
+			SigningKey:  []byte(cfg.RefreshJWTSecret),
+			TokenLookup: "header:Authorization:Bearer ,cookie:" + cfg.RefreshJWTCookieName,
 		},
 	)
 }

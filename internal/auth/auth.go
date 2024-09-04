@@ -72,39 +72,128 @@ func (s *Auth) CreateAuthUser(ctx context.Context, req *CreateUserRequestDTO) er
 	return tx.Commit()
 }
 
-func (s *Auth) CreateJWTToken(ctx context.Context, jwtSecret string, req *UserAuthRequestDTO) (string, error) {
+func (s *Auth) CreateJWTToken(
+	ctx context.Context,
+	now time.Time,
+	jwtSigningMethod *jwt.SigningMethodHMAC,
+	jwtSecret string,
+	jwtExpireSeconds int,
+	refreshJwtSigningMethod *jwt.SigningMethodHMAC,
+	refreshJwtSecret string,
+	refreshJwtExpireSeconds int,
+	req *UserAuthRequestDTO,
+) (string, string, error) {
 	// Retrieve user
 	u, err := s.authRepo.GetUserByName(ctx, s.db, req.Username)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
+		return "", "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
 	} else if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	// Retrieve user password
 	up, err := s.authRepo.GetUserPasswordByUserID(ctx, s.db, u.ID)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
+		return "", "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
 	} else if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	// Check if hash matches
 	err = CheckPasswordHash(up.PasswordHash, req.Password)
 	if err != nil {
-		return "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
+		return "", "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
+	}
+
+	// TODO: Generate and store refresh token value in database and in the JWT claim!
+	tokenID := GenerateRandomString(50)
+
+	// Set custom claims
+	tokenBuilder := NewJWTBuilder(now, jwtExpireSeconds, JWTCustomClaims{UserID: u.ID})
+	refreshTokenBuilder := NewJWTBuilder(now, refreshJwtExpireSeconds, JWTCustomClaims{UserID: u.ID, TokenID: tokenID})
+
+	// Generate encoded token and send it as response.
+	tokenStr, err := tokenBuilder.CreateAndSignToken(jwtSigningMethod, jwtSecret)
+	if err != nil {
+		return "", "", err
+	}
+	refreshTokenStr, err := refreshTokenBuilder.CreateAndSignToken(refreshJwtSigningMethod, refreshJwtSecret)
+	if err != nil {
+		return "", "", err
+	}
+
+	_, err = s.authRepo.CreateUserRefreshToken(
+		ctx,
+		s.db,
+		auth_repository.CreateUserRefreshTokenParams{
+			UserID: u.ID,
+			Value:  tokenID,
+			ExpiresAt: sql.NullTime{
+				Time:  refreshTokenBuilder.claims.ExpiresAt.Time,
+				Valid: true,
+			},
+		})
+	if err != nil {
+		return "", "", err
+	}
+
+	return tokenStr, refreshTokenStr, nil
+}
+
+func (s *Auth) RefreshJWTToken(
+	ctx context.Context,
+	now time.Time,
+	jwtSigningMethod *jwt.SigningMethodHMAC,
+	jwtSecret string,
+	jwtExpireSeconds int,
+	refreshJwtSigningMethod *jwt.SigningMethodHMAC,
+	refreshJwtSecret string,
+	refreshJwtExpireSeconds int,
+	claims *JWTClaims,
+) (string, string, error) {
+	urt, err := s.authRepo.GetUserRefreshTokenByValue(
+		ctx,
+		s.db,
+		auth_repository.GetUserRefreshTokenByValueParams{
+			UserID: claims.UserID,
+			Value:  claims.TokenID,
+		},
+	)
+
+	// If the token doesn't exist, this means this token id(value) has been invalidated
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return "", "", api.NewAPIError(api.CodeUnauthorized, errors.New("token is invalid"))
+	} else if err != nil {
+		return "", "", err
 	}
 
 	// Set custom claims
-	jb := NewJWTBuilder(time.Now(), 72, u.ID)
+	tokenBuilder := NewJWTBuilder(now, jwtExpireSeconds, JWTCustomClaims{UserID: claims.UserID})
+	refreshTokenBuilder := NewJWTBuilder(now, refreshJwtExpireSeconds, JWTCustomClaims{UserID: claims.UserID, TokenID: urt.Value})
 
 	// Generate encoded token and send it as response.
-	tokenStr, err := jb.CreateAndSignToken(jwt.SigningMethodHS256, jwtSecret)
+	tokenStr, err := tokenBuilder.CreateAndSignToken(jwtSigningMethod, jwtSecret)
 	if err != nil {
-		return "", err
+		return "", "", err
+	}
+	refreshTokenStr, err := refreshTokenBuilder.CreateAndSignToken(refreshJwtSigningMethod, refreshJwtSecret)
+	if err != nil {
+		return "", "", err
 	}
 
-	return tokenStr, nil
+	// Update refresh token expiry time
+	err = s.authRepo.UpdateUserRefreshTokenExpiresAt(ctx, s.db, auth_repository.UpdateUserRefreshTokenExpiresAtParams{
+		ID: urt.ID,
+		ExpiresAt: sql.NullTime{
+			Time:  refreshTokenBuilder.claims.ExpiresAt.Time,
+			Valid: true,
+		},
+	})
+	if err != nil {
+		return "", "", err
+	}
+
+	return tokenStr, refreshTokenStr, nil
 }
 
 func (s *Auth) GetAuthUser(ctx context.Context, jwtClaims *JWTClaims) (AuthUser, error) {

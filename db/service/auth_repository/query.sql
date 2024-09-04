@@ -60,3 +60,33 @@ SET
   password_hash = ?
 WHERE
   id = ?;
+
+-- name: CreateUserRefreshToken :execresult
+INSERT INTO
+  user_refresh_tokens (user_id, value, expires_at)
+VALUES
+  (?, ?, ?);
+
+-- name: GetUserRefreshTokenByValue :one
+SELECT
+  *
+FROM
+  user_refresh_tokens
+WHERE
+  user_id = ?
+  AND value = ?
+LIMIT
+  1;
+
+-- name: UpdateUserRefreshTokenExpiresAt :exec
+UPDATE user_refresh_tokens
+SET
+  expires_at = ?
+WHERE
+  id = ?;
+
+-- name: DeleteUserRefreshToken :exec
+DELETE FROM user_refresh_tokens
+WHERE
+  user_id = ?
+  AND value = ?;

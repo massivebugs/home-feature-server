@@ -25,3 +25,12 @@ type UserPassword struct {
 	UpdatedAt    time.Time
 	DeletedAt    sql.NullTime
 }
+
+type UserRefreshToken struct {
+	ID        uint32
+	UserID    uint32
+	Value     string
+	ExpiresAt sql.NullTime
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}

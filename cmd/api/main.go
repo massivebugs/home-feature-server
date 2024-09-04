@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/massivebugs/home-feature-server/api/config"
-	apiMiddleware "github.com/massivebugs/home-feature-server/api/middleware"
+	api_middleware "github.com/massivebugs/home-feature-server/api/middleware"
 	"github.com/massivebugs/home-feature-server/api/route"
 	"github.com/massivebugs/home-feature-server/internal/api"
 )
@@ -36,14 +36,17 @@ func main() {
 	e.Validator = &api.RequestValidator{}
 
 	fmt.Println("Attaching middlewares...")
+
+	apiMiddleware := api_middleware.NewAPIMiddleware(cfg)
+
+	// Globally applied middleware
+	// Route based middlewares can be applied at RegisterRoutes()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	// TODO: Switch CORS settings on local and production
-	e.Use(middleware.CORS())
+	e.Use(apiMiddleware.CORS)
 
 	fmt.Println("Registering routes...")
-	jwtMiddleware := apiMiddleware.GetEchoJWTMiddleware(cfg)
-	route.RegisterRoutes(e, cfg, jwtMiddleware, db)
+	route.RegisterRoutes(e, cfg, apiMiddleware, db)
 
-	e.Logger.Fatal(e.Start(":" + cfg.APIPort))
+	e.Logger.Fatal(e.StartTLS(":"+cfg.APIPort, cfg.TLSCertificate, cfg.TLSKey))
 }

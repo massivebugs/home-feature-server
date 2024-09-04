@@ -17,10 +17,9 @@ import (
 func main() {
 	// Parse command line flags
 	var isReset bool
-	flag.BoolVar(&isReset, "reset", false, "Rolls back everything, and migrates everything if this is provided")
-	flag.Parse()
-
 	var isRollback bool
+
+	flag.BoolVar(&isReset, "reset", false, "Rolls back everything, and migrates everything if this is provided")
 	flag.BoolVar(&isRollback, "rollback", false, "Rolls back a step if this is provided")
 	flag.Parse()
 
