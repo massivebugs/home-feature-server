@@ -1,32 +1,37 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 
 export const isAPIError = (e: any) => {
   return axios.isAxiosError(e)
 }
 
 const api = axios.create({
-  baseURL: 'http://localhost:1323/api/',
+  baseURL: 'https://localhost:1323/api/',
   timeout: 10000,
-  headers: {},
+  withCredentials: true,
 })
-
-api.interceptors.request.use(
-  (config) => {
-    config.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  },
-)
 
 api.interceptors.response.use(
   (res) => {
     return res
   },
-  (err: AxiosError) => {
+  async (err: AxiosError) => {
     if (err.response?.status === 401 && location.pathname !== '/login') {
-      window.location.replace('/login')
+      try {
+        // If a token has expired, try refreshing it first
+        const refreshRes = await api.post(APIEndpoints.v1.authRefresh, null, {
+          validateStatus: null,
+        })
+
+        if (refreshRes.status === 401) {
+          throw new Error('Refresh token is either invalid or expired')
+        }
+
+        // Retry original request
+        return api.request(err.config as AxiosRequestConfig)
+      } catch (refreshErr) {
+        // Refresh token is invalid
+        window.location.replace('/login')
+      }
     }
     return Promise.reject(err)
   },
@@ -36,6 +41,7 @@ export const APIEndpoints = {
   v1: {
     auth: 'v1/auth',
     authToken: 'v1/auth/token',
+    authRefresh: 'v1/auth/refresh',
     secure: {
       authUser: 'v1/secure/auth',
       cashbunny: {

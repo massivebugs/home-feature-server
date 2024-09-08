@@ -21,3 +21,15 @@ func NewAuthUserResponseDTO(au auth.AuthUser) AuthUserResponseDTO {
 		CreatedAt:  au.CreatedAt,
 	}
 }
+
+type CreateJWTTokenResponseDTO struct {
+	Token        string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+func NewCreateJWTTokenResponseDTO(token string, refreshToken string) CreateJWTTokenResponseDTO {
+	return CreateJWTTokenResponseDTO{
+		Token:        token,
+		RefreshToken: refreshToken,
+	}
+}
