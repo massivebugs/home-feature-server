@@ -4,23 +4,34 @@ This project is a personal server tailored to meet various personal needs.
 
 The main idea is to create a api server+frontend with a Desktop like UI to manage household budgets, control homemade robots, and more.
 
-It is very much a work in progress and development is non-linear (quite messy too)!!!
+This is a work in progress, and development is not a very straightforward process as it is a personal project.
 
 ## Getting started for development
 
 ### 1. Install dependencies
 
-- Go `1.22.4` (used for VSCode plugin and generating/running tests)
+- Go `1.22.4` (used for VSCode plugin and generating/running tests locally)
 - Docker (https://docs.docker.com/engine/install/ubuntu/)
 
 ### 2. Clone the repository
 
 ```bash
-    git clone https://github.com/massivebugs/home-feature-server.git
-    cd home-feature-server
+git clone https://github.com/massivebugs/home-feature-server.git
+cd home-feature-server
 ```
 
-### 3. Run containers
+### 3. Create local Certificate Authority and certificate
+
+- Download [mkcert](https://github.com/FiloSottile/mkcert)
+- Create local CA and certificate
+
+  ```bash
+  mkcert -install && mkcert "\*.local" localhost 127.0.0.1 ::1 # Adjust if necessary
+  ```
+
+- Copy the certificate and key to the `devcerts` directory
+
+### 4. Run containers
 
 - `make start/stop/restart`: Start/stop/restart the DB, API server, and Node front end server/watcher.
 - 🧑‍💻️ To check if local api server is up and running, go to http://localhost:1323/api/v1/ping
