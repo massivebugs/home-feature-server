@@ -78,13 +78,6 @@ WHERE
 LIMIT
   1;
 
--- name: UpdateUserRefreshTokenExpiresAt :exec
-UPDATE user_refresh_tokens
-SET
-  expires_at = ?
-WHERE
-  id = ?;
-
 -- name: DeleteUserRefreshToken :exec
 DELETE FROM user_refresh_tokens
 WHERE

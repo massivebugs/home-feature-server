@@ -105,7 +105,6 @@ func (s *Auth) CreateJWTToken(
 		return "", "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
 	}
 
-	// TODO: Generate and store refresh token value in database and in the JWT claim!
 	tokenID := GenerateRandomString(50)
 
 	// Set custom claims
@@ -149,17 +148,17 @@ func (s *Auth) RefreshJWTToken(
 	refreshJwtSigningMethod *jwt.SigningMethodHMAC,
 	refreshJwtSecret string,
 	refreshJwtExpireSeconds int,
-	claims *JWTClaims,
+	userID uint32,
+	tokenID string,
 ) (string, string, error) {
-	urt, err := s.authRepo.GetUserRefreshTokenByValue(
+	_, err := s.authRepo.GetUserRefreshTokenByValue(
 		ctx,
 		s.db,
 		auth_repository.GetUserRefreshTokenByValueParams{
-			UserID: claims.UserID,
-			Value:  claims.TokenID,
+			UserID: userID,
+			Value:  tokenID,
 		},
 	)
-
 	// If the token doesn't exist, this means this token id(value) has been invalidated
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return "", "", api.NewAPIError(api.CodeUnauthorized, errors.New("token is invalid"))
@@ -167,9 +166,11 @@ func (s *Auth) RefreshJWTToken(
 		return "", "", err
 	}
 
+	newTokenID := GenerateRandomString(50)
+
 	// Set custom claims
-	tokenBuilder := NewJWTBuilder(now, jwtExpireSeconds, JWTCustomClaims{UserID: claims.UserID})
-	refreshTokenBuilder := NewJWTBuilder(now, refreshJwtExpireSeconds, JWTCustomClaims{UserID: claims.UserID, TokenID: urt.Value})
+	tokenBuilder := NewJWTBuilder(now, jwtExpireSeconds, JWTCustomClaims{UserID: userID})
+	refreshTokenBuilder := NewJWTBuilder(now, refreshJwtExpireSeconds, JWTCustomClaims{UserID: userID, TokenID: newTokenID})
 
 	// Generate encoded token and send it as response.
 	tokenStr, err := tokenBuilder.CreateAndSignToken(jwtSigningMethod, jwtSecret)
@@ -181,14 +182,17 @@ func (s *Auth) RefreshJWTToken(
 		return "", "", err
 	}
 
-	// Update refresh token expiry time
-	err = s.authRepo.UpdateUserRefreshTokenExpiresAt(ctx, s.db, auth_repository.UpdateUserRefreshTokenExpiresAtParams{
-		ID: urt.ID,
-		ExpiresAt: sql.NullTime{
-			Time:  refreshTokenBuilder.claims.ExpiresAt.Time,
-			Valid: true,
-		},
-	})
+	_, err = s.authRepo.CreateUserRefreshToken(
+		ctx,
+		s.db,
+		auth_repository.CreateUserRefreshTokenParams{
+			UserID: userID,
+			Value:  newTokenID,
+			ExpiresAt: sql.NullTime{
+				Time:  refreshTokenBuilder.claims.ExpiresAt.Time,
+				Valid: true,
+			},
+		})
 	if err != nil {
 		return "", "", err
 	}

@@ -114,7 +114,8 @@ func (h *AuthHandler) RefreshJWTToken(ctx echo.Context) *api.APIResponse {
 		h.cfg.RefreshJWTSigningMethod,
 		h.cfg.RefreshJWTSecret,
 		h.cfg.RefreshJWTExpireSeconds,
-		claims,
+		claims.UserID,
+		claims.TokenID,
 	)
 
 	ctx.SetCookie(&http.Cookie{

@@ -223,21 +223,3 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, db DBTX, arg UpdateUse
 	_, err := db.ExecContext(ctx, updateUserPassword, arg.PasswordHash, arg.ID)
 	return err
 }
-
-const updateUserRefreshTokenExpiresAt = `-- name: UpdateUserRefreshTokenExpiresAt :exec
-UPDATE user_refresh_tokens
-SET
-  expires_at = ?
-WHERE
-  id = ?
-`
-
-type UpdateUserRefreshTokenExpiresAtParams struct {
-	ExpiresAt sql.NullTime
-	ID        uint32
-}
-
-func (q *Queries) UpdateUserRefreshTokenExpiresAt(ctx context.Context, db DBTX, arg UpdateUserRefreshTokenExpiresAtParams) error {
-	_, err := db.ExecContext(ctx, updateUserRefreshTokenExpiresAt, arg.ExpiresAt, arg.ID)
-	return err
-}

@@ -21,7 +21,6 @@ type Querier interface {
 	GetUserRefreshTokenByValue(ctx context.Context, db DBTX, arg GetUserRefreshTokenByValueParams) (*UserRefreshToken, error)
 	UpdateUser(ctx context.Context, db DBTX, arg UpdateUserParams) error
 	UpdateUserPassword(ctx context.Context, db DBTX, arg UpdateUserPasswordParams) error
-	UpdateUserRefreshTokenExpiresAt(ctx context.Context, db DBTX, arg UpdateUserRefreshTokenExpiresAtParams) error
 }
 
 var _ Querier = (*Queries)(nil)
