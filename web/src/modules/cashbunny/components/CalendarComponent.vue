@@ -1,13 +1,5 @@
 <template>
-  <div>
-    <FullCalendarComponent
-      :class="{
-        'hfs-calendar__small': small,
-      }"
-      ref="fullCalendar"
-      :options="calendarOptions"
-    />
-  </div>
+  <FullCalendarComponent ref="fullCalendar" :options="calendarOptions" />
 </template>
 
 <script lang="ts">
@@ -26,7 +18,10 @@ import {
   type CalendarOptions,
   type DateSelectArg,
   type DatesSetArg,
+  type EventInput,
+  type MoreLinkAction,
 } from '@fullcalendar/core/index.js'
+import rrulePlugin from '@fullcalendar/rrule'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -34,26 +29,32 @@ import FullCalendarComponent from '@fullcalendar/vue3'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import { debounce } from 'lodash'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
-export type CalendarSelectDatesEvent = {
+export type CalendarSetDatesEvent = {
   dateStart: Dayjs
   dateEnd: Dayjs
 }
+
+export type CalendarSelectDatesEvent = CalendarSetDatesEvent | null
 
 export type CalendarLoadedEvent = {
   resizeFunc: () => void
 }
 
+export type CalendarEvent = EventInput
+
 const emit = defineEmits<{
   (e: 'selectDates', payload: CalendarSelectDatesEvent): void
+  (e: 'setDates', payload: CalendarSetDatesEvent): void
   (e: 'loaded', payload: CalendarLoadedEvent): void
 }>()
 
 const props = defineProps<{
   tabs: CalendarTab[]
   height?: string
-  small?: boolean
+  events?: CalendarEvent
+  moreLinkAction?: MoreLinkAction
 }>()
 
 const fullCalendar = ref()
@@ -61,7 +62,7 @@ let fullCalendarApi: CalendarApi
 const resizeFunc = debounce(() => fullCalendarApi.updateSize(), 100)
 let currentSelection: CalendarSelectDatesEvent | null = null
 
-const onSelect = (arg: DatesSetArg | DateSelectArg) => {
+const onSelect = (arg: DateSelectArg) => {
   // We want dateEnd to not include the next day (we didn't select it!)
   const dateStart = dayjs(arg.start)
   const dateEnd = dayjs(arg.end).subtract(1, 's')
@@ -69,33 +70,50 @@ const onSelect = (arg: DatesSetArg | DateSelectArg) => {
   // Clear date selection if the same date has been picked
   if (
     currentSelection &&
-    currentSelection.dateStart.isSame(dateStart) &&
-    currentSelection.dateEnd.isSame(dateEnd)
+    currentSelection.dateStart?.isSame(dateStart) &&
+    currentSelection.dateEnd?.isSame(dateEnd)
   ) {
     fullCalendarApi.unselect()
     currentSelection = null
-    return
+  } else {
+    currentSelection = { dateStart, dateEnd }
   }
 
-  currentSelection = { dateStart, dateEnd }
   emit('selectDates', currentSelection)
 }
 
-const calendarOptions: CalendarOptions = {
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+const onDatesSet = (arg: DatesSetArg) => {
+  // We want dateEnd to not include the next day (we didn't select it!)
+  const dateStart = dayjs(arg.start)
+  const dateEnd = dayjs(arg.end).subtract(1, 's')
+
+  emit('setDates', { dateStart, dateEnd })
+}
+
+const calendarOptions = computed<CalendarOptions>(() => ({
+  plugins: [rrulePlugin, dayGridPlugin, timeGridPlugin, interactionPlugin],
+  height: props.height,
   initialView: 'dayGridMonth',
+  customButtons: {
+    myCustomButton: {
+      text: 'custom!',
+      click: function () {
+        alert('clicked the custom button!')
+      },
+    },
+  },
   headerToolbar: {
+    start: 'myCustomButton',
     left: 'prev,next,today',
     center: 'title',
     right: props.tabs.join(','),
   },
-  allDaySlot: false,
   editable: true,
   selectable: true,
   selectMirror: true,
   dayMaxEvents: true,
   showNonCurrentDates: false,
-  datesSet: onSelect,
+  datesSet: onDatesSet,
   select: onSelect,
   eventClick: (arg) => {
     console.log('eventClick', arg)
@@ -109,11 +127,14 @@ const calendarOptions: CalendarOptions = {
   eventRemove: (arg) => {
     console.log('eventRemove', arg)
   },
-  events: [
-    { title: 'event 1', date: '2019-04-01' },
-    { title: 'event 2', date: '2019-04-02' },
-  ],
-}
+  events: props.events,
+  moreLinkClick: props.moreLinkAction,
+  eventTimeFormat: {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  },
+}))
 
 onMounted(() => {
   fullCalendarApi = fullCalendar.value.getApi()
@@ -126,33 +147,21 @@ onMounted(() => {
 :deep() {
   user-select: none;
 
-  .fc {
-    height: 100%;
-  }
-
-  &.hfs-calendar__small .fc-header-toolbar {
-    flex-direction: column;
-
-    .fc-button {
-      padding: 0 0.4em;
-      font-size: 0.9em;
-    }
-
-    .fc-toolbar-title {
-      font-size: 1em;
-    }
-  }
-
   .fc-header-toolbar {
     gap: 5px;
-
+    flex-direction: column;
     .fc-button {
       background-color: colors.$dark-grey;
       text-transform: capitalize;
+      padding: 0.1em 0.6em;
 
       &.fc-button-active {
         background-color: colors.$black;
       }
+    }
+
+    .fc-toolbar-title {
+      font-size: 1.2em;
     }
   }
 
@@ -171,6 +180,16 @@ onMounted(() => {
       width: 100%;
       background-color: colors.$dark-grey;
       color: colors.$white;
+    }
+
+    .fc-daygrid-day-top {
+      display: flex;
+      justify-content: center;
+      font-size: 0.8em;
+    }
+
+    .fc-daygrid-day-events {
+      overflow: hidden;
     }
   }
 }

@@ -6,7 +6,7 @@
     stroke-width="2"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <text :x="textX" y="33" font-size="20" font-weight="500" :fill="color">{{ day }}</text>
+    <text :x="textX" y="32" font-size="20" font-weight="500" :fill="color">{{ day }}</text>
 
     <path
       :stroke="color ?? '#000'"
@@ -27,10 +27,8 @@ const props = defineProps<{ color?: string; day: number }>()
 
 // Use pre-defined x position based on day's number
 const textX = computed(() => {
-  if (props.day > 19) {
-    return 13
-  } else if (props.day > 9) {
-    return 12
+  if (props.day > 9) {
+    return 14
   } else {
     return 19
   }
