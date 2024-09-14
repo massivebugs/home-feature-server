@@ -18,8 +18,9 @@ type Transaction struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 
-	SourceAccount      *Account
-	DestinationAccount *Account
+	SourceAccount        *Account
+	DestinationAccount   *Account
+	ScheduledTransaction *ScheduledTransaction
 }
 
 func NewTransaction(transaction *cashbunny_repository.CashbunnyTransaction) (*Transaction, error) {

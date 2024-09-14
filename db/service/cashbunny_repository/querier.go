@@ -11,6 +11,9 @@ import (
 
 type Querier interface {
 	CreateAccount(ctx context.Context, db DBTX, arg CreateAccountParams) (sql.Result, error)
+	CreateRecurrenceRule(ctx context.Context, db DBTX, arg CreateRecurrenceRuleParams) (sql.Result, error)
+	CreateScheduledTransaction(ctx context.Context, db DBTX, arg CreateScheduledTransactionParams) (sql.Result, error)
+	CreateScheduledTransactionRecurrenceRuleRelationship(ctx context.Context, db DBTX, arg CreateScheduledTransactionRecurrenceRuleRelationshipParams) (sql.Result, error)
 	CreateTransaction(ctx context.Context, db DBTX, arg CreateTransactionParams) (sql.Result, error)
 	CreateUserCurrency(ctx context.Context, db DBTX, arg CreateUserCurrencyParams) (sql.Result, error)
 	CreateUserPreferences(ctx context.Context, db DBTX, userID uint32) (sql.Result, error)
@@ -24,6 +27,7 @@ type Querier interface {
 	ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyAccount, error)
 	ListAccountsByIDs(ctx context.Context, db DBTX, arg ListAccountsByIDsParams) ([]*CashbunnyAccount, error)
 	ListAccountsWithRelatedTransactions(ctx context.Context, db DBTX, arg ListAccountsWithRelatedTransactionsParams) ([]*CashbunnyAccount, error)
+	ListScheduledTransactionsWithAllRelations(ctx context.Context, db DBTX, userID uint32) ([]*ListScheduledTransactionsWithAllRelationsRow, error)
 	ListTransactions(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyTransaction, error)
 	ListTransactionsBetweenDates(ctx context.Context, db DBTX, arg ListTransactionsBetweenDatesParams) ([]*CashbunnyTransaction, error)
 	ListUserCurrencies(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyUserCurrency, error)

@@ -195,50 +195,71 @@ var (
 
 type Cashbunny struct {
 	db            *sql.DB
-	cashbunnyRepo cashbunny_repository.Querier
+	cashbunnyRepo cashbunny_repository.ICashbunnyRepository
 }
 
-func NewCashbunny(db *sql.DB, cashbunnyRepo cashbunny_repository.Querier) *Cashbunny {
+func NewCashbunny(db *sql.DB, cashbunnyRepo cashbunny_repository.ICashbunnyRepository) *Cashbunny {
 	return &Cashbunny{
 		db:            db,
 		cashbunnyRepo: cashbunnyRepo,
 	}
 }
 
-func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Time, to time.Time) (*Ledger, error) {
-	accountListData, err := s.cashbunnyRepo.ListAccounts(ctx, s.db, userID)
+func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Time, to time.Time) (*Ledger, []*Transaction, error) {
+	accRows, err := s.cashbunnyRepo.ListAccounts(ctx, s.db, userID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	accounts := make([]*Account, len(accountListData))
-	for idx, ad := range accountListData {
-		accounts[idx] = NewAccount(ad)
+	accounts := make([]*Account, len(accRows))
+	for idx, row := range accRows {
+		accounts[idx] = NewAccount(row)
 	}
 
-	transactionListData, err := s.cashbunnyRepo.ListTransactionsBetweenDates(
+	tRows, err := s.cashbunnyRepo.ListTransactionsBetweenDates(
 		ctx,
 		s.db,
 		cashbunny_repository.ListTransactionsBetweenDatesParams{
 			UserID:           userID,
-			FromTransactedAt: from,
+			FromTransactedAt: time.Time{},
 			ToTransactedAt:   to,
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	transactions := make([]*Transaction, len(transactionListData))
-	for idx, td := range transactionListData {
-		tr, err := NewTransaction(td)
+	ts := make([]*Transaction, len(tRows))
+	for idx, row := range tRows {
+		tr, err := NewTransaction(row)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		transactions[idx] = tr
+
+		ts[idx] = tr
 	}
 
-	return NewLedger(accounts, transactions), nil
+	stListRows, err := s.cashbunnyRepo.ListScheduledTransactionsWithAllRelations(ctx, s.db, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var tsFromScheduled []*Transaction
+	for _, row := range stListRows {
+		st, err := NewScheduledTransaction(
+			&row.CashbunnyScheduledTransaction,
+			&row.CashbunnyRecurrenceRule,
+			&row.CashbunnyAccount,
+			&row.CashbunnyAccount_2,
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		tsFromScheduled = append(tsFromScheduled, st.ToTransactions(from, to)...)
+	}
+
+	return NewLedger(accounts, ts), tsFromScheduled, nil
 }
 
 func (s *Cashbunny) GetAllCurrencies(ctx context.Context) map[string]string {
@@ -315,12 +336,6 @@ func (s *Cashbunny) CreateDefaultUserPreferences(ctx context.Context, userID uin
 }
 
 func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *CreateAccountRequestDTO) error {
-	accountType, err := GetAccountTypeForCategory(AccountCategory(req.Category))
-	if err != nil {
-		// TODO: Flag errors
-		return err
-	}
-
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -349,7 +364,6 @@ func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *Creat
 			Description: req.Description,
 			Balance:     0,
 			Currency:    req.Currency,
-			Type:        string(accountType),
 			OrderIndex:  req.OrderIndex,
 		},
 	)
@@ -438,7 +452,7 @@ func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *C
 		return err
 	}
 
-	if sa.Type == AccountTypeCredit {
+	if sa.GetType() == AccountTypeCredit {
 		m, err := sa.Balance.Add(money.NewFromFloat(req.Amount, req.Currency))
 		if err != nil {
 			return err
@@ -452,7 +466,7 @@ func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *C
 		sa.Balance = m
 	}
 
-	if da.Type == AccountTypeCredit {
+	if da.GetType() == AccountTypeCredit {
 		m, err := da.Balance.Subtract(money.NewFromFloat(req.Amount, req.Currency))
 		if err != nil {
 			return err
@@ -591,7 +605,7 @@ func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transa
 
 	da := NewAccount(daResult)
 
-	if sa.Type == AccountTypeCredit {
+	if sa.GetType() == AccountTypeCredit {
 		m, err := sa.Balance.Subtract(money.NewFromFloat(trResult.Amount, trResult.Currency))
 		if err != nil {
 			return err
@@ -605,7 +619,7 @@ func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transa
 		sa.Balance = m
 	}
 
-	if da.Type == AccountTypeCredit {
+	if da.GetType() == AccountTypeCredit {
 		m, err := da.Balance.Add(money.NewFromFloat(trResult.Amount, trResult.Currency))
 		if err != nil {
 			return err

@@ -3,16 +3,24 @@ package cashbunny
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/Rhymond/go-money"
 )
 
 func TestLedger_GetProfitLoss(t *testing.T) {
+	type args struct {
+		from *time.Time
+		to   *time.Time
+	}
+
 	type fields struct {
 		accounts []*Account
 	}
+
 	tests := []struct {
 		name         string
+		args         args
 		fields       fields
 		wantRevenues CurrencySums
 		wantExpenses CurrencySums
@@ -25,32 +33,38 @@ func TestLedger_GetProfitLoss(t *testing.T) {
 					{
 						Category: AccountCategoryRevenues,
 						IncomingTransactions: []*Transaction{
+							{Amount: money.New(100, money.JPY)},
+							{Amount: money.New(100, money.CAD)},
+						},
+						OutgoingTransactions: []*Transaction{
 							{Amount: money.New(500, money.JPY)},
-							{Amount: money.New(500, money.JPY)},
-							{Amount: money.New(500, money.CAD)},
 							{Amount: money.New(500, money.CAD)},
 						},
 					},
 					{
 						Category: AccountCategoryExpenses,
 						IncomingTransactions: []*Transaction{
-							{Amount: money.New(700, money.JPY)},
-							{Amount: money.New(700, money.CAD)},
+							{Amount: money.New(500, money.JPY)},
+							{Amount: money.New(500, money.CAD)},
+						},
+						OutgoingTransactions: []*Transaction{
+							{Amount: money.New(100, money.JPY)},
+							{Amount: money.New(100, money.CAD)},
 						},
 					},
 				},
 			},
 			wantRevenues: NewCurrencySums([]*money.Money{
-				money.New(1000, money.JPY),
-				money.New(1000, money.CAD),
+				money.New(400, money.JPY),
+				money.New(400, money.CAD),
 			}),
 			wantExpenses: NewCurrencySums([]*money.Money{
-				money.New(700, money.JPY),
-				money.New(700, money.CAD),
+				money.New(400, money.JPY),
+				money.New(400, money.CAD),
 			}),
 			wantSums: NewCurrencySums([]*money.Money{
-				money.New(300, money.JPY),
-				money.New(300, money.CAD),
+				money.New(0, money.JPY),
+				money.New(0, money.CAD),
 			}),
 		},
 		{
@@ -68,7 +82,7 @@ func TestLedger_GetProfitLoss(t *testing.T) {
 			l := &Ledger{
 				accounts: tt.fields.accounts,
 			}
-			gotRevenues, gotExpenses, gotSums := l.GetProfitLoss()
+			gotRevenues, gotExpenses, gotSums := l.GetProfitLoss(tt.args.from, tt.args.to)
 			if !reflect.DeepEqual(gotRevenues, tt.wantRevenues) {
 				t.Errorf("Ledger.GetProfitLoss() gotRevenues = %v, want %v", gotRevenues, tt.wantRevenues)
 			}
