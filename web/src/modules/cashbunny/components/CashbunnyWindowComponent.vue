@@ -15,6 +15,7 @@
   >
     <div class="cashbunny-window__container">
       <TabGroupComponent
+        class="cashbunny-window__tab-group"
         @tab-click="(e) => (currentTab = e.tabId)"
         :selected-tab-id="currentTab"
         :tabs="[
@@ -25,7 +26,7 @@
             id: Tabs.planner,
           },
           {
-            id: Tabs.schedule,
+            id: Tabs.schedules,
           },
           {
             id: Tabs.accounts,
@@ -61,18 +62,18 @@
         <template #planner>
           <div class="cashbunny__tab-body"></div>
         </template>
-        <template #schedule_label>
+        <template #schedules_label>
           <div class="cashbunny__tab-label">
-            <ScheduleTabIconComponent
-              :color="currentTab === Tabs.schedule ? '#ebebeb' : undefined"
+            <SchedulesTabIconComponent
+              :color="currentTab === Tabs.schedules ? '#ebebeb' : undefined"
               :day="today.getDate()"
             />
-            {{ t('cashbunny.schedule') }}
+            {{ t('cashbunny.schedules') }}
           </div>
         </template>
-        <template #schedule>
+        <template #schedules>
           <div class="cashbunny__tab-body">
-            <ScheduleComponent />
+            <SchedulesComponent />
           </div>
         </template>
         <template #accounts_label>
@@ -119,14 +120,14 @@ import OverviewTabIconComponent from '@/modules/cashbunny/components/OverviewTab
 import TransactionsTabIconComponent from '@/modules/cashbunny/components/TransactionsTabIconComponent.vue'
 import OverviewComponent from './OverviewComponent.vue'
 import PlannerTabIconComponent from './PlannerTabIconComponent.vue'
-import ScheduleComponent from './ScheduleComponent.vue'
-import ScheduleTabIconComponent from './ScheduleTabIconComponent.vue'
+import SchedulesComponent from './SchedulesComponent.vue'
+import SchedulesTabIconComponent from './SchedulesTabIconComponent.vue'
 import TransactionDataTableComponent from './TransactionDataTableComponent.vue'
 
 const Tabs = {
   overview: 'overview',
   planner: 'planner',
-  schedule: 'schedule',
+  schedules: 'schedules',
   accounts: 'accounts',
   transactions: 'transactions',
 } as const
@@ -280,7 +281,6 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
 
 <style scoped lang="scss">
 @use '@/assets/colors';
-
 .cashbunny-window__container {
   width: 100%;
   height: 100%;
@@ -296,8 +296,13 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
   font-weight: bold;
 }
 
+.cashbunny-window__tab-group {
+  height: 100%;
+}
+
 .cashbunny__tab-body {
+  height: 100%;
   background-color: colors.$white;
-  padding: 0.5em;
+  border-radius: 3px;
 }
 </style>

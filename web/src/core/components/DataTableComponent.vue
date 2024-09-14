@@ -1,13 +1,11 @@
 <template>
-  <div>
-    <DataTable
-      :columns="columns"
-      :data="data"
-      :options="dtConfig"
-      ref="table"
-      class="table display nowrap compact hfs-datatable"
-    />
-  </div>
+  <DataTable
+    :columns="columns"
+    :data="data"
+    :options="dtConfig"
+    ref="table"
+    class="table display nowrap compact hfs-datatable"
+  />
 </template>
 
 <script setup lang="ts">
@@ -50,9 +48,14 @@ export type DataTableRowDeleteEvent<T> = {
   rows: T[]
 }
 
+export type DataTableLoadedEvent = {
+  resizeFunc: () => void
+}
+
 const emit = defineEmits<{
   (e: 'editRow', payload: DataTableRowEditEvent<any>): void
   (e: 'deleteRow', payload: DataTableRowDeleteEvent<any>): void
+  (e: 'loaded', payload: DataTableLoadedEvent): void
 }>()
 
 const props = defineProps<{
@@ -89,6 +92,7 @@ const getTargetRowData = () => {
 onMounted(async () => {
   dt = table.value.dt
 
+  emit('loaded', { resizeFunc: dt.responsive.recalc })
   addWindowResizeListener(dt.responsive.recalc)
 
   // Prevent right click and display custom context menu
@@ -144,18 +148,4 @@ onUnmounted(() => {
 @import 'datatables.net-dt';
 @import 'datatables.net-responsive-dt';
 @import 'datatables.net-select-dt';
-</style>
-
-<style scoped lang="scss">
-:deep(.table) {
-  max-width: 100%;
-}
-
-.table-action-btn {
-  margin-right: 5px;
-}
-
-:deep(.hfs-datatable) {
-  // background-color: black !important;
-}
 </style>

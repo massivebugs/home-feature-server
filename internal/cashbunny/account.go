@@ -1,7 +1,6 @@
 package cashbunny
 
 import (
-	"errors"
 	"time"
 
 	"github.com/Rhymond/go-money"
@@ -22,23 +21,12 @@ const (
 	AccountCategoryExpenses    AccountCategory = "expenses"
 )
 
-func GetAccountTypeForCategory(c AccountCategory) (AccountType, error) {
-	switch c {
-	case AccountCategoryAssets, AccountCategoryExpenses:
-		return AccountTypeDebit, nil
-	case AccountCategoryLiabilities, AccountCategoryRevenues:
-		return AccountTypeCredit, nil
-	}
-	return "", errors.New("failed to get account type as account category is invalid")
-}
-
 type Account struct {
 	ID          uint32
 	Category    AccountCategory
 	Name        string
 	Description string
 	Balance     *money.Money
-	Type        AccountType
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 
@@ -53,7 +41,6 @@ func NewAccount(account *cashbunny_repository.CashbunnyAccount) *Account {
 		Name:        account.Name,
 		Description: account.Description,
 		Balance:     money.NewFromFloat(account.Balance, account.Currency),
-		Type:        AccountType(account.Type),
 		CreatedAt:   account.CreatedAt,
 		UpdatedAt:   account.UpdatedAt,
 	}
@@ -87,19 +74,32 @@ func (a *Account) Validate() error {
 			validation.Required,
 			validation.By(IsMoneyNotNegative(a.Balance)),
 		),
-		validation.Field(
-			&a.Type,
-			validation.Required,
-			validation.In(AccountTypeCredit, AccountTypeDebit),
-		),
 	)
 }
 
-func (a *Account) SumTransactions() CurrencySums {
+func (a *Account) GetType() AccountType {
+	switch a.Category {
+	case AccountCategoryAssets, AccountCategoryExpenses:
+		return AccountTypeDebit
+	case AccountCategoryLiabilities, AccountCategoryRevenues:
+		return AccountTypeCredit
+	}
+	return ""
+}
+
+func (a *Account) SumTransactions(from *time.Time, to *time.Time) CurrencySums {
 	cs := NewCurrencySums(nil)
 
 	for _, tr := range a.IncomingTransactions {
-		if a.Type == AccountTypeCredit {
+		if from != nil && tr.TransactedAt.Before(*from) {
+			continue
+		}
+
+		if to != nil && tr.TransactedAt.After(*to) {
+			continue
+		}
+
+		if a.GetType() == AccountTypeCredit {
 			cs.Subtract(tr.Amount)
 		} else {
 			cs.Add(tr.Amount)
@@ -107,7 +107,15 @@ func (a *Account) SumTransactions() CurrencySums {
 	}
 
 	for _, tr := range a.OutgoingTransactions {
-		if a.Type == AccountTypeCredit {
+		if from != nil && tr.TransactedAt.Before(*from) {
+			continue
+		}
+
+		if to != nil && tr.TransactedAt.After(*to) {
+			continue
+		}
+
+		if a.GetType() == AccountTypeCredit {
 			cs.Add(tr.Amount)
 		} else {
 			cs.Subtract(tr.Amount)

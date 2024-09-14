@@ -51,7 +51,6 @@ const isCurrentTab = (tabId: string) => {
 <style scoped lang="scss">
 @use '@/assets/colors';
 .tabs {
-  min-height: 100%;
   display: flex;
   flex-direction: column;
 }

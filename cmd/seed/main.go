@@ -36,6 +36,6 @@ func main() {
 		db,
 		cfg,
 		auth_repository.New(),
-		cashbunny_repository.New(),
+		cashbunny_repository.NewCashbunnyRepository(),
 	).Seed(context.Background())
 }

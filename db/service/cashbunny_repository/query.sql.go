@@ -21,11 +21,10 @@ INSERT INTO
     description,
     balance,
     currency,
-    type,
     order_index
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?)
+  (?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateAccountParams struct {
@@ -35,7 +34,6 @@ type CreateAccountParams struct {
 	Description string
 	Balance     float64
 	Currency    string
-	Type        string
 	OrderIndex  uint32
 }
 
@@ -47,9 +45,83 @@ func (q *Queries) CreateAccount(ctx context.Context, db DBTX, arg CreateAccountP
 		arg.Description,
 		arg.Balance,
 		arg.Currency,
-		arg.Type,
 		arg.OrderIndex,
 	)
+}
+
+const createRecurrenceRule = `-- name: CreateRecurrenceRule :execresult
+INSERT INTO
+  cashbunny_recurrence_rules (freq, dtstart, count, ` + "`" + `interval` + "`" + `, ` + "`" + `until` + "`" + `)
+VALUES
+  (?, ?, ?, ?, ?)
+`
+
+type CreateRecurrenceRuleParams struct {
+	Freq     string
+	Dtstart  time.Time
+	Count    int32
+	Interval int32
+	Until    time.Time
+}
+
+func (q *Queries) CreateRecurrenceRule(ctx context.Context, db DBTX, arg CreateRecurrenceRuleParams) (sql.Result, error) {
+	return db.ExecContext(ctx, createRecurrenceRule,
+		arg.Freq,
+		arg.Dtstart,
+		arg.Count,
+		arg.Interval,
+		arg.Until,
+	)
+}
+
+const createScheduledTransaction = `-- name: CreateScheduledTransaction :execresult
+INSERT INTO
+  cashbunny_scheduled_transactions (
+    user_id,
+    src_account_id,
+    dest_account_id,
+    description,
+    amount,
+    currency
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?)
+`
+
+type CreateScheduledTransactionParams struct {
+	UserID        uint32
+	SrcAccountID  uint32
+	DestAccountID uint32
+	Description   string
+	Amount        float64
+	Currency      string
+}
+
+func (q *Queries) CreateScheduledTransaction(ctx context.Context, db DBTX, arg CreateScheduledTransactionParams) (sql.Result, error) {
+	return db.ExecContext(ctx, createScheduledTransaction,
+		arg.UserID,
+		arg.SrcAccountID,
+		arg.DestAccountID,
+		arg.Description,
+		arg.Amount,
+		arg.Currency,
+	)
+}
+
+const createScheduledTransactionRecurrenceRuleRelationship = `-- name: CreateScheduledTransactionRecurrenceRuleRelationship :execresult
+INSERT INTO
+  cashbunny_scheduled_transactions_recurrence_rules (scheduled_transaction_id, recurrence_rule_id)
+VALUES
+  (?, ?)
+`
+
+type CreateScheduledTransactionRecurrenceRuleRelationshipParams struct {
+	ScheduledTransactionID uint32
+	RecurrenceRuleID       uint32
+}
+
+func (q *Queries) CreateScheduledTransactionRecurrenceRuleRelationship(ctx context.Context, db DBTX, arg CreateScheduledTransactionRecurrenceRuleRelationshipParams) (sql.Result, error) {
+	return db.ExecContext(ctx, createScheduledTransactionRecurrenceRuleRelationship, arg.ScheduledTransactionID, arg.RecurrenceRuleID)
 }
 
 const createTransaction = `-- name: CreateTransaction :execresult
@@ -176,7 +248,7 @@ func (q *Queries) DeleteTransactionsByAccountID(ctx context.Context, db DBTX, ar
 
 const getAccountByID = `-- name: GetAccountByID :one
 SELECT
-  id, user_id, category, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
+  id, user_id, category, name, description, balance, currency, order_index, created_at, updated_at, deleted_at
 FROM
   cashbunny_accounts
 WHERE
@@ -203,7 +275,6 @@ func (q *Queries) GetAccountByID(ctx context.Context, db DBTX, arg GetAccountByI
 		&i.Description,
 		&i.Balance,
 		&i.Currency,
-		&i.Type,
 		&i.OrderIndex,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -214,7 +285,7 @@ func (q *Queries) GetAccountByID(ctx context.Context, db DBTX, arg GetAccountByI
 
 const getTransactionByID = `-- name: GetTransactionByID :one
 SELECT
-  id, user_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
+  id, user_id, scheduled_transaction_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
 FROM
   cashbunny_transactions
 WHERE
@@ -236,6 +307,7 @@ func (q *Queries) GetTransactionByID(ctx context.Context, db DBTX, arg GetTransa
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
+		&i.ScheduledTransactionID,
 		&i.SrcAccountID,
 		&i.DestAccountID,
 		&i.Description,
@@ -295,7 +367,7 @@ func (q *Queries) IncrementIndex(ctx context.Context, db DBTX, arg IncrementInde
 
 const listAccounts = `-- name: ListAccounts :many
 SELECT
-  id, user_id, category, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
+  id, user_id, category, name, description, balance, currency, order_index, created_at, updated_at, deleted_at
 FROM
   cashbunny_accounts
 WHERE
@@ -322,7 +394,6 @@ func (q *Queries) ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*
 			&i.Description,
 			&i.Balance,
 			&i.Currency,
-			&i.Type,
 			&i.OrderIndex,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -343,7 +414,7 @@ func (q *Queries) ListAccounts(ctx context.Context, db DBTX, userID uint32) ([]*
 
 const listAccountsByIDs = `-- name: ListAccountsByIDs :many
 SELECT
-  id, user_id, category, name, description, balance, currency, type, order_index, created_at, updated_at, deleted_at
+  id, user_id, category, name, description, balance, currency, order_index, created_at, updated_at, deleted_at
 FROM
   cashbunny_accounts
 WHERE
@@ -387,7 +458,6 @@ func (q *Queries) ListAccountsByIDs(ctx context.Context, db DBTX, arg ListAccoun
 			&i.Description,
 			&i.Balance,
 			&i.Currency,
-			&i.Type,
 			&i.OrderIndex,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -408,7 +478,7 @@ func (q *Queries) ListAccountsByIDs(ctx context.Context, db DBTX, arg ListAccoun
 
 const listAccountsWithRelatedTransactions = `-- name: ListAccountsWithRelatedTransactions :many
 SELECT DISTINCT
-  cashbunny_accounts.id, cashbunny_accounts.user_id, cashbunny_accounts.category, cashbunny_accounts.name, cashbunny_accounts.description, cashbunny_accounts.balance, cashbunny_accounts.currency, cashbunny_accounts.type, cashbunny_accounts.order_index, cashbunny_accounts.created_at, cashbunny_accounts.updated_at, cashbunny_accounts.deleted_at
+  cashbunny_accounts.id, cashbunny_accounts.user_id, cashbunny_accounts.category, cashbunny_accounts.name, cashbunny_accounts.description, cashbunny_accounts.balance, cashbunny_accounts.currency, cashbunny_accounts.order_index, cashbunny_accounts.created_at, cashbunny_accounts.updated_at, cashbunny_accounts.deleted_at
 FROM
   cashbunny_accounts
   JOIN cashbunny_transactions ON cashbunny_accounts.id = cashbunny_transactions.src_account_id
@@ -451,7 +521,6 @@ func (q *Queries) ListAccountsWithRelatedTransactions(ctx context.Context, db DB
 			&i.Description,
 			&i.Balance,
 			&i.Currency,
-			&i.Type,
 			&i.OrderIndex,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -470,9 +539,99 @@ func (q *Queries) ListAccountsWithRelatedTransactions(ctx context.Context, db DB
 	return items, nil
 }
 
+const listScheduledTransactionsWithAllRelations = `-- name: ListScheduledTransactionsWithAllRelations :many
+SELECT
+  cashbunny_scheduled_transactions.id, cashbunny_scheduled_transactions.user_id, cashbunny_scheduled_transactions.src_account_id, cashbunny_scheduled_transactions.dest_account_id, cashbunny_scheduled_transactions.description, cashbunny_scheduled_transactions.amount, cashbunny_scheduled_transactions.currency, cashbunny_scheduled_transactions.created_at, cashbunny_scheduled_transactions.updated_at, cashbunny_scheduled_transactions.deleted_at,
+  cashbunny_recurrence_rules.id, cashbunny_recurrence_rules.freq, cashbunny_recurrence_rules.dtstart, cashbunny_recurrence_rules.count, cashbunny_recurrence_rules.` + "`" + `interval` + "`" + `, cashbunny_recurrence_rules.until, cashbunny_recurrence_rules.created_at, cashbunny_recurrence_rules.updated_at,
+  source_account.id, source_account.user_id, source_account.category, source_account.name, source_account.description, source_account.balance, source_account.currency, source_account.order_index, source_account.created_at, source_account.updated_at, source_account.deleted_at,
+  destination_account.id, destination_account.user_id, destination_account.category, destination_account.name, destination_account.description, destination_account.balance, destination_account.currency, destination_account.order_index, destination_account.created_at, destination_account.updated_at, destination_account.deleted_at
+FROM
+  cashbunny_scheduled_transactions
+  LEFT JOIN cashbunny_scheduled_transactions_recurrence_rules as relationship ON relationship.scheduled_transaction_id = cashbunny_scheduled_transactions.id
+  LEFT JOIN cashbunny_recurrence_rules ON cashbunny_recurrence_rules.id = relationship.recurrence_rule_id
+  LEFT JOIN cashbunny_accounts AS source_account ON source_account.id = src_account_id
+  LEFT JOIN cashbunny_accounts AS destination_account ON destination_account.id = dest_account_id
+WHERE
+  cashbunny_scheduled_transactions.user_id = ?
+  AND cashbunny_scheduled_transactions.deleted_at IS NULL
+ORDER BY
+  cashbunny_scheduled_transactions.created_at ASC
+`
+
+type ListScheduledTransactionsWithAllRelationsRow struct {
+	CashbunnyScheduledTransaction CashbunnyScheduledTransaction
+	CashbunnyRecurrenceRule       CashbunnyRecurrenceRule
+	CashbunnyAccount              CashbunnyAccount
+	CashbunnyAccount_2            CashbunnyAccount
+}
+
+func (q *Queries) ListScheduledTransactionsWithAllRelations(ctx context.Context, db DBTX, userID uint32) ([]*ListScheduledTransactionsWithAllRelationsRow, error) {
+	rows, err := db.QueryContext(ctx, listScheduledTransactionsWithAllRelations, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*ListScheduledTransactionsWithAllRelationsRow{}
+	for rows.Next() {
+		var i ListScheduledTransactionsWithAllRelationsRow
+		if err := rows.Scan(
+			&i.CashbunnyScheduledTransaction.ID,
+			&i.CashbunnyScheduledTransaction.UserID,
+			&i.CashbunnyScheduledTransaction.SrcAccountID,
+			&i.CashbunnyScheduledTransaction.DestAccountID,
+			&i.CashbunnyScheduledTransaction.Description,
+			&i.CashbunnyScheduledTransaction.Amount,
+			&i.CashbunnyScheduledTransaction.Currency,
+			&i.CashbunnyScheduledTransaction.CreatedAt,
+			&i.CashbunnyScheduledTransaction.UpdatedAt,
+			&i.CashbunnyScheduledTransaction.DeletedAt,
+			&i.CashbunnyRecurrenceRule.ID,
+			&i.CashbunnyRecurrenceRule.Freq,
+			&i.CashbunnyRecurrenceRule.Dtstart,
+			&i.CashbunnyRecurrenceRule.Count,
+			&i.CashbunnyRecurrenceRule.Interval,
+			&i.CashbunnyRecurrenceRule.Until,
+			&i.CashbunnyRecurrenceRule.CreatedAt,
+			&i.CashbunnyRecurrenceRule.UpdatedAt,
+			&i.CashbunnyAccount.ID,
+			&i.CashbunnyAccount.UserID,
+			&i.CashbunnyAccount.Category,
+			&i.CashbunnyAccount.Name,
+			&i.CashbunnyAccount.Description,
+			&i.CashbunnyAccount.Balance,
+			&i.CashbunnyAccount.Currency,
+			&i.CashbunnyAccount.OrderIndex,
+			&i.CashbunnyAccount.CreatedAt,
+			&i.CashbunnyAccount.UpdatedAt,
+			&i.CashbunnyAccount.DeletedAt,
+			&i.CashbunnyAccount_2.ID,
+			&i.CashbunnyAccount_2.UserID,
+			&i.CashbunnyAccount_2.Category,
+			&i.CashbunnyAccount_2.Name,
+			&i.CashbunnyAccount_2.Description,
+			&i.CashbunnyAccount_2.Balance,
+			&i.CashbunnyAccount_2.Currency,
+			&i.CashbunnyAccount_2.OrderIndex,
+			&i.CashbunnyAccount_2.CreatedAt,
+			&i.CashbunnyAccount_2.UpdatedAt,
+			&i.CashbunnyAccount_2.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransactions = `-- name: ListTransactions :many
 SELECT
-  id, user_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
+  id, user_id, scheduled_transaction_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
 FROM
   cashbunny_transactions
 WHERE
@@ -494,6 +653,7 @@ func (q *Queries) ListTransactions(ctx context.Context, db DBTX, userID uint32) 
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
+			&i.ScheduledTransactionID,
 			&i.SrcAccountID,
 			&i.DestAccountID,
 			&i.Description,
@@ -519,7 +679,7 @@ func (q *Queries) ListTransactions(ctx context.Context, db DBTX, userID uint32) 
 
 const listTransactionsBetweenDates = `-- name: ListTransactionsBetweenDates :many
 SELECT
-  id, user_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
+  id, user_id, scheduled_transaction_id, src_account_id, dest_account_id, description, amount, currency, transacted_at, created_at, updated_at, deleted_at
 FROM
   cashbunny_transactions
 WHERE
@@ -548,6 +708,7 @@ func (q *Queries) ListTransactionsBetweenDates(ctx context.Context, db DBTX, arg
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
+			&i.ScheduledTransactionID,
 			&i.SrcAccountID,
 			&i.DestAccountID,
 			&i.Description,

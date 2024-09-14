@@ -22,7 +22,7 @@ func NewCashbunnyHandler(db *sql.DB) *CashbunnyHandler {
 	return &CashbunnyHandler{
 		cashbunny: cashbunny.NewCashbunny(
 			db,
-			cashbunny_repository.New(),
+			cashbunny_repository.NewCashbunnyRepository(),
 		),
 	}
 }
@@ -50,12 +50,12 @@ func (h *CashbunnyHandler) GetOverview(ctx echo.Context) *api.APIResponse {
 		to = time.Unix(int64(qTo), 0)
 	}
 
-	ledger, err := h.cashbunny.GetOverview(ctx.Request().Context(), claims.UserID, from, to)
+	ledger, transactionsFromScheduled, err := h.cashbunny.GetOverview(ctx.Request().Context(), claims.UserID, from, to)
 	if err != nil {
 		return api.NewAPIResponse(err, "")
 	}
 
-	return api.NewAPIResponse(nil, response.NewGetOverviewResponseDTO(ledger))
+	return api.NewAPIResponse(nil, response.NewGetOverviewResponseDTO(from, to, ledger, transactionsFromScheduled))
 }
 
 func (h *CashbunnyHandler) GetCurrencies(ctx echo.Context) *api.APIResponse {

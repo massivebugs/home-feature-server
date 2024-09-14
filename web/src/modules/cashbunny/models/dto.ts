@@ -1,7 +1,8 @@
 export type OverviewDto = {
+  net_worth: { [key: string]: string }
   summaries: { [key: string]: { revenue: string; expense: string; profit: string } }
-  totals: { [key: string]: string }
   transactions: TransactionDto[]
+  transactions_from_scheduled: TransactionDto[]
 }
 
 export type GetAllCurrenciesDto = {
@@ -43,6 +44,7 @@ export type TransactionDto = {
   description: string
   amount: number
   currency: string
+  amount_display: string
   transacted_at: string
   created_at: string
   updated_at: string
@@ -50,6 +52,30 @@ export type TransactionDto = {
   source_account_name: string
   destination_account_id: number
   destination_account_name: string
+  scheduled_transaction: ScheduledTransactionDto | null
+}
+
+export type ScheduledTransactionDto = {
+  id: number
+  description: string
+  amount: number
+  currency: string
+  amount_display: string
+  created_at: string
+  updated_at: string
+  recurrence_rule: RecurrenceRuleDto
+  source_account_id: number
+  source_account_name: string
+  destination_account_id: number
+  destination_account_name: string
+}
+
+export type RecurrenceRuleDto = {
+  freq: string
+  dtstart: string
+  count: number
+  interval: number
+  until: string
 }
 
 export type CreateTransactionDto = {

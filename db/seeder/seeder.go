@@ -11,20 +11,21 @@ import (
 	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
 	"github.com/massivebugs/home-feature-server/internal/auth"
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
+	"github.com/teambition/rrule-go"
 )
 
 type Seeder struct {
 	db            *sql.DB
 	cfg           *config.Config
 	authRepo      auth_repository.Querier
-	cashbunnyRepo cashbunny_repository.Querier
+	cashbunnyRepo cashbunny_repository.ICashbunnyRepository
 }
 
 func NewSeeder(
 	db *sql.DB,
 	cfg *config.Config,
 	authRepo auth_repository.Querier,
-	cashbunnyRepo cashbunny_repository.Querier,
+	cashbunnyRepo cashbunny_repository.ICashbunnyRepository,
 ) *Seeder {
 	return &Seeder{
 		db:            db,
@@ -50,6 +51,8 @@ func (s *Seeder) Seed(ctx context.Context) error {
 }
 
 func (s *Seeder) seedForLocal(ctx context.Context) error {
+	now := time.Now()
+
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -95,7 +98,6 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 			Description: "For storing income and for every day use",
 			Balance:     1486000,
 			Currency:    "JPY",
-			Type:        string(cashbunny.AccountTypeDebit),
 			OrderIndex:  0,
 		},
 	)
@@ -120,7 +122,6 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 			Description: "For grocery expenses",
 			Balance:     10000,
 			Currency:    "JPY",
-			Type:        string(cashbunny.AccountTypeDebit),
 			OrderIndex:  1,
 		},
 	)
@@ -145,7 +146,6 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 			Description: "My workplace",
 			Balance:     1496000,
 			Currency:    "JPY",
-			Type:        string(cashbunny.AccountTypeCredit),
 			OrderIndex:  2,
 		},
 	)
@@ -164,10 +164,10 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 		UserID:        uint32(userID),
 		SrcAccountID:  uint32(account3ID),
 		DestAccountID: uint32(account1ID),
-		Description:   "Monthly wage for May",
+		Description:   "Monthly wage",
 		Amount:        710000,
 		Currency:      "JPY",
-		TransactedAt:  time.Date(2024, 6, 15, 10, 0, 0, 0, time.UTC),
+		TransactedAt:  now.AddDate(0, -1, 0),
 	})
 	if err != nil {
 		return err
@@ -181,7 +181,7 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 		Description:   "Bought some groceries for 2 weeks",
 		Amount:        10000,
 		Currency:      "JPY",
-		TransactedAt:  time.Date(2024, 6, 28, 15, 0, 0, 0, time.UTC),
+		TransactedAt:  now,
 	})
 	if err != nil {
 		return err
@@ -192,10 +192,32 @@ func (s *Seeder) seedForLocal(ctx context.Context) error {
 		UserID:        uint32(userID),
 		SrcAccountID:  uint32(account3ID),
 		DestAccountID: uint32(account1ID),
-		Description:   "Monthly wage for June",
+		Description:   "Monthly wage",
 		Amount:        786000,
 		Currency:      "JPY",
-		TransactedAt:  time.Date(2024, 7, 15, 10, 0, 0, 0, time.UTC),
+		TransactedAt:  now,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Cashbunny - create test scheduled transaction
+	err = s.cashbunnyRepo.CreateScheduledTransactionWithRecurrenceRule(ctx, tx, cashbunny_repository.CreateScheduledTransactionWithRecurrenceRuleParams{
+		ScheduledTransaction: cashbunny_repository.CreateScheduledTransactionParams{
+			UserID:        uint32(userID),
+			SrcAccountID:  uint32(account1ID),
+			DestAccountID: uint32(account2ID),
+			Description:   "Monthly payment ",
+			Amount:        10000,
+			Currency:      "JPY",
+		},
+		RecurrenceRule: cashbunny_repository.CreateRecurrenceRuleParams{
+			Freq:     rrule.MONTHLY.String(),
+			Dtstart:  time.Date(now.Year(), now.Month(), now.Day(), 13, 0, 0, 0, time.UTC),
+			Count:    0,
+			Interval: 1,
+			Until:    time.Date(now.AddDate(0, 5, 0).Year(), now.AddDate(0, 5, 0).Month(), now.AddDate(0, 5, 0).Day(), 13, 0, 0, 0, time.UTC),
+		},
 	})
 	if err != nil {
 		return err
