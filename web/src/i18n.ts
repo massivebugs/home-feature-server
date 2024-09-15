@@ -6,6 +6,10 @@ export const i18nOptions: I18nOptions = {
   fallbackLocale: 'ja',
   messages: {
     en: {
+      common: {
+        back: 'Back',
+        continue: 'Continue',
+      },
       app: {
         name: 'Massivebugs Systems',
       },
@@ -37,7 +41,110 @@ export const i18nOptions: I18nOptions = {
         errorLoadingDataTitle: 'Error',
         errorLoadingDataMessage: 'An error occured while loading data: {e}',
         overview: 'Overview',
-        planner: 'Planner',
+        planner: {
+          name: 'Planner',
+          wizard: {
+            welcome: {
+              question:
+                "Welcome! Let's set up your budget plan.\nWe will ask you a few questions about your current budget status.\nThe questions may take a few minutes to complete.\nWould you like to get started now?",
+              yes: "Yes, let's get started",
+              no: 'No, remind me later',
+            },
+            assets: {
+              question:
+                'What are your current assets?\nPlease list your accounts and their balances.',
+              options: {
+                cash: 'Cash (Enter Amount)',
+                bankAccounts: 'Bank Accounts (List and enter balances for each account)',
+                investments: 'Investments (List stocks, bonds, etc., with amounts)',
+                otherAssets: 'Other Assets (e.g., property, vehicles, etc.)',
+              },
+              info: 'Assets are things you own that can be converted to cash or have value.',
+            },
+            liabilities: {
+              question:
+                'Do you have any current liabilities?\nPlease list your debts and the amounts.',
+              options: {
+                mortgage: 'Mortgage (Enter amount owed)',
+                creditCardDebt: 'Credit Card Debt (List accounts and balances)',
+                studentLoans: 'Student Loans (Enter amount owed)',
+                personalLoans: 'Personal Loans (Enter amount owed)',
+                otherDebts: 'Other Debts (e.g., car loans, medical debts, etc.)',
+              },
+              info: 'Liabilities are debts or obligations that you owe.',
+            },
+            revenues: {
+              question:
+                'What are your sources of income?\nPlease provide details for your revenue.',
+              options: {
+                salary: 'Salary/Wages (Enter amount and frequency)',
+                investmentIncome: 'Investment Income (List source and amount)',
+                freelance: 'Freelance or Side Jobs (Enter amounts)',
+                otherIncome: 'Other Income (e.g., alimony, government benefits, etc.)',
+              },
+              info: 'Include any income you receive regularly.',
+            },
+            expenses: {
+              question:
+                'What are your regular monthly expenses?\nPlease categorize and enter amounts.',
+              options: {
+                rent: 'Rent/Mortgage Payment (Enter amount)',
+                utilities: 'Utilities (Water, electricity, internet, etc.)',
+                groceries: 'Groceries (Enter average monthly amount)',
+                transportation: 'Transportation (Fuel, car payment, public transit)',
+                entertainment: 'Entertainment (Streaming, dining out, etc.)',
+                subscriptions: 'Subscriptions (e.g., Netflix, gym membership)',
+                savings: 'Savings (Enter planned savings)',
+                other: 'Other (Medical, childcare, etc.)',
+              },
+            },
+            scheduledTransactions: {
+              question:
+                'Do you have any scheduled transactions?\nSet up recurring payments and income here.',
+              options: {
+                income: 'Income: (e.g., salary paid on the 1st and 15th)',
+                expenses: 'Expenses: (e.g., rent due on the 1st, credit card payment on the 20th)',
+              },
+              info: 'Scheduled transactions can be set to recur automatically for easy tracking.',
+            },
+            savingsGoals: {
+              question:
+                'What are your savings goals?\nSet specific targets for your financial future.',
+              options: {
+                emergencyFund: 'Emergency Fund (Enter goal amount and timeframe)',
+                vacation: 'Vacation Savings (Enter goal amount and timeframe)',
+                retirement: 'Retirement (Enter goal amount and timeframe)',
+                largePurchases: 'Large Purchases (e.g., new car, home renovation)',
+              },
+              info: 'We’ll help you calculate how much to save each month to reach these goals.',
+            },
+            notifications: {
+              question:
+                'Would you like to receive notifications for scheduled transactions and important updates?',
+              options: {
+                email: 'Email',
+                sms: 'SMS/Text',
+                pushNotifications: 'Push Notifications',
+                noNotifications: 'No, I don’t need notifications',
+              },
+            },
+            suggestions: {
+              question:
+                "Based on your input, here's a summary of your current financial situation.\nWould you like to receive suggestions to help you meet your savings goals?",
+              yes: 'Yes, show me suggestions',
+              no: 'No, I’m comfortable with my current plan',
+              suggestions: {
+                reduceSpending: 'Cut non-essential spending (e.g., reduce entertainment expenses)',
+                saveMore: 'Set aside more for savings each month (specific amount)',
+                payOffDebt: 'Pay off high-interest debt first',
+              },
+            },
+            complete: {
+              question: 'Your budget planner is set up!\n You may now exit the wizard.',
+              complete: 'complete',
+            },
+          },
+        },
         schedules: 'Schedules',
         accounts: 'Accounts',
         transactions: 'Transactions',
@@ -99,6 +206,10 @@ export const i18nOptions: I18nOptions = {
       },
     },
     ja: {
+      common: {
+        back: '前へ戻る',
+        continue: '次に進む',
+      },
       app: {
         name: 'Massivebugs Systems',
       },
