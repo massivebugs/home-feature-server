@@ -38,6 +38,7 @@ defineProps<{
   display: flex;
   align-items: center;
   justify-content: center;
+  user-select: none;
 
   // Button types
   background-color: colors.$white;

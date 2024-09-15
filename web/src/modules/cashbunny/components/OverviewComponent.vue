@@ -382,13 +382,14 @@ onBeforeUnmount(() => {
 
 .cashbunny-overview__calendar {
   padding: 1em;
-  border-right: 5px solid colors.$light-grey;
+  margin-right: 5px;
+  background-color: colors.$white;
 }
 
 .cashbunny-overview__report {
   padding: 1em;
   overflow: hidden;
-  background-color: colors.$low-opacity-light-grey;
+  background-color: colors.$white;
 
   :deep(.datatable) {
     .dt-layout-row {

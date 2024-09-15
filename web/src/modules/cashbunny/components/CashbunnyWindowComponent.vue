@@ -56,11 +56,13 @@
               height="30"
               :fill="currentTab === Tabs.planner ? '#ebebeb' : undefined"
             />
-            {{ t('cashbunny.planner') }}
+            {{ t('cashbunny.planner.name') }}
           </div>
         </template>
         <template #planner>
-          <div class="cashbunny__tab-body"></div>
+          <div class="cashbunny__tab-body">
+            <PlannerComponent />
+          </div>
         </template>
         <template #schedules_label>
           <div class="cashbunny__tab-label">
@@ -119,6 +121,7 @@ import AccountsTabIconComponent from '@/modules/cashbunny/components/AccountsTab
 import OverviewTabIconComponent from '@/modules/cashbunny/components/OverviewTabIconComponent.vue'
 import TransactionsTabIconComponent from '@/modules/cashbunny/components/TransactionsTabIconComponent.vue'
 import OverviewComponent from './OverviewComponent.vue'
+import PlannerComponent from './PlannerComponent.vue'
 import PlannerTabIconComponent from './PlannerTabIconComponent.vue'
 import SchedulesComponent from './SchedulesComponent.vue'
 import SchedulesTabIconComponent from './SchedulesTabIconComponent.vue'
@@ -302,7 +305,5 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
 
 .cashbunny__tab-body {
   height: 100%;
-  background-color: colors.$white;
-  border-radius: 3px;
 }
 </style>
