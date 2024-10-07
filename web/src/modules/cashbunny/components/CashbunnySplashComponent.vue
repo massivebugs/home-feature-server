@@ -1,7 +1,7 @@
 <template>
   <WindowComponent
-    :pos="new RelativePosition(35, 35)"
-    :size="new RelativeSize(30, 30)"
+    class="cashbunny-splash-window"
+    pos="center"
     :hide-titlebar="true"
     :static="true"
   >
@@ -28,8 +28,6 @@
 import { onMounted, ref } from 'vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
 import type { APIResponse } from '@/core/models/dto'
-import { RelativePosition } from '@/core/models/relativePosition'
-import { RelativeSize } from '@/core/models/relativeSize'
 import { sleep } from '@/core/utils/time'
 import { isAPIError } from '@/utils/api'
 import { useCashbunnyStore } from '../stores'
@@ -103,7 +101,23 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@/assets/media-query';
 @use '@/assets/colors';
+
+.cashbunny-splash-window {
+  // TODO: Ugly overrides, make a more streamlined way for window sizing
+  min-width: 300px;
+  height: auto !important;
+  width: 90%;
+
+  @include media-query.md {
+    width: 70%;
+  }
+
+  @include media-query.lg {
+    width: 500px;
+  }
+}
 
 .cashbunny-splash__container {
   position: relative;

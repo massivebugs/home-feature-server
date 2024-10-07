@@ -27,7 +27,7 @@
         :label="t('cashbunny.accountCategory')"
         :options="['assets', 'liabilities', 'revenues', 'expenses']"
         :error-message="validationErrors.category"
-        v-model:value="formValues.category"
+        v-model="formValues.category"
       />
       <TextInputComponent
         name="accountDescription"
@@ -41,7 +41,7 @@
         :label="t('cashbunny.transactionCurrency')"
         :options="store.userPreferences?.user_currencies"
         :error-message="validationErrors.currency"
-        v-model:value="formValues.currency"
+        v-model="formValues.currency"
       />
     </div>
   </DialogComponent>
@@ -60,13 +60,6 @@ import type { RelativeSize } from '@/core/models/relativeSize'
 import type { AccountDto, CreateAccountDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 
-export type AccountFormValues = {
-  name: string
-  category: string
-  description: string
-  currency: string
-}
-
 const emit = defineEmits<{
   (e: 'success'): void
 }>()
@@ -81,7 +74,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const store = useCashbunnyStore()
-const formValues = ref<AccountFormValues>(
+const formValues = ref<CreateAccountDto>(
   props.account
     ? {
         name: props.account.name,
@@ -116,7 +109,7 @@ const onClickSubmit = async () => {
         category: formValues.value.category,
         description: formValues.value.description,
         currency: formValues.value.currency,
-        order_index: props.nextAccountIndex,
+        // order_index: props.nextAccountIndex,
       })
 
   await request

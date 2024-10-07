@@ -13,7 +13,7 @@ type AuthUserResponseDTO struct {
 	CreatedAt  time.Time `json:"created_at"`
 }
 
-func NewAuthUserResponseDTO(au auth.AuthUser) AuthUserResponseDTO {
+func NewAuthUserResponseDTO(au *auth.AuthUser) AuthUserResponseDTO {
 	return AuthUserResponseDTO{
 		ID:         au.ID,
 		Name:       au.Name,

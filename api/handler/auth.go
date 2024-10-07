@@ -1,64 +1,60 @@
 package handler
 
 import (
-	"database/sql"
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
-	"github.com/massivebugs/home-feature-server/api/config"
+	"github.com/massivebugs/home-feature-server/api"
 	"github.com/massivebugs/home-feature-server/api/response"
-	"github.com/massivebugs/home-feature-server/db/service/auth_repository"
-	"github.com/massivebugs/home-feature-server/internal/api"
+	"github.com/massivebugs/home-feature-server/db"
+	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/massivebugs/home-feature-server/internal/auth"
+	"github.com/massivebugs/home-feature-server/repository"
 )
 
 type AuthHandler struct {
-	cfg  *config.Config
+	*api.Handler
+	cfg  *api.Config
 	auth *auth.Auth
 }
 
-func NewAuthHandler(cfg *config.Config, db *sql.DB) *AuthHandler {
+func NewAuthHandler(cfg *api.Config, db *db.Handle, querier queries.Querier) *AuthHandler {
 	return &AuthHandler{
 		cfg: cfg,
 		auth: auth.NewAuth(
 			db,
-			auth_repository.New(),
+			repository.NewUserDBRepository(querier),
+			repository.NewUserPasswordDBRepository(querier),
+			repository.NewUserRefreshTokenDBRepository(querier),
 		),
 	}
 }
 
-func (h *AuthHandler) CreateUser(ctx echo.Context) *api.APIResponse {
-	req := new(auth.CreateUserRequestDTO)
+func (h *AuthHandler) CreateUser(c echo.Context) *api.APIResponse {
+	req := new(auth.CreateUserDTO)
 
-	if err := ctx.Bind(req); err != nil {
-		return api.NewAPIResponse(err, nil)
+	err := h.Validate(c, req)
+	if err != nil {
+		return h.CreateErrorResponse(err)
 	}
 
-	if err := ctx.Validate(req); err != nil {
-		return api.NewAPIResponse(err, nil)
-	}
+	err = h.auth.CreateAuthUser(c.Request().Context(), req)
 
-	err := h.auth.CreateAuthUser(ctx.Request().Context(), req)
-
-	return api.NewAPIResponse(err, nil)
+	return h.CreateResponse(err, nil)
 }
 
-func (h *AuthHandler) CreateJWTToken(ctx echo.Context) *api.APIResponse {
-	req := new(auth.UserAuthRequestDTO)
+func (h *AuthHandler) CreateJWTToken(c echo.Context) *api.APIResponse {
+	req := new(auth.UserAuthDTO)
 
-	if err := ctx.Bind(req); err != nil {
-		return api.NewAPIResponse(err, nil)
-	}
-
-	if err := ctx.Validate(req); err != nil {
-		return api.NewAPIResponse(err, nil)
+	err := h.Validate(c, req)
+	if err != nil {
+		return h.CreateErrorResponse(err)
 	}
 
 	now := time.Now()
 	token, refreshToken, err := h.auth.CreateJWTToken(
-		ctx.Request().Context(),
+		c.Request().Context(),
 		now,
 		h.cfg.AuthJWTSigningMethod,
 		h.cfg.AuthJWTSecret,
@@ -68,12 +64,11 @@ func (h *AuthHandler) CreateJWTToken(ctx echo.Context) *api.APIResponse {
 		h.cfg.RefreshJWTExpireSeconds,
 		req,
 	)
-
 	if err != nil {
-		return api.NewAPIResponse(err, nil)
+		return h.CreateErrorResponse(err)
 	}
 
-	ctx.SetCookie(&http.Cookie{
+	c.SetCookie(&http.Cookie{
 		Name:     h.cfg.AuthJWTCookieName,
 		Value:    token,
 		Path:     "/",
@@ -84,7 +79,7 @@ func (h *AuthHandler) CreateJWTToken(ctx echo.Context) *api.APIResponse {
 		Expires:  now.Add(time.Second * time.Duration(h.cfg.AuthJWTExpireSeconds)),
 	})
 
-	ctx.SetCookie(&http.Cookie{
+	c.SetCookie(&http.Cookie{
 		Name:     h.cfg.RefreshJWTCookieName,
 		Value:    refreshToken,
 		Path:     "/",
@@ -97,16 +92,15 @@ func (h *AuthHandler) CreateJWTToken(ctx echo.Context) *api.APIResponse {
 
 	result := response.NewCreateJWTTokenResponseDTO(token, refreshToken)
 
-	return api.NewAPIResponse(err, result)
+	return h.CreateResponse(nil, result)
 }
 
-func (h *AuthHandler) RefreshJWTToken(ctx echo.Context) *api.APIResponse {
-	oldRefreshToken := ctx.Get("user").(*jwt.Token)
-	claims := oldRefreshToken.Claims.(*auth.JWTClaims)
+func (h *AuthHandler) RefreshJWTToken(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
 
 	now := time.Now()
 	token, refreshToken, err := h.auth.RefreshJWTToken(
-		ctx.Request().Context(),
+		c.Request().Context(),
 		now,
 		h.cfg.AuthJWTSigningMethod,
 		h.cfg.AuthJWTSecret,
@@ -117,8 +111,11 @@ func (h *AuthHandler) RefreshJWTToken(ctx echo.Context) *api.APIResponse {
 		claims.UserID,
 		claims.TokenID,
 	)
+	if err != nil {
+		return h.CreateErrorResponse(err)
+	}
 
-	ctx.SetCookie(&http.Cookie{
+	c.SetCookie(&http.Cookie{
 		Name:     h.cfg.AuthJWTCookieName,
 		Value:    token,
 		Path:     "/",
@@ -129,7 +126,7 @@ func (h *AuthHandler) RefreshJWTToken(ctx echo.Context) *api.APIResponse {
 		Expires:  now.Add(time.Second * time.Duration(h.cfg.AuthJWTExpireSeconds)),
 	})
 
-	ctx.SetCookie(&http.Cookie{
+	c.SetCookie(&http.Cookie{
 		Name:     h.cfg.AuthJWTCookieName + "_refresh",
 		Value:    refreshToken,
 		Path:     "/",
@@ -142,14 +139,13 @@ func (h *AuthHandler) RefreshJWTToken(ctx echo.Context) *api.APIResponse {
 
 	result := response.NewCreateJWTTokenResponseDTO(token, refreshToken)
 
-	return api.NewAPIResponse(err, result)
+	return h.CreateResponse(nil, result)
 }
 
-func (h *AuthHandler) GetAuthUser(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
+func (h *AuthHandler) GetAuthUser(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
 
-	result, err := h.auth.GetAuthUser(ctx.Request().Context(), claims)
+	result, err := h.auth.GetAuthUser(c.Request().Context(), claims)
 
-	return api.NewAPIResponse(err, response.NewAuthUserResponseDTO(result))
+	return h.CreateResponse(err, response.NewAuthUserResponseDTO(result))
 }

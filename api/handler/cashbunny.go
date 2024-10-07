@@ -1,39 +1,43 @@
 package handler
 
 import (
-	"database/sql"
 	"strconv"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
+	"github.com/massivebugs/home-feature-server/api"
 	"github.com/massivebugs/home-feature-server/api/response"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
-	"github.com/massivebugs/home-feature-server/internal/api"
-	"github.com/massivebugs/home-feature-server/internal/auth"
+	"github.com/massivebugs/home-feature-server/db"
+	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
+	"github.com/massivebugs/home-feature-server/repository"
 )
 
 type CashbunnyHandler struct {
+	*api.Handler
 	cashbunny *cashbunny.Cashbunny
 }
 
-func NewCashbunnyHandler(db *sql.DB) *CashbunnyHandler {
+func NewCashbunnyHandler(db *db.Handle, querier queries.Querier) *CashbunnyHandler {
 	return &CashbunnyHandler{
 		cashbunny: cashbunny.NewCashbunny(
 			db,
-			cashbunny_repository.NewCashbunnyRepository(),
+			repository.NewAccountDBRepository(querier),
+			repository.NewScheduledTransactionDBRepository(querier),
+			repository.NewTransactionDBRepository(querier),
+			repository.NewRecurrenceRuleDBRepository(querier),
+			repository.NewCurrencyDBRepository(querier),
+			repository.NewUserPreferencesDBRepository(querier),
 		),
 	}
 }
 
-func (h *CashbunnyHandler) GetOverview(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
+func (h *CashbunnyHandler) GetOverview(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
 
-	qFrom, _ := strconv.Atoi(ctx.QueryParam("from"))
+	qFrom, _ := strconv.Atoi(c.QueryParam("from"))
 
-	qTo, _ := strconv.Atoi(ctx.QueryParam("to"))
+	qTo, _ := strconv.Atoi(c.QueryParam("to"))
 
 	var from time.Time
 	var to time.Time
@@ -50,126 +54,151 @@ func (h *CashbunnyHandler) GetOverview(ctx echo.Context) *api.APIResponse {
 		to = time.Unix(int64(qTo), 0)
 	}
 
-	ledger, transactionsFromScheduled, err := h.cashbunny.GetOverview(ctx.Request().Context(), claims.UserID, from, to)
+	ledger, transactionsFromScheduled, err := h.cashbunny.GetOverview(c.Request().Context(), claims.UserID, from, to)
 	if err != nil {
-		return api.NewAPIResponse(err, "")
+		return h.CreateErrorResponse(err)
 	}
 
-	return api.NewAPIResponse(nil, response.NewGetOverviewResponseDTO(from, to, ledger, transactionsFromScheduled))
+	return h.CreateResponse(nil, response.NewGetOverviewResponseDTO(from, to, ledger, transactionsFromScheduled))
 }
 
-func (h *CashbunnyHandler) GetCurrencies(ctx echo.Context) *api.APIResponse {
-	result := h.cashbunny.GetAllCurrencies(ctx.Request().Context())
+func (h *CashbunnyHandler) GetPlan(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
 
-	return api.NewAPIResponse(nil, response.NewGetAllCurrenciesResponseDTO(result))
-}
-
-func (h *CashbunnyHandler) GetUserPreferences(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
-
-	result, err := h.cashbunny.GetUserPreferences(ctx.Request().Context(), claims.UserID)
+	planner, err := h.cashbunny.GetPlan(c.Request().Context(), claims.UserID)
 	if err != nil {
-		return api.NewAPIResponse(err, "")
+		return h.CreateErrorResponse(err)
 	}
 
-	return api.NewAPIResponse(nil, response.NewGetUserPreferencesDTO(result))
+	return h.CreateResponse(nil, response.NewGetPlanResponseDTO(planner))
 }
 
-func (h *CashbunnyHandler) CreateDefaultUserPreferences(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
+func (h *CashbunnyHandler) GetPlannerParameters(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
 
-	result, err := h.cashbunny.CreateDefaultUserPreferences(ctx.Request().Context(), claims.UserID)
+	aas, srts, slts, err := h.cashbunny.GetPlannerParameters(c.Request().Context(), claims.UserID)
 	if err != nil {
-		return api.NewAPIResponse(err, "")
+		return h.CreateErrorResponse(err)
 	}
 
-	return api.NewAPIResponse(nil, response.NewGetUserPreferencesDTO(result))
+	return h.CreateResponse(nil, response.NewGetPlannerParametersResponseDTO(aas, srts, slts))
 }
 
-func (h *CashbunnyHandler) CreateAccount(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
+func (h *CashbunnyHandler) SavePlannerParameters(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
 
-	req := new(cashbunny.CreateAccountRequestDTO)
-
-	if err := ctx.Bind(req); err != nil {
-		return api.NewAPIResponse(err, "")
-	}
-
-	if err := ctx.Validate(req); err != nil {
-		return api.NewAPIResponse(err, "")
-	}
-
-	err := h.cashbunny.CreateAccount(ctx.Request().Context(), claims.UserID, req)
-
-	return api.NewAPIResponse(err, nil)
-}
-
-func (h *CashbunnyHandler) ListAccounts(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
-
-	result, err := h.cashbunny.ListAccounts(ctx.Request().Context(), claims.UserID)
-
-	return api.NewAPIResponse(err, response.NewListAccountsResponseDTO(result))
-}
-
-func (h *CashbunnyHandler) DeleteAccount(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
-
-	accountID, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
+	req := new(cashbunny.SavePlannerParametersDTO)
+	err := h.Validate(c, req)
 	if err != nil {
-		return api.NewAPIResponse(err, "")
+		return h.CreateErrorResponse(err)
 	}
 
-	err = h.cashbunny.DeleteAccount(ctx.Request().Context(), claims.UserID, uint32(accountID))
-
-	return api.NewAPIResponse(err, nil)
-
-}
-
-func (h *CashbunnyHandler) CreateTransaction(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
-
-	req := new(cashbunny.CreateTransactionRequestDTO)
-
-	if err := ctx.Bind(req); err != nil {
-		return api.NewAPIResponse(err, "")
-	}
-
-	if err := ctx.Validate(req); err != nil {
-		return api.NewAPIResponse(err, "")
-	}
-
-	err := h.cashbunny.CreateTransaction(ctx.Request().Context(), claims.UserID, req)
-
-	return api.NewAPIResponse(err, nil)
-}
-
-func (h *CashbunnyHandler) ListTransactions(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
-
-	result, err := h.cashbunny.ListTransactions(ctx.Request().Context(), claims.UserID)
-
-	return api.NewAPIResponse(err, response.NewListTransactionsResponseDTO(result))
-}
-
-func (h *CashbunnyHandler) DeleteTransaction(ctx echo.Context) *api.APIResponse {
-	token := ctx.Get("user").(*jwt.Token)
-	claims := token.Claims.(*auth.JWTClaims)
-
-	transactionId, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
+	planner, err := h.cashbunny.SavePlannerParameters(c.Request().Context(), claims.UserID, req)
 	if err != nil {
-		return api.NewAPIResponse(err, "")
+		return h.CreateErrorResponse(err)
 	}
 
-	err = h.cashbunny.DeleteTransaction(ctx.Request().Context(), claims.UserID, uint32(transactionId))
+	return h.CreateResponse(nil, response.NewGetPlanResponseDTO(planner))
+}
 
-	return api.NewAPIResponse(err, nil)
+func (h *CashbunnyHandler) GetCurrencies(c echo.Context) *api.APIResponse {
+	result := h.cashbunny.GetAllCurrencies(c.Request().Context())
+
+	return h.CreateResponse(nil, response.NewGetAllCurrenciesResponseDTO(result))
+}
+
+func (h *CashbunnyHandler) GetUserPreferences(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
+
+	result, err := h.cashbunny.GetUserPreferences(c.Request().Context(), claims.UserID)
+	if err != nil {
+		return h.CreateErrorResponse(err)
+	}
+
+	return h.CreateResponse(nil, response.NewGetUserPreferencesDTO(result))
+}
+
+func (h *CashbunnyHandler) CreateDefaultUserPreferences(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
+
+	result, err := h.cashbunny.CreateDefaultUserPreferences(c.Request().Context(), claims.UserID)
+	if err != nil {
+		return h.CreateErrorResponse(err)
+	}
+
+	return h.CreateResponse(nil, response.NewGetUserPreferencesDTO(result))
+}
+
+func (h *CashbunnyHandler) CreateAccount(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
+
+	req := new(cashbunny.CreateAccountDTO)
+
+	err := h.Validate(c, req)
+	if err != nil {
+		return h.CreateErrorResponse(err)
+	}
+
+	err = h.cashbunny.CreateAccount(c.Request().Context(), claims.UserID, req)
+
+	return h.CreateResponse(err, nil)
+}
+
+func (h *CashbunnyHandler) ListAccounts(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
+
+	result, err := h.cashbunny.ListAccounts(c.Request().Context(), claims.UserID, time.Now())
+
+	return h.CreateResponse(err, response.NewListAccountsResponseDTO(result))
+}
+
+func (h *CashbunnyHandler) DeleteAccount(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
+
+	accountID, err := strconv.ParseInt(c.Param("id"), 10, 32)
+	if err != nil {
+		return h.CreateErrorResponse(err)
+	}
+
+	err = h.cashbunny.DeleteAccount(c.Request().Context(), claims.UserID, uint32(accountID))
+
+	return h.CreateResponse(err, nil)
+
+}
+
+func (h *CashbunnyHandler) CreateTransaction(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
+
+	req := new(cashbunny.CreateTransactionDTO)
+
+	err := h.Validate(c, req)
+	if err != nil {
+		return h.CreateErrorResponse(err)
+	}
+
+	err = h.cashbunny.CreateTransaction(c.Request().Context(), claims.UserID, req)
+
+	return h.CreateResponse(err, nil)
+}
+
+func (h *CashbunnyHandler) ListTransactions(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
+
+	result, err := h.cashbunny.ListTransactions(c.Request().Context(), claims.UserID)
+
+	return h.CreateResponse(err, response.NewListTransactionsResponseDTO(result))
+}
+
+func (h *CashbunnyHandler) DeleteTransaction(c echo.Context) *api.APIResponse {
+	claims := h.GetTokenClaims(c)
+
+	transactionId, err := strconv.ParseInt(c.Param("id"), 10, 32)
+	if err != nil {
+		return h.CreateErrorResponse(err)
+	}
+
+	err = h.cashbunny.DeleteTransaction(c.Request().Context(), claims.UserID, uint32(transactionId))
+
+	return h.CreateResponse(err, nil)
 
 }

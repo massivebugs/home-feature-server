@@ -1,0 +1,24 @@
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// Medium size
+@mixin md {
+  @media (min-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+// Large size
+@mixin lg {
+  @media (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+// Extra Large size
+@mixin xl {
+  @media (min-width: $breakpoint-xl) {
+    @content;
+  }
+}

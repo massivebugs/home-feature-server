@@ -7,11 +7,16 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/massivebugs/home-feature-server/api/config"
-	api_middleware "github.com/massivebugs/home-feature-server/api/middleware"
-	"github.com/massivebugs/home-feature-server/api/route"
-	"github.com/massivebugs/home-feature-server/internal/api"
+	"github.com/massivebugs/home-feature-server/api"
+	"github.com/massivebugs/home-feature-server/db"
 )
+
+type apiMiddlewares struct {
+	CSRF       echo.MiddlewareFunc
+	CORS       echo.MiddlewareFunc
+	JWT        echo.MiddlewareFunc
+	JWTRefresh echo.MiddlewareFunc
+}
 
 func main() {
 	// TODO: Only in local?
@@ -21,13 +26,13 @@ func main() {
 	}
 
 	fmt.Println("Checking config...")
-	cfg := config.NewConfig()
+	cfg := api.NewConfig()
 	if err := cfg.Load(); err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Creating database connection...")
-	db, err := config.CreateDatabaseConnection(cfg)
+	db, err := db.OpenMySQLDatabase(cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBDatabase)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,16 +42,21 @@ func main() {
 
 	fmt.Println("Attaching middlewares...")
 
-	apiMiddleware := api_middleware.NewAPIMiddleware(cfg)
+	apiMiddlewares := apiMiddlewares{
+		CSRF:       api.NewCSRFMiddleware(cfg),
+		CORS:       api.NewCORSMiddleware(cfg),
+		JWT:        api.NewJWTMiddleware(cfg),
+		JWTRefresh: api.NewJWTRefreshMiddleware(cfg),
+	}
 
 	// Globally applied middleware
 	// Route based middlewares can be applied at RegisterRoutes()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(apiMiddleware.CORS)
+	e.Use(apiMiddlewares.CORS)
 
 	fmt.Println("Registering routes...")
-	route.RegisterRoutes(e, cfg, apiMiddleware, db)
+	registerRoutes(e, cfg, apiMiddlewares, db)
 
 	e.Logger.Fatal(e.StartTLS(":"+cfg.APIPort, cfg.TLSCertificate, cfg.TLSKey))
 }

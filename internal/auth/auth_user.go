@@ -3,7 +3,7 @@ package auth
 import (
 	"time"
 
-	"github.com/massivebugs/home-feature-server/db/service/auth_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
 type AuthUser struct {
@@ -13,11 +13,16 @@ type AuthUser struct {
 	CreatedAt  time.Time
 }
 
-func NewAuthUser(user *auth_repository.User, claims *JWTClaims) AuthUser {
-	return AuthUser{
-		ID:         user.ID,
-		Name:       user.Name,
-		LoggedInAt: claims.IssuedAt.Time,
-		CreatedAt:  user.CreatedAt,
+func NewAuthUserFromDBGateway(u *queries.User) *AuthUser {
+	user := &AuthUser{
+		ID:        u.ID,
+		Name:      u.Name,
+		CreatedAt: u.CreatedAt,
 	}
+
+	return user
+}
+
+func (u *AuthUser) SetLoginTime(claims *JWTClaims) {
+	u.LoggedInAt = claims.IssuedAt.Time
 }

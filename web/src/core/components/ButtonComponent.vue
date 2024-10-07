@@ -10,7 +10,12 @@
 
 <script lang="ts">
 export const ButtonTypes = {
+  primary: 'primary',
   success: 'success',
+  info: 'info',
+  warning: 'warning',
+  danger: 'danger',
+  dark: 'dark',
 } as const
 export type ButtonType = (typeof ButtonTypes)[keyof typeof ButtonTypes]
 </script>
@@ -27,6 +32,7 @@ defineProps<{
 </script>
 
 <style scoped lang="scss">
+@use 'sass:color';
 @use '@/assets/colors';
 
 .hfs-button {
@@ -43,6 +49,11 @@ defineProps<{
   // Button types
   background-color: colors.$white;
 
+  &:disabled {
+    background-color: colors.$light-grey !important;
+    color: colors.$dark-grey !important;
+  }
+
   &:hover:not(:disabled) {
     background-color: darken(colors.$white, 10);
   }
@@ -51,18 +62,45 @@ defineProps<{
     background-color: darken(colors.$white, 20);
   }
 
-  // Success
-  &.hfs-button_success {
-    background-color: colors.$skobeloff;
-    color: colors.$white;
+  @mixin button-styles($bg-color) {
+    background-color: $bg-color;
 
     &:hover:not(:disabled) {
-      background-color: darken(colors.$skobeloff, 10);
+      background-color: darken($bg-color, 9);
     }
 
     &:active:not(:disabled) {
-      background-color: darken(colors.$skobeloff, 20);
+      background-color: darken($bg-color, 19);
     }
+  }
+
+  &.hfs-button_primary {
+    @include button-styles(colors.$deep-sea-blue);
+    color: colors.$white;
+  }
+
+  &.hfs-button_success {
+    @include button-styles(colors.$skobeloff);
+    color: colors.$white;
+  }
+
+  &.hfs-button_info {
+    @include button-styles(colors.$viridian);
+    color: colors.$white;
+  }
+
+  &.hfs-button_warning {
+    @include button-styles(colors.$peach);
+  }
+
+  &.hfs-button_danger {
+    @include button-styles(color.scale(colors.$red-cmyk, $saturation: -10%));
+    color: colors.$white;
+  }
+
+  &.hfs-button_dark {
+    @include button-styles(colors.$rich-black);
+    color: colors.$white;
   }
 }
 </style>

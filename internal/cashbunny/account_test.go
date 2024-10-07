@@ -14,7 +14,7 @@ func TestAccount_Validate(t *testing.T) {
 		Category             AccountCategory
 		Name                 string
 		Description          string
-		Balance              *money.Money
+		Currency             string
 		CreatedAt            time.Time
 		UpdatedAt            time.Time
 		IncomingTransactions []*Transaction
@@ -32,7 +32,7 @@ func TestAccount_Validate(t *testing.T) {
 				Category:             AccountCategoryAssets,
 				Name:                 "Foo",
 				Description:          "Bar",
-				Balance:              money.NewFromFloat(100, "JPY"),
+				Currency:             money.JPY,
 				CreatedAt:            time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
 				UpdatedAt:            time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
 				IncomingTransactions: []*Transaction{},
@@ -47,7 +47,7 @@ func TestAccount_Validate(t *testing.T) {
 				Category:             tt.fields.Category,
 				Name:                 tt.fields.Name,
 				Description:          tt.fields.Description,
-				Balance:              tt.fields.Balance,
+				Currency:             tt.fields.Currency,
 				CreatedAt:            tt.fields.CreatedAt,
 				UpdatedAt:            tt.fields.UpdatedAt,
 				IncomingTransactions: tt.fields.IncomingTransactions,

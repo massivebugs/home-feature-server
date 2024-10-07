@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/Rhymond/go-money"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
 type ScheduledTransaction struct {
@@ -21,13 +21,13 @@ type ScheduledTransaction struct {
 	DestinationAccount *Account
 }
 
-func NewScheduledTransaction(
-	stData *cashbunny_repository.CashbunnyScheduledTransaction,
-	rrData *cashbunny_repository.CashbunnyRecurrenceRule,
-	sAData *cashbunny_repository.CashbunnyAccount,
-	dAData *cashbunny_repository.CashbunnyAccount,
+func NewScheduledTransactionFromDBGateway(
+	stData *queries.CashbunnyScheduledTransaction,
+	rrData *queries.CashbunnyRecurrenceRule,
+	sAData *queries.CashbunnyAccount,
+	dAData *queries.CashbunnyAccount,
 ) (*ScheduledTransaction, error) {
-	rr, err := NewRecurrenceRuleFromData(rrData)
+	rr, err := NewRecurrenceRuleFromDBGateway(rrData)
 	if err != nil {
 		return nil, err
 	}
@@ -45,11 +45,11 @@ func NewScheduledTransaction(
 	}
 
 	if sAData != nil {
-		result.SourceAccount = NewAccount(sAData)
+		result.SourceAccount = NewAccountFromDBGateway(sAData, nil)
 	}
 
 	if dAData != nil {
-		result.DestinationAccount = NewAccount(dAData)
+		result.DestinationAccount = NewAccountFromDBGateway(dAData, nil)
 	}
 
 	return result, nil
@@ -73,4 +73,12 @@ func (st *ScheduledTransaction) ToTransactions(from time.Time, to time.Time) []*
 	}
 
 	return result
+}
+
+func (str *ScheduledTransaction) IsRevenueTransaction() bool {
+	return str.SourceAccount.Category == AccountCategoryRevenues && str.DestinationAccount.Category == AccountCategoryAssets
+}
+
+func (str *ScheduledTransaction) IsLiabilityTransaction() bool {
+	return str.SourceAccount.Category == AccountCategoryAssets && str.DestinationAccount.Category == AccountCategoryLiabilities
 }

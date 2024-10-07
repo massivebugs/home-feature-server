@@ -2,11 +2,12 @@ package handler
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/massivebugs/home-feature-server/internal/api"
+	"github.com/massivebugs/home-feature-server/api"
 	"github.com/massivebugs/home-feature-server/internal/repeat"
 )
 
 type RepeatHandler struct {
+	*api.Handler
 	repeat *repeat.Repeat
 }
 
@@ -16,18 +17,15 @@ func NewRepeatHandler() *RepeatHandler {
 	}
 }
 
-func (h *RepeatHandler) Repeat(ctx echo.Context) *api.APIResponse {
-	req := new(repeat.RepeatRequestDTO)
+func (h *RepeatHandler) Repeat(c echo.Context) *api.APIResponse {
+	req := new(repeat.RepeatDTO)
 
-	if err := ctx.Bind(req); err != nil {
-		return api.NewAPIResponse(err, "")
+	err := h.Validate(c, req)
+	if err != nil {
+		return h.CreateErrorResponse(err)
 	}
 
-	if err := ctx.Validate(req); err != nil {
-		return api.NewAPIResponse(err, "")
-	}
+	result := h.repeat.Run(c.Request().Context(), req)
 
-	result := h.repeat.Run(ctx.Request().Context(), req)
-
-	return api.NewAPIResponse(nil, result)
+	return h.CreateResponse(nil, result)
 }

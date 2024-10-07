@@ -29,7 +29,7 @@
         <p>full-stack engineer to develop and maintain features</p>
         <p>Projects</p>
         <ul>
-          <li>LEAN BODY</li>
+          <li>...</li>
         </ul>
         <p>...</p>
         <p>Did various projects for clients, made company product</p>
@@ -126,12 +126,12 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
     isMenu: true,
     items: [
       {
-        label: 'File',
+        label: t('common.file'),
         contextMenuOptions: {
           itemGroups: [
             [
               {
-                label: t('portfolio.exit'),
+                label: t('common.exit'),
                 shortcutKey: 'Alt+F4',
                 isDisabled: false,
                 onClick: () => {
@@ -143,7 +143,7 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
         },
       },
       {
-        label: t('portfolio.help'),
+        label: t('common.help'),
         contextMenuOptions: {
           itemGroups: [
             [
@@ -157,7 +157,7 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
             ],
             [
               {
-                label: t('portfolio.about'),
+                label: t('common.about'),
                 isDisabled: false,
                 onClick: () => {
                   showAboutDialog.value = true

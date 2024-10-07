@@ -3,7 +3,7 @@ package cashbunny
 import (
 	"time"
 
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/teambition/rrule-go"
 )
 
@@ -25,7 +25,7 @@ func NewRecurrenceRuleWithDefaultParams(freq rrule.Frequency, dtStart time.Time)
 	}, err
 }
 
-func NewRecurrenceRuleFromData(data *cashbunny_repository.CashbunnyRecurrenceRule) (*RecurrenceRule, error) {
+func NewRecurrenceRuleFromDBGateway(data *queries.CashbunnyRecurrenceRule) (*RecurrenceRule, error) {
 	rrFreq, err := rrule.StrToFreq(data.Freq)
 	if err != nil {
 		return nil, err
