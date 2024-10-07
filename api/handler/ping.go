@@ -2,11 +2,12 @@ package handler
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/massivebugs/home-feature-server/internal/api"
+	"github.com/massivebugs/home-feature-server/api"
 	"github.com/massivebugs/home-feature-server/internal/ping"
 )
 
 type PingHandler struct {
+	*api.Handler
 	ping *ping.Ping
 }
 
@@ -16,8 +17,8 @@ func NewPingHandler() *PingHandler {
 	}
 }
 
-func (h *PingHandler) Ping(ctx echo.Context) *api.APIResponse {
-	result := h.ping.Run(ctx.Request().Context())
+func (h *PingHandler) Ping(c echo.Context) *api.APIResponse {
+	result := h.ping.Run(c.Request().Context())
 
-	return api.NewAPIResponse(nil, result)
+	return h.CreateResponse(nil, result)
 }

@@ -73,8 +73,8 @@ defineProps<{
 }>()
 
 const { t } = useI18n()
-const username = ref('testuser')
-const password = ref('test_password_123')
+const username = ref('public')
+const password = ref('')
 
 const onClickSuccess = () => {
   emit('submit', { username: username.value, password: password.value })

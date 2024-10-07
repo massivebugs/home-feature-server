@@ -5,7 +5,7 @@ import (
 
 	"github.com/Rhymond/go-money"
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
 type AccountCategory string
@@ -26,23 +26,28 @@ type Account struct {
 	Category    AccountCategory
 	Name        string
 	Description string
-	Balance     *money.Money
+	Currency    string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 
 	IncomingTransactions []*Transaction
 	OutgoingTransactions []*Transaction
+	Amount               *money.Money
 }
 
-func NewAccount(account *cashbunny_repository.CashbunnyAccount) *Account {
+func NewAccountFromDBGateway(account *queries.CashbunnyAccount, amount *float64) *Account {
 	a := &Account{
 		ID:          account.ID,
 		Category:    AccountCategory(account.Category),
 		Name:        account.Name,
 		Description: account.Description,
-		Balance:     money.NewFromFloat(account.Balance, account.Currency),
+		Currency:    account.Currency,
 		CreatedAt:   account.CreatedAt,
 		UpdatedAt:   account.UpdatedAt,
+	}
+
+	if amount != nil {
+		a.Amount = money.NewFromFloat(*amount, a.Currency)
 	}
 
 	return a
@@ -70,9 +75,8 @@ func (a *Account) Validate() error {
 			validation.Required,
 		),
 		validation.Field(
-			&a.Balance,
+			&a.Currency,
 			validation.Required,
-			validation.By(IsMoneyNotNegative(a.Balance)),
 		),
 	)
 }

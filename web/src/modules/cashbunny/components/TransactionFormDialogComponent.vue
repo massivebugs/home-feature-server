@@ -35,16 +35,16 @@
       <SelectInputComponent
         name="sourceAccount"
         :label="t('cashbunny.transactionSourceAccount')"
-        :options="accounts.map((a) => a.id)"
+        :options="accounts.map((a) => ({ label: a.name, value: a.id }))"
         :error-message="validationErrors.source_account_id"
-        v-model:value="formValues.sourceAccountId"
+        v-model="formValues.sourceAccountId"
       />
       <SelectInputComponent
         name="destinationAccount"
         :label="t('cashbunny.transactionDestinationAccount')"
-        :options="accounts.map((a) => a.id)"
+        :options="accounts.map((a) => ({ label: a.name, value: a.id }))"
         :error-message="validationErrors.destination_account_id"
-        v-model:value="formValues.destinationAccountId"
+        v-model="formValues.destinationAccountId"
       />
       <DateTimeInputComponent
         name="transactedAt"

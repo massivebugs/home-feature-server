@@ -16,13 +16,5 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(createI18n(i18nOptions))
 app.use(router)
-// app.use(mediaQuery, {
-//   breakpoints: {
-//     xl: 1200,
-//     l: 992,
-//     m: 768,
-//     s: 576,
-//   },
-// })
 
 app.mount('#app')

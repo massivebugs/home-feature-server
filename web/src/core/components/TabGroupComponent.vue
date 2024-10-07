@@ -1,27 +1,22 @@
 <template>
-  <section class="tabs">
-    <menu>
-      <button
-        role="tab"
-        v-for="tab in tabs"
-        :key="tab.id"
-        :aria-selected="isCurrentTab(tab.id)"
-        :aria-controls="tab.id"
-        class="tab"
-        :class="{
-          selected: isCurrentTab(tab.id),
-        }"
-        @click="emit('tabClick', { tabId: tab.id })"
-      >
-        <slot :name="tab.id + '_label'">
-          {{ tab.label }}
-        </slot>
-      </button>
-    </menu>
-    <article>
-      <slot :name="selectedTabId" />
-    </article>
-  </section>
+  <menu class="hfs-tab-group">
+    <button
+      role="tab"
+      v-for="tab in tabs"
+      :key="tab.id"
+      :aria-selected="isCurrentTab(tab.id)"
+      :aria-controls="tab.id"
+      class="hfs-tab-group__tab"
+      :class="{
+        'hfs-tab-group__tab-selected': isCurrentTab(tab.id),
+      }"
+      @click="emit('tabClick', { tabId: tab.id })"
+    >
+      <slot :name="tab.id">
+        {{ tab.label }}
+      </slot>
+    </button>
+  </menu>
 </template>
 
 <script setup lang="ts">
@@ -50,25 +45,25 @@ const isCurrentTab = (tabId: string) => {
 
 <style scoped lang="scss">
 @use '@/assets/colors';
-.tabs {
+.hfs-tab-group {
   display: flex;
-  flex-direction: column;
-}
-
-.tabs > menu {
   padding: 0;
   margin: 0;
-  margin-bottom: 0.3em;
   user-select: none;
-
-  .tab.selected {
-    background-color: colors.$dark-grey;
-    color: colors.$white;
-    border-top: 3px solid colors.$white;
-  }
+  flex-wrap: wrap;
 }
 
-.tabs > article {
-  flex: 1;
+.hfs-tab-group__tab {
+  padding: 0.3em 0.5em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+}
+
+.hfs-tab-group__tab-selected {
+  background-color: colors.$dark-grey;
+  color: colors.$white;
+  border-top: 3px solid colors.$white;
 }
 </style>

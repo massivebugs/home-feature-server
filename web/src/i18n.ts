@@ -1,17 +1,29 @@
 import type { I18nOptions } from 'vue-i18n'
 
+export const Locales = {
+  en: 'en',
+  ja: 'ja',
+}
+export type Locale = (typeof Locales)[keyof typeof Locales]
+
 export const i18nOptions: I18nOptions = {
   legacy: false,
-  locale: 'en',
-  fallbackLocale: 'ja',
+  fallbackLocale: Locales.en,
   messages: {
     en: {
       common: {
         back: 'Back',
         continue: 'Continue',
+        save: 'Save',
+        close: 'Close',
+        help: 'Help',
+        action: 'Action',
+        file: 'File',
+        exit: 'Exit',
+        about: 'About {v}',
       },
       app: {
-        name: 'Massivebugs Systems',
+        name: 'Home Feature Server',
       },
       login: {
         title: 'Log into @:app.name',
@@ -28,10 +40,17 @@ export const i18nOptions: I18nOptions = {
       },
       systemSettings: {
         name: 'System Settings',
-        file: 'File',
-        exit: 'Exit',
-        help: 'Help',
-        about: 'About Massivebugs Systems',
+        locale: {
+          default: 'Use system defaults',
+          en: 'English',
+          ja: '日本語',
+        },
+        preferences: {
+          title: 'Preferences',
+          language: {
+            title: 'Language',
+          },
+        },
       },
       cashbunny: {
         name: 'Cashbunny',
@@ -40,108 +59,139 @@ export const i18nOptions: I18nOptions = {
         processAlreadyExistsMessage: 'This program can have only one running process',
         errorLoadingDataTitle: 'Error',
         errorLoadingDataMessage: 'An error occured while loading data: {e}',
+        assets: {
+          name: 'Assets',
+        },
+        liabilities: {
+          name: 'Liabilities',
+        },
+        recurrenceRule: {
+          freq: 'Frequency',
+          dtstart: 'Start from',
+          count: 'Max recurrences',
+          interval: 'Interval',
+          until: 'End on',
+          frequencies: {
+            YEARLY: 'Yearly',
+            MONTHLY: 'Monthly',
+            WEEKLY: 'Weekly',
+            DAILY: 'Daily',
+            HOURLY: 'Hourly',
+            MINUTELY: 'Minutely',
+            SECONDLY: 'Secondly',
+          },
+        },
+        featuresOverview: {
+          name: 'Overview of features',
+        },
         overview: 'Overview',
         planner: {
           name: 'Planner',
           wizard: {
             welcome: {
+              name: 'Welcome',
               question:
-                "Welcome! Let's set up your budget plan.\nWe will ask you a few questions about your current budget status.\nThe questions may take a few minutes to complete.\nWould you like to get started now?",
+                "Welcome! Let's set up your budget plan.\nWe will ask you a few questions about your current budget status.",
+              info: 'The questions may take a few minutes to complete.\nWould you like to get started now?',
               yes: "Yes, let's get started",
               no: 'No, remind me later',
             },
             assets: {
+              name: 'Assets',
               question:
                 'What are your current assets?\nPlease list your accounts and their balances.',
-              options: {
-                cash: 'Cash (Enter Amount)',
-                bankAccounts: 'Bank Accounts (List and enter balances for each account)',
-                investments: 'Investments (List stocks, bonds, etc., with amounts)',
-                otherAssets: 'Other Assets (e.g., property, vehicles, etc.)',
-              },
               info: 'Assets are things you own that can be converted to cash or have value.',
             },
-            liabilities: {
-              question:
-                'Do you have any current liabilities?\nPlease list your debts and the amounts.',
-              options: {
-                mortgage: 'Mortgage (Enter amount owed)',
-                creditCardDebt: 'Credit Card Debt (List accounts and balances)',
-                studentLoans: 'Student Loans (Enter amount owed)',
-                personalLoans: 'Personal Loans (Enter amount owed)',
-                otherDebts: 'Other Debts (e.g., car loans, medical debts, etc.)',
-              },
-              info: 'Liabilities are debts or obligations that you owe.',
-            },
             revenues: {
+              name: 'Revenues',
               question:
                 'What are your sources of income?\nPlease provide details for your revenue.',
-              options: {
-                salary: 'Salary/Wages (Enter amount and frequency)',
-                investmentIncome: 'Investment Income (List source and amount)',
-                freelance: 'Freelance or Side Jobs (Enter amounts)',
-                otherIncome: 'Other Income (e.g., alimony, government benefits, etc.)',
-              },
               info: 'Include any income you receive regularly.',
             },
+            liabilities: {
+              name: 'Liabilities',
+              question:
+                'Do you have any current liabilities?\nPlease list your debts and the amounts.',
+              info: 'Liabilities are debts or obligations that you owe.',
+            },
             expenses: {
+              name: 'Expenses',
               question:
                 'What are your regular monthly expenses?\nPlease categorize and enter amounts.',
-              options: {
-                rent: 'Rent/Mortgage Payment (Enter amount)',
-                utilities: 'Utilities (Water, electricity, internet, etc.)',
-                groceries: 'Groceries (Enter average monthly amount)',
-                transportation: 'Transportation (Fuel, car payment, public transit)',
-                entertainment: 'Entertainment (Streaming, dining out, etc.)',
-                subscriptions: 'Subscriptions (e.g., Netflix, gym membership)',
-                savings: 'Savings (Enter planned savings)',
-                other: 'Other (Medical, childcare, etc.)',
-              },
-            },
-            scheduledTransactions: {
-              question:
-                'Do you have any scheduled transactions?\nSet up recurring payments and income here.',
-              options: {
-                income: 'Income: (e.g., salary paid on the 1st and 15th)',
-                expenses: 'Expenses: (e.g., rent due on the 1st, credit card payment on the 20th)',
-              },
-              info: 'Scheduled transactions can be set to recur automatically for easy tracking.',
-            },
-            savingsGoals: {
-              question:
-                'What are your savings goals?\nSet specific targets for your financial future.',
-              options: {
-                emergencyFund: 'Emergency Fund (Enter goal amount and timeframe)',
-                vacation: 'Vacation Savings (Enter goal amount and timeframe)',
-                retirement: 'Retirement (Enter goal amount and timeframe)',
-                largePurchases: 'Large Purchases (e.g., new car, home renovation)',
-              },
-              info: 'We’ll help you calculate how much to save each month to reach these goals.',
-            },
-            notifications: {
-              question:
-                'Would you like to receive notifications for scheduled transactions and important updates?',
-              options: {
-                email: 'Email',
-                sms: 'SMS/Text',
-                pushNotifications: 'Push Notifications',
-                noNotifications: 'No, I don’t need notifications',
-              },
-            },
-            suggestions: {
-              question:
-                "Based on your input, here's a summary of your current financial situation.\nWould you like to receive suggestions to help you meet your savings goals?",
-              yes: 'Yes, show me suggestions',
-              no: 'No, I’m comfortable with my current plan',
-              suggestions: {
-                reduceSpending: 'Cut non-essential spending (e.g., reduce entertainment expenses)',
-                saveMore: 'Set aside more for savings each month (specific amount)',
-                payOffDebt: 'Pay off high-interest debt first',
-              },
+              info: 'Include any expenses you spend regularly.',
             },
             complete: {
-              question: 'Your budget planner is set up!\n You may now exit the wizard.',
-              complete: 'complete',
+              name: 'Complete',
+              question: 'Your budget planner is set up!',
+              info: 'You may now exit the wizard.',
+            },
+          },
+          asset: {
+            name: 'Name',
+            namePlaceholder: 'Checking account, savings in Some Bank',
+            description: 'Description',
+            descriptionPlaceholder: 'e.g. What this account is for',
+            amount: 'Amount',
+            currency: 'Currency',
+            presets: {
+              checkingAccount: {
+                name: 'Checking account',
+                description: 'I use this for everyday transactions',
+              },
+              savingsAccount: {
+                name: 'Savings account',
+                description: 'Store all of my savings here',
+              },
+              sinkingFunds: {
+                name: 'Sinking funds',
+                description: 'For discretionary payments not planned for',
+              },
+            },
+          },
+          revenue: {
+            description: 'Description',
+            descriptionPlaceholder: 'e.g. Salary wired from my company',
+            amount: 'Amount',
+            currency: 'Currency',
+            from: 'From',
+            to: 'To',
+            recurrence: 'Payment Schedule',
+            presets: {
+              salary: {
+                description: 'Salary (biweekly)',
+                from: 'Some Company',
+              },
+              pension: {
+                description: 'Pension (monthly)',
+                from: 'Government',
+              },
+              dividends: {
+                description: 'Dividends (quarterly)',
+                from: 'Some Company',
+              },
+            },
+          },
+          liability: {
+            description: 'Description',
+            descriptionPlaceholder: 'e.g. Car loan',
+            amount: 'Amount',
+            currency: 'Currency',
+            from: 'From',
+            to: 'To',
+            recurrence: 'Payment Schedule',
+            presets: {
+              studentLoans: {
+                description: 'Student Loans (fixed interest rate)',
+                from: 'Some School',
+              },
+              carLoans: {
+                description: 'Car Loans (fixed interest rate)',
+                from: 'Some Credit Union',
+              },
+              mortgage: {
+                description: 'Mortgage (adjustable interest rate)',
+                from: 'Some Bank',
+              },
             },
           },
         },
@@ -159,7 +209,7 @@ export const i18nOptions: I18nOptions = {
         profit: 'Profit',
         netWorth: 'Net Worth',
         overviewForDate: 'Overview for {v}',
-        overviewSummary: 'Summary',
+        overviewProfitLossSummary: 'Profit/Loss',
         overviewProfit: 'Profit',
         addAccount: 'Add Account',
         editAccount: 'Edit Account',
@@ -209,9 +259,16 @@ export const i18nOptions: I18nOptions = {
       common: {
         back: '前へ戻る',
         continue: '次に進む',
+        save: '保存',
+        close: '閉じる',
+        help: 'ヘルプ',
+        action: '操作',
+        file: 'ファイル',
+        exit: '閉じる',
+        about: '{v}について',
       },
       app: {
-        name: 'Massivebugs Systems',
+        name: 'Home Feature Server',
       },
       login: {
         title: '@:app.name にログインする',
@@ -228,10 +285,17 @@ export const i18nOptions: I18nOptions = {
       },
       systemSettings: {
         name: 'システム設定',
-        file: 'ファイル',
-        exit: '閉じる',
-        help: 'ヘルプ',
-        about: 'massivebugsシステムについて',
+        locale: {
+          default: 'システムデフォルト',
+          en: 'English',
+          ja: '日本語',
+        },
+        preferences: {
+          title: 'ユーザ設定',
+          language: {
+            title: '言語',
+          },
+        },
       },
       cashbunny: {
         name: 'Cashbunny',
@@ -240,8 +304,138 @@ export const i18nOptions: I18nOptions = {
         processAlreadyExistsMessage: 'すでに起動しているプロセスがあります',
         errorLoadingDataTitle: 'エラー',
         errorLoadingDataMessage: 'データ取得中エラーが発生しました: {e}',
+        assets: {
+          name: '資産',
+        },
+        liabilities: {
+          name: '負債',
+        },
+        recurrenceRule: {
+          freq: '頻度',
+          dtstart: '開始日',
+          count: '最大数',
+          interval: '間隔',
+          until: '終了日',
+          frequencies: {
+            YEARLY: '毎年',
+            MONTHLY: '毎月',
+            WEEKLY: '毎週',
+            DAILY: '毎日',
+            HOURLY: '毎時間',
+            MINUTELY: '毎分',
+            SECONDLY: '毎秒',
+          },
+        },
+        featuresOverview: {
+          name: '機能の概要',
+        },
         overview: '概要',
-        planner: 'プランナー',
+        planner: {
+          name: 'プランナー',
+          wizard: {
+            welcome: {
+              name: 'ようこそ',
+              question:
+                'ようこそ！予算計画を設定しましょう。\n現在の予算状況に関するいくつかの質問をします。',
+              info: '質問には数分かかる場合があります。\n今すぐ始めますか？',
+              yes: '始めめる',
+              no: 'いいえ、後でリマインドする',
+            },
+            assets: {
+              name: '資産',
+              question: '現在の資産は何ですか？\nアカウントとその残高をリストしてください。',
+              info: '資産とは、現金に換えられるものや価値のあるものです。',
+            },
+            revenues: {
+              name: '経常収入',
+              question: '収入源は何ですか？\n収入の詳細を教えてください。',
+              info: '定期的に受け取る収入をすべて含めてください。',
+            },
+            liabilities: {
+              name: '負債',
+              question: '現在の負債はありますか？\n負債とその金額をリストしてください。',
+              info: '負債とは、支払わなければならない債務や義務です。',
+            },
+            expenses: {
+              name: '経常経費',
+              question: '毎月の通常の支出は何ですか？\nカテゴリーごとに金額を入力してください。',
+              info: 'Include any expenses you spend regularly.',
+            },
+            complete: {
+              name: '完了',
+              question: '予算プランナーが設定されました！',
+              info: 'プランナーを終了しても大丈夫です。',
+            },
+          },
+          asset: {
+            name: '資産名',
+            namePlaceholder: '普通預金口座、定期口座',
+            description: '説明',
+            descriptionPlaceholder: '例）貯金するときはここだけに入れる',
+            amount: '金額',
+            currency: '通貨',
+            presets: {
+              checkingAccount: {
+                name: '普通預金口座',
+                description: '普段使い用の口座',
+              },
+              savingsAccount: {
+                name: '定期口座',
+                description: '貯金するお金はここにためていく',
+              },
+              sinkingFunds: {
+                name: '緊急予備資金',
+                description: '予想外の請求が発生したとき使える生活防衛資金',
+              },
+            },
+          },
+          revenue: {
+            description: '説明',
+            descriptionPlaceholder: '例）給料日に振り込まれる額',
+            amount: '金額',
+            currency: '通貨',
+            from: '~から',
+            to: '〜に',
+            recurrence: '支払いスケジュール',
+            presets: {
+              salary: {
+                description: '給料（隔週）',
+                from: 'なんとか会社',
+              },
+              pension: {
+                description: '年金（毎月）',
+                from: '政府',
+              },
+              dividends: {
+                description: '配当（四半期ごと）',
+                from: 'なんとか会社',
+              },
+            },
+          },
+          liability: {
+            description: '説明',
+            descriptionPlaceholder: '例）給料日に振り込まれる額',
+            amount: '金額',
+            currency: '通貨',
+            from: '~から',
+            to: '〜に',
+            recurrence: '支払いスケジュール',
+            presets: {
+              studentLoans: {
+                description: '奨学金（固定金利）',
+                from: 'なんとか学校',
+              },
+              carLoans: {
+                description: '自動車ローン（固定金利）',
+                from: 'なんとか信用組合',
+              },
+              mortgage: {
+                description: '住宅ローン（変動金利）',
+                from: 'なんとか銀行',
+              },
+            },
+          },
+        },
         schedules: 'スケジュール',
         accounts: 'アカウント',
         transactions: '取引',
@@ -256,7 +450,7 @@ export const i18nOptions: I18nOptions = {
         profit: '利益',
         netWorth: '純資産',
         overviewForDate: '{v} の概要',
-        overviewSummary: '概要',
+        overviewProfitLossSummary: '利益・損失',
         overviewProfit: '利益',
         addAccount: 'アカウントを追加',
         editAccount: 'アカウントを修正',

@@ -5,7 +5,7 @@ import (
 
 	"github.com/Rhymond/go-money"
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
 type Transaction struct {
@@ -23,8 +23,8 @@ type Transaction struct {
 	ScheduledTransaction *ScheduledTransaction
 }
 
-func NewTransaction(transaction *cashbunny_repository.CashbunnyTransaction) (*Transaction, error) {
-	t := &Transaction{
+func NewTransactionFromDBGateway(transaction *queries.CashbunnyTransaction) *Transaction {
+	return &Transaction{
 		ID:            transaction.ID,
 		SrcAccountID:  transaction.SrcAccountID,
 		DestAccountID: transaction.DestAccountID,
@@ -34,11 +34,9 @@ func NewTransaction(transaction *cashbunny_repository.CashbunnyTransaction) (*Tr
 		CreatedAt:     transaction.CreatedAt,
 		UpdatedAt:     transaction.UpdatedAt,
 	}
-
-	return t, t.validate()
 }
 
-func (tr *Transaction) validate() error {
+func (tr *Transaction) Validate() error {
 	return validation.ValidateStruct(
 		tr,
 		validation.Field(

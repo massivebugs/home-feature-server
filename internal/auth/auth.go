@@ -7,69 +7,61 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/massivebugs/home-feature-server/db/service/auth_repository"
-	"github.com/massivebugs/home-feature-server/internal/api"
+	"github.com/massivebugs/home-feature-server/db"
+	"github.com/massivebugs/home-feature-server/internal/app"
 )
 
 type Auth struct {
-	db       *sql.DB
-	authRepo auth_repository.Querier
+	db       *db.Handle
+	userRepo IUserRepository
+	passRepo IUserPasswordRepository
+	rtRepo   IUserRefreshTokenRepository
 }
 
 func NewAuth(
-	db *sql.DB,
-	authRepo auth_repository.Querier,
+	db *db.Handle,
+	userRepo IUserRepository,
+	passRepo IUserPasswordRepository,
+	rtRepo IUserRefreshTokenRepository,
 ) *Auth {
 	return &Auth{
 		db:       db,
-		authRepo: authRepo,
+		userRepo: userRepo,
+		passRepo: passRepo,
+		rtRepo:   rtRepo,
 	}
 }
 
-func (s *Auth) CreateAuthUser(ctx context.Context, req *CreateUserRequestDTO) error {
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+func (s *Auth) CreateAuthUser(ctx context.Context, req *CreateUserDTO) error {
+	return s.db.WithTx(ctx, func(tx db.DB) error {
+		// Check if user already exists
+		exists, err := s.userRepo.GetUsernameExists(ctx, s.db, req.Username)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return app.NewAppError(app.CodeBadRequest, errors.New("user already exists"))
+		}
 
-	// Check if user already exists
-	_, err = s.authRepo.GetUserByName(ctx, s.db, req.Username)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return err
-	} else if err == nil {
-		return api.NewAPIError(api.CodeBadRequest, errors.New("user already exists"))
-	}
+		// Create new user
+		userID, err := s.userRepo.CreateUser(ctx, tx, req.Username)
+		if err != nil {
+			return err
+		}
 
-	// Create new user
-	result, err := s.authRepo.CreateUser(ctx, tx, req.Username)
-	if err != nil {
-		return err
-	}
+		// Hash password
+		hashedPassword, err := GeneratePasswordHash(req.Password)
+		if err != nil {
+			return err
+		}
 
-	// Retrieve ID
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	// Hash password
-	hashedPassword, err := GeneratePasswordHash(req.Password)
-	if err != nil {
-		return err
-	}
-
-	// Create user password
-	p := auth_repository.CreateUserPasswordParams{
-		UserID:       uint32(id),
-		PasswordHash: hashedPassword,
-	}
-	_, err = s.authRepo.CreateUserPassword(ctx, tx, p)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
+		// Create user password
+		p := CreateUserPasswordParams{
+			UserID:       uint32(userID),
+			PasswordHash: hashedPassword,
+		}
+		return s.passRepo.CreateUserPassword(ctx, tx, p)
+	})
 }
 
 func (s *Auth) CreateJWTToken(
@@ -81,28 +73,26 @@ func (s *Auth) CreateJWTToken(
 	refreshJwtSigningMethod *jwt.SigningMethodHMAC,
 	refreshJwtSecret string,
 	refreshJwtExpireSeconds int,
-	req *UserAuthRequestDTO,
+	req *UserAuthDTO,
 ) (string, string, error) {
 	// Retrieve user
-	u, err := s.authRepo.GetUserByName(ctx, s.db, req.Username)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return "", "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
-	} else if err != nil {
-		return "", "", err
+	// TODO
+	u, err := s.userRepo.GetUserByName(ctx, s.db, req.Username)
+	if err != nil {
+		return "", "", app.NewAppError(app.CodeNotFound, errors.New("username or password does not match"))
 	}
 
 	// Retrieve user password
-	up, err := s.authRepo.GetUserPasswordByUserID(ctx, s.db, u.ID)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return "", "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
-	} else if err != nil {
-		return "", "", err
+	// TODO
+	hash, err := s.passRepo.GetUserPasswordByUserID(ctx, s.db, u.ID)
+	if err != nil {
+		return "", "", app.NewAppError(app.CodeNotFound, errors.New("username or password does not match"))
 	}
 
 	// Check if hash matches
-	err = CheckPasswordHash(up.PasswordHash, req.Password)
+	err = CheckPasswordHash(hash, req.Password)
 	if err != nil {
-		return "", "", api.NewAPIError(api.CodeNotFound, errors.New("username or password does not match"))
+		return "", "", app.NewAppError(app.CodeNotFound, errors.New("username or password does not match"))
 	}
 
 	tokenID := GenerateRandomString(50)
@@ -121,10 +111,10 @@ func (s *Auth) CreateJWTToken(
 		return "", "", err
 	}
 
-	_, err = s.authRepo.CreateUserRefreshToken(
+	err = s.rtRepo.CreateUserRefreshToken(
 		ctx,
 		s.db,
-		auth_repository.CreateUserRefreshTokenParams{
+		CreateUserRefreshTokenParams{
 			UserID: u.ID,
 			Value:  tokenID,
 			ExpiresAt: sql.NullTime{
@@ -151,19 +141,21 @@ func (s *Auth) RefreshJWTToken(
 	userID uint32,
 	tokenID string,
 ) (string, string, error) {
-	_, err := s.authRepo.GetUserRefreshTokenByValue(
+	exists, err := s.rtRepo.GetUserRefreshTokenExistsByValue(
 		ctx,
 		s.db,
-		auth_repository.GetUserRefreshTokenByValueParams{
+		GetUserRefreshTokenExistsByValueParams{
 			UserID: userID,
 			Value:  tokenID,
 		},
 	)
-	// If the token doesn't exist, this means this token id(value) has been invalidated
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return "", "", api.NewAPIError(api.CodeUnauthorized, errors.New("token is invalid"))
-	} else if err != nil {
+	if err != nil {
 		return "", "", err
+	}
+
+	// If the token doesn't exist, this means this token id(value) has been invalidated
+	if !exists {
+		return "", "", app.NewAppError(app.CodeUnauthorized, errors.New("token is invalid"))
 	}
 
 	newTokenID := GenerateRandomString(50)
@@ -182,10 +174,10 @@ func (s *Auth) RefreshJWTToken(
 		return "", "", err
 	}
 
-	_, err = s.authRepo.CreateUserRefreshToken(
+	err = s.rtRepo.CreateUserRefreshToken(
 		ctx,
 		s.db,
-		auth_repository.CreateUserRefreshTokenParams{
+		CreateUserRefreshTokenParams{
 			UserID: userID,
 			Value:  newTokenID,
 			ExpiresAt: sql.NullTime{
@@ -200,13 +192,13 @@ func (s *Auth) RefreshJWTToken(
 	return tokenStr, refreshTokenStr, nil
 }
 
-func (s *Auth) GetAuthUser(ctx context.Context, jwtClaims *JWTClaims) (AuthUser, error) {
-	u, err := s.authRepo.GetUser(ctx, s.db, jwtClaims.UserID)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return AuthUser{}, api.NewAPIError(api.CodeForbidden, errors.New("user does not exist"))
-	} else if err != nil {
-		return AuthUser{}, err
+func (s *Auth) GetAuthUser(ctx context.Context, jwtClaims *JWTClaims) (*AuthUser, error) {
+	u, err := s.userRepo.GetUser(ctx, s.db, jwtClaims.UserID)
+	if err != nil {
+		return nil, err
 	}
 
-	return NewAuthUser(u, jwtClaims), nil
+	u.SetLoginTime(jwtClaims)
+
+	return u, nil
 }

@@ -10,7 +10,7 @@ import PlannerWizardComponent from './PlannerWizardComponent.vue'
 <style scoped lang="scss">
 @use '@/assets/colors';
 .cashbunny-planner {
-  background-color: colors.$white;
   height: 100%;
+  background-color: colors.$high-opacity-white;
 }
 </style>

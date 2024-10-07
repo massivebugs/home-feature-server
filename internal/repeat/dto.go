@@ -1,0 +1,18 @@
+package repeat
+
+import validation "github.com/go-ozzo/ozzo-validation"
+
+type RepeatDTO struct {
+	Message string `json:"message"`
+}
+
+func (r *RepeatDTO) Validate() error {
+	return validation.ValidateStruct(
+		r,
+		validation.Field(
+			&r.Message,
+			validation.Required,
+			validation.Length(1, 20),
+		),
+	)
+}

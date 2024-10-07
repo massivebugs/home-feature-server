@@ -55,9 +55,9 @@ func (l *Ledger) GetNetWorth(to *time.Time) CurrencySums {
 	for _, a := range l.accounts {
 		sum := a.SumTransactions(nil, to)
 
-		if a.Category == AccountCategoryRevenues {
+		if a.Category == AccountCategoryAssets {
 			sums.AddSums(sum)
-		} else if a.Category == AccountCategoryExpenses {
+		} else if a.Category == AccountCategoryLiabilities {
 			sums.SubtractSums(sum)
 		}
 	}
@@ -84,4 +84,15 @@ func (l *Ledger) GetProfitLoss(from *time.Time, to *time.Time) (revenues Currenc
 	sums.SubtractSums(expenses)
 
 	return
+}
+
+func (l *Ledger) GetAccountsByCategory(c AccountCategory) []*Account {
+	var res []*Account
+	for _, a := range l.accounts {
+		if a.Category == c {
+			res = append(res, a)
+		}
+	}
+
+	return res
 }

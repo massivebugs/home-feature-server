@@ -8,218 +8,54 @@ import (
 
 	"github.com/Rhymond/go-money"
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
-	"github.com/massivebugs/home-feature-server/internal/api"
-)
-
-var (
-	SupportedCurrencyCodes = []string{
-		money.AED,
-		money.AFN,
-		money.ALL,
-		money.AMD,
-		money.ANG,
-		money.AOA,
-		money.ARS,
-		money.AUD,
-		money.AWG,
-		money.AZN,
-		money.BAM,
-		money.BBD,
-		money.BDT,
-		money.BGN,
-		money.BHD,
-		money.BIF,
-		money.BMD,
-		money.BND,
-		money.BOB,
-		money.BRL,
-		money.BSD,
-		money.BTN,
-		money.BWP,
-		money.BYN,
-		money.BYR,
-		money.BZD,
-		money.CAD,
-		money.CDF,
-		money.CHF,
-		money.CLF,
-		money.CLP,
-		money.CNY,
-		money.COP,
-		money.CRC,
-		money.CUC,
-		money.CUP,
-		money.CVE,
-		money.CZK,
-		money.DJF,
-		money.DKK,
-		money.DOP,
-		money.DZD,
-		money.EEK,
-		money.EGP,
-		money.ERN,
-		money.ETB,
-		money.EUR,
-		money.FJD,
-		money.FKP,
-		money.GBP,
-		money.GEL,
-		money.GGP,
-		money.GHC,
-		money.GHS,
-		money.GIP,
-		money.GMD,
-		money.GNF,
-		money.GTQ,
-		money.GYD,
-		money.HKD,
-		money.HNL,
-		money.HRK,
-		money.HTG,
-		money.HUF,
-		money.IDR,
-		money.ILS,
-		money.IMP,
-		money.INR,
-		money.IQD,
-		money.IRR,
-		money.ISK,
-		money.JEP,
-		money.JMD,
-		money.JOD,
-		money.JPY,
-		money.KES,
-		money.KGS,
-		money.KHR,
-		money.KMF,
-		money.KPW,
-		money.KRW,
-		money.KWD,
-		money.KYD,
-		money.KZT,
-		money.LAK,
-		money.LBP,
-		money.LKR,
-		money.LRD,
-		money.LSL,
-		money.LTL,
-		money.LVL,
-		money.LYD,
-		money.MAD,
-		money.MDL,
-		money.MGA,
-		money.MKD,
-		money.MMK,
-		money.MNT,
-		money.MOP,
-		money.MRU,
-		money.MUR,
-		money.MVR,
-		money.MWK,
-		money.MXN,
-		money.MYR,
-		money.MZN,
-		money.NAD,
-		money.NGN,
-		money.NIO,
-		money.NOK,
-		money.NPR,
-		money.NZD,
-		money.OMR,
-		money.PAB,
-		money.PEN,
-		money.PGK,
-		money.PHP,
-		money.PKR,
-		money.PLN,
-		money.PYG,
-		money.QAR,
-		money.RON,
-		money.RSD,
-		money.RUB,
-		money.RUR,
-		money.RWF,
-		money.SAR,
-		money.SBD,
-		money.SCR,
-		money.SDG,
-		money.SEK,
-		money.SGD,
-		money.SHP,
-		money.SKK,
-		money.SLE,
-		money.SLL,
-		money.SOS,
-		money.SRD,
-		money.SSP,
-		money.STD,
-		money.STN,
-		money.SVC,
-		money.SYP,
-		money.SZL,
-		money.THB,
-		money.TJS,
-		money.TMT,
-		money.TND,
-		money.TOP,
-		money.TRL,
-		money.TRY,
-		money.TTD,
-		money.TWD,
-		money.TZS,
-		money.UAH,
-		money.UGX,
-		money.USD,
-		money.UYU,
-		money.UZS,
-		money.VEF,
-		money.VES,
-		money.VND,
-		money.VUV,
-		money.WST,
-		money.XAF,
-		money.XAG,
-		money.XAU,
-		money.XCD,
-		money.XDR,
-		money.XOF,
-		money.XPF,
-		money.YER,
-		money.ZAR,
-		money.ZMW,
-		money.ZWD,
-		money.ZWL,
-	}
+	"github.com/massivebugs/home-feature-server/db"
+	"github.com/massivebugs/home-feature-server/internal/app"
 )
 
 type Cashbunny struct {
-	db            *sql.DB
-	cashbunnyRepo cashbunny_repository.ICashbunnyRepository
+	db        *db.Handle
+	accRepo   IAccountRepository
+	strRepo   IScheduledTransactionRepository
+	trRepo    ITransactionRepository
+	rruleRepo IRecurrenceRuleRepository
+	ucrRepo   ICurrencyRepository
+	upRepo    IUserPreferencesRepository
 }
 
-func NewCashbunny(db *sql.DB, cashbunnyRepo cashbunny_repository.ICashbunnyRepository) *Cashbunny {
+func NewCashbunny(
+	db *db.Handle,
+	accRepo IAccountRepository,
+	strRepo IScheduledTransactionRepository,
+	trRepo ITransactionRepository,
+	rruleRepo IRecurrenceRuleRepository,
+	ucrRepo ICurrencyRepository,
+	upRepo IUserPreferencesRepository,
+) *Cashbunny {
 	return &Cashbunny{
-		db:            db,
-		cashbunnyRepo: cashbunnyRepo,
+		db:        db,
+		accRepo:   accRepo,
+		strRepo:   strRepo,
+		trRepo:    trRepo,
+		rruleRepo: rruleRepo,
+		ucrRepo:   ucrRepo,
+		upRepo:    upRepo,
 	}
 }
 
 func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Time, to time.Time) (*Ledger, []*Transaction, error) {
-	accRows, err := s.cashbunnyRepo.ListAccounts(ctx, s.db, userID)
+	accounts, err := s.accRepo.ListAccountsAndAmountBetweenDates(ctx, s.db, ListAccountsAndAmountBetweenDatesParams{
+		UserID:           userID,
+		FromTransactedAt: time.Time{},
+		ToTransactedAt:   to,
+	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	accounts := make([]*Account, len(accRows))
-	for idx, row := range accRows {
-		accounts[idx] = NewAccount(row)
-	}
-
-	tRows, err := s.cashbunnyRepo.ListTransactionsBetweenDates(
+	trs, err := s.trRepo.ListTransactionsBetweenDates(
 		ctx,
 		s.db,
-		cashbunny_repository.ListTransactionsBetweenDatesParams{
+		ListTransactionsBetweenDatesParams{
 			UserID:           userID,
 			FromTransactedAt: time.Time{},
 			ToTransactedAt:   to,
@@ -229,37 +65,61 @@ func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Ti
 		return nil, nil, err
 	}
 
-	ts := make([]*Transaction, len(tRows))
-	for idx, row := range tRows {
-		tr, err := NewTransaction(row)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		ts[idx] = tr
-	}
-
-	stListRows, err := s.cashbunnyRepo.ListScheduledTransactionsWithAllRelations(ctx, s.db, userID)
+	strs, err := s.strRepo.ListScheduledTransactionsWithAllRelations(ctx, s.db, userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	var tsFromScheduled []*Transaction
-	for _, row := range stListRows {
-		st, err := NewScheduledTransaction(
-			&row.CashbunnyScheduledTransaction,
-			&row.CashbunnyRecurrenceRule,
-			&row.CashbunnyAccount,
-			&row.CashbunnyAccount_2,
-		)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		tsFromScheduled = append(tsFromScheduled, st.ToTransactions(from, to)...)
+	for _, str := range strs {
+		tsFromScheduled = append(tsFromScheduled, str.ToTransactions(from, to)...)
 	}
 
-	return NewLedger(accounts, ts), tsFromScheduled, nil
+	return NewLedger(accounts, trs), tsFromScheduled, nil
+}
+
+func (s *Cashbunny) GetPlan(ctx context.Context, userID uint32) (*Planner, error) {
+	return &Planner{}, nil
+}
+
+func (s *Cashbunny) GetPlannerParameters(
+	ctx context.Context,
+	userID uint32,
+) (
+	[]*Account,
+	[]*ScheduledTransaction,
+	[]*ScheduledTransaction,
+	error,
+) {
+	assetAccounts, err := s.accRepo.ListAccountsAndAmountByCategory(ctx, s.db, ListAccountsAndAmountByCategoryParams{
+		UserID:   userID,
+		Category: AccountCategoryAssets,
+	})
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	strs, err := s.strRepo.ListScheduledTransactionsWithAllRelations(ctx, s.db, userID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	var revenueStrs []*ScheduledTransaction
+	var liabilityStrs []*ScheduledTransaction
+	for _, str := range strs {
+		if str.IsRevenueTransaction() {
+			revenueStrs = append(revenueStrs, str)
+		}
+		if str.IsLiabilityTransaction() {
+			liabilityStrs = append(liabilityStrs, str)
+		}
+	}
+
+	return assetAccounts, revenueStrs, liabilityStrs, nil
+}
+
+func (s *Cashbunny) SavePlannerParameters(ctx context.Context, userID uint32, p *SavePlannerParametersDTO) (*Planner, error) {
+	return &Planner{}, nil
 }
 
 func (s *Cashbunny) GetAllCurrencies(ctx context.Context) map[string]string {
@@ -272,249 +132,165 @@ func (s *Cashbunny) GetAllCurrencies(ctx context.Context) map[string]string {
 }
 
 func (s *Cashbunny) GetUserPreferences(ctx context.Context, userID uint32) (*UserPreferences, error) {
-	ucData, err := s.cashbunnyRepo.ListUserCurrencies(ctx, s.db, userID)
+	exists, err := s.upRepo.GetUserPreferenceExistsByUserID(ctx, s.db, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	upData, err := s.cashbunnyRepo.GetUserPreferenceByUserID(ctx, s.db, userID)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return nil, api.NewAPIError(api.CodeNotFound, errors.New("user preferences hasn't been created yet"))
+	if !exists {
+		return nil, app.NewAppError(app.CodeNotFound, errors.New("user preferences hasn't been created yet"))
 	}
 
-	up := NewUserPreferences(upData, ucData)
+	up, err := s.upRepo.GetUserPreferencesByUserID(ctx, s.db, userID)
+	if err != nil {
+		return nil, err
+	}
 
 	return up, nil
 }
 
 func (s *Cashbunny) CreateDefaultUserPreferences(ctx context.Context, userID uint32) (*UserPreferences, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
+	var up *UserPreferences
+	err := s.db.WithTx(ctx, func(tx db.DB) error {
+		_, err := s.upRepo.CreateUserPreferences(ctx, tx, userID)
+		if err != nil {
+			return err
+		}
 
-	_, err = s.cashbunnyRepo.CreateUserPreferences(ctx, tx, userID)
-	if err != nil {
-		return nil, err
-	}
+		_, err = s.upRepo.CreateUserCurrency(ctx, tx, CreateUserCurrencyParams{
+			UserID:       userID,
+			CurrencyCode: money.CAD,
+		})
+		if err != nil {
+			return err
+		}
 
-	_, err = s.cashbunnyRepo.CreateUserCurrency(ctx, tx, cashbunny_repository.CreateUserCurrencyParams{
-		UserID:       userID,
-		CurrencyCode: money.CAD,
+		_, err = s.upRepo.CreateUserCurrency(ctx, tx, CreateUserCurrencyParams{
+			UserID:       userID,
+			CurrencyCode: money.JPY,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = s.cashbunnyRepo.CreateUserCurrency(ctx, tx, cashbunny_repository.CreateUserCurrencyParams{
-		UserID:       userID,
-		CurrencyCode: money.JPY,
-	})
+	up, err = s.upRepo.GetUserPreferencesByUserID(ctx, s.db, userID)
 	if err != nil {
 		return nil, err
 	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
-	}
-
-	ucData, err := s.cashbunnyRepo.ListUserCurrencies(ctx, s.db, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	upData, err := s.cashbunnyRepo.GetUserPreferenceByUserID(ctx, s.db, userID)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return nil, api.NewAPIError(api.CodeNotFound, errors.New("user preferences hasn't been created yet"))
-	}
-
-	up := NewUserPreferences(upData, ucData)
 
 	return up, nil
 }
 
-func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *CreateAccountRequestDTO) error {
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *CreateAccountDTO) error {
+	return s.db.WithTx(ctx, func(tx db.DB) error {
+		orderIndexParam := sql.NullInt32{}
+		if req.OrderIndex != nil {
+			err := s.accRepo.IncrementAccountIndices(
+				ctx,
+				tx,
+				IncrementAccountIndicesParams{
+					UserID:     userID,
+					OrderIndex: *req.OrderIndex,
+				},
+			)
+			if err != nil {
+				return err
+			}
 
-	err = s.cashbunnyRepo.IncrementIndex(
-		ctx,
-		tx,
-		cashbunny_repository.IncrementIndexParams{
-			UserID:     userID,
-			OrderIndex: req.OrderIndex,
-		},
-	)
-	if err != nil {
-		return err
-	}
+			orderIndexParam.Valid = true
+			orderIndexParam.Int32 = int32(*req.OrderIndex)
+		}
 
-	_, err = s.cashbunnyRepo.CreateAccount(
-		ctx,
-		tx,
-		cashbunny_repository.CreateAccountParams{
-			UserID:      userID,
-			Category:    req.Category,
-			Name:        req.Name,
-			Description: req.Description,
-			Balance:     0,
-			Currency:    req.Currency,
-			OrderIndex:  req.OrderIndex,
-		},
-	)
-	if err != nil {
-		return err
-	}
+		_, err := s.accRepo.CreateAccount(ctx, tx,
+			CreateAccountParams{
+				UserID:      userID,
+				Category:    AccountCategory(req.Category),
+				Name:        req.Name,
+				Description: req.Description,
+				Currency:    req.Currency,
+				OrderIndex:  orderIndexParam,
+			},
+		)
+		if err != nil {
+			return err
+		}
 
-	return tx.Commit()
+		return nil
+	})
 }
 
-func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32) ([]*Account, error) {
-	data, err := s.cashbunnyRepo.ListAccounts(ctx, s.db, userID)
+func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32, now time.Time) ([]*Account, error) {
+	accounts, err := s.accRepo.ListAccountsAndAmountBetweenDates(ctx, s.db, ListAccountsAndAmountBetweenDatesParams{
+		UserID:           userID,
+		FromTransactedAt: time.Time{},
+		ToTransactedAt:   now,
+	})
 	if err != nil {
 		return nil, err
-	}
-
-	accounts := make([]*Account, len(data))
-	for idx, d := range data {
-		accounts[idx] = NewAccount(d)
 	}
 
 	return accounts, nil
 }
 
 func (s *Cashbunny) DeleteAccount(ctx context.Context, userID uint32, accountID uint32) error {
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	return s.db.WithTx(ctx, func(tx db.DB) error {
+		err := s.accRepo.DeleteAccount(ctx, tx, DeleteAccountParams{
+			UserID: userID,
+			ID:     accountID,
+		})
+		if err != nil {
+			return err
+		}
 
-	err = s.cashbunnyRepo.DeleteAccount(ctx, tx, cashbunny_repository.DeleteAccountParams{
-		UserID: userID,
-		ID:     accountID,
+		err = s.trRepo.DeleteTransactionsByAccountID(ctx, tx, DeleteTransactionsByAccountIDParams{
+			UserID:    userID,
+			AccountID: accountID,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
-	if err != nil {
-		return err
-	}
-
-	err = s.cashbunnyRepo.DeleteTransactionsByAccountID(ctx, tx, cashbunny_repository.DeleteTransactionsByAccountIDParams{
-		UserID:    userID,
-		AccountID: accountID,
-	})
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
 }
 
-func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *CreateTransactionRequestDTO) error {
+func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *CreateTransactionDTO) error {
 	// Check if source account belong to this user
-	saResult, err := s.cashbunnyRepo.GetAccountByID(ctx, s.db, cashbunny_repository.GetAccountByIDParams{
+	sa, err := s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
 		UserID: userID,
 		ID:     req.SourceAccountID,
 	})
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		// TODO: flag action
-		return err
-	} else if err != nil {
+	if err != nil {
 		return err
 	}
 
-	sa := NewAccount(saResult)
-
 	// Check if destination account belong to this user
-	daResult, err := s.cashbunnyRepo.GetAccountByID(ctx, s.db, cashbunny_repository.GetAccountByIDParams{
+	da, err := s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
 		UserID: userID,
 		ID:     req.DestinationAccountID,
 	})
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		// TODO: flag action
-		return err
-	} else if err != nil {
+	if err != nil {
 		return err
 	}
 
-	da := NewAccount(daResult)
-
-	if sa.Balance.Currency().Code != req.Currency || da.Balance.Currency().Code != req.Currency {
-		return api.NewAPIError(api.CodeBadRequest, errors.New("currency does not match the currency of either account"))
+	if sa.Currency != req.Currency || da.Currency != req.Currency {
+		return app.NewAppError(app.CodeBadRequest, errors.New("currency does not match the currency of either account"))
 	}
+
+	// TODO: Validate 0 balance
 
 	transactedAt, err := time.Parse(time.RFC3339Nano, req.TransactedAt)
 	if err != nil {
 		return err
 	}
 
-	if sa.GetType() == AccountTypeCredit {
-		m, err := sa.Balance.Add(money.NewFromFloat(req.Amount, req.Currency))
-		if err != nil {
-			return err
-		}
-		sa.Balance = m
-	} else {
-		m, err := sa.Balance.Subtract(money.NewFromFloat(req.Amount, req.Currency))
-		if err != nil {
-			return err
-		}
-		sa.Balance = m
-	}
-
-	if da.GetType() == AccountTypeCredit {
-		m, err := da.Balance.Subtract(money.NewFromFloat(req.Amount, req.Currency))
-		if err != nil {
-			return err
-		}
-		da.Balance = m
-	} else {
-		m, err := da.Balance.Add(money.NewFromFloat(req.Amount, req.Currency))
-		if err != nil {
-			return err
-		}
-		da.Balance = m
-	}
-
-	err = sa.Validate()
-	if err != nil {
-		return err
-	}
-
-	err = da.Validate()
-	if err != nil {
-		return err
-	}
-
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	err = s.cashbunnyRepo.UpdateAccountBalance(ctx, tx, cashbunny_repository.UpdateAccountBalanceParams{
-		UserID:  userID,
-		ID:      sa.ID,
-		Balance: sa.Balance.AsMajorUnits(),
-	})
-	if err != nil {
-		return err
-	}
-
-	err = s.cashbunnyRepo.UpdateAccountBalance(ctx, tx, cashbunny_repository.UpdateAccountBalanceParams{
-		UserID:  userID,
-		ID:      da.ID,
-		Balance: da.Balance.AsMajorUnits(),
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = s.cashbunnyRepo.CreateTransaction(ctx, tx, cashbunny_repository.CreateTransactionParams{
+	_, err = s.trRepo.CreateTransaction(ctx, s.db, CreateTransactionParams{
 		UserID:        userID,
 		SrcAccountID:  req.SourceAccountID,
 		DestAccountID: req.DestinationAccountID,
@@ -523,59 +299,52 @@ func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *C
 		Currency:      req.Currency,
 		TransactedAt:  transactedAt,
 	})
-	if err != nil {
-		return err
-	}
 
-	return tx.Commit()
+	return err
 }
 
 func (s *Cashbunny) ListTransactions(ctx context.Context, userID uint32) ([]*Transaction, error) {
-	data, err := s.cashbunnyRepo.ListTransactions(ctx, s.db, userID)
+	trs, err := s.trRepo.ListTransactions(ctx, s.db, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Preload accounts
-	accountIds := mapset.NewSet[uint32]()
-	for _, d := range data {
-		accountIds.Add(d.SrcAccountID)
-		accountIds.Add(d.DestAccountID)
+	accIds := mapset.NewSet[uint32]()
+	for _, tr := range trs {
+		accIds.Add(tr.SrcAccountID)
+		accIds.Add(tr.DestAccountID)
 	}
 
-	accounts, err := s.cashbunnyRepo.ListAccountsByIDs(ctx, s.db, cashbunny_repository.ListAccountsByIDsParams{
+	accs, err := s.accRepo.ListAccountsByIDs(ctx, s.db, ListAccountsByIDsParams{
 		UserID: userID,
-		IDs:    accountIds.ToSlice(),
+		IDs:    accIds.ToSlice(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	trs := make([]*Transaction, len(data))
-	for idx, d := range data {
-		srcAccountDa := SliceFind(accounts, func(a *cashbunny_repository.CashbunnyAccount) bool { return a.ID == d.SrcAccountID })
-		destAccountDa := SliceFind(accounts, func(a *cashbunny_repository.CashbunnyAccount) bool { return a.ID == d.DestAccountID })
-
-		a, err := NewTransaction(d)
-		if err != nil {
+	// Map preloaded Accounts to Transactions
+	for _, tr := range trs {
+		srcAcc := SliceFind(accs, func(a *Account) bool { return a.ID == tr.SrcAccountID })
+		if srcAcc == nil {
 			return nil, err
 		}
 
-		sa := NewAccount(*srcAccountDa)
+		destAcc := SliceFind(accs, func(a *Account) bool { return a.ID == tr.DestAccountID })
+		if destAcc == nil {
+			return nil, err
+		}
 
-		da := NewAccount(*destAccountDa)
-
-		a.SourceAccount = sa
-		a.DestinationAccount = da
-
-		trs[idx] = a
+		tr.SourceAccount = *srcAcc
+		tr.DestinationAccount = *destAcc
 	}
 
 	return trs, nil
 }
 
 func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transactionID uint32) error {
-	trResult, err := s.cashbunnyRepo.GetTransactionByID(ctx, s.db, cashbunny_repository.GetTransactionByIDParams{
+	tr, err := s.trRepo.GetTransactionByID(ctx, s.db, GetTransactionByIDParams{
 		UserID: userID,
 		ID:     transactionID,
 	})
@@ -584,96 +353,27 @@ func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transa
 	}
 
 	// Check if source account belong to this user
-	saResult, err := s.cashbunnyRepo.GetAccountByID(ctx, s.db, cashbunny_repository.GetAccountByIDParams{
+	_, err = s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
 		UserID: userID,
-		ID:     trResult.SrcAccountID,
+		ID:     tr.SrcAccountID,
 	})
 	if err != nil {
 		return err
 	}
-
-	sa := NewAccount(saResult)
 
 	// Check if destination account belong to this user
-	daResult, err := s.cashbunnyRepo.GetAccountByID(ctx, s.db, cashbunny_repository.GetAccountByIDParams{
+	_, err = s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
 		UserID: userID,
-		ID:     trResult.DestAccountID,
+		ID:     tr.DestAccountID,
 	})
 	if err != nil {
 		return err
 	}
 
-	da := NewAccount(daResult)
+	// TODO: Validate 0 balance
 
-	if sa.GetType() == AccountTypeCredit {
-		m, err := sa.Balance.Subtract(money.NewFromFloat(trResult.Amount, trResult.Currency))
-		if err != nil {
-			return err
-		}
-		sa.Balance = m
-	} else {
-		m, err := sa.Balance.Add(money.NewFromFloat(trResult.Amount, trResult.Currency))
-		if err != nil {
-			return err
-		}
-		sa.Balance = m
-	}
-
-	if da.GetType() == AccountTypeCredit {
-		m, err := da.Balance.Add(money.NewFromFloat(trResult.Amount, trResult.Currency))
-		if err != nil {
-			return err
-		}
-		da.Balance = m
-	} else {
-		m, err := da.Balance.Subtract(money.NewFromFloat(trResult.Amount, trResult.Currency))
-		if err != nil {
-			return err
-		}
-		da.Balance = m
-	}
-
-	err = sa.Validate()
-	if err != nil {
-		return err
-	}
-
-	err = da.Validate()
-	if err != nil {
-		return err
-	}
-
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	err = s.cashbunnyRepo.UpdateAccountBalance(ctx, tx, cashbunny_repository.UpdateAccountBalanceParams{
-		UserID:  userID,
-		ID:      sa.ID,
-		Balance: sa.Balance.AsMajorUnits(),
-	})
-	if err != nil {
-		return err
-	}
-
-	err = s.cashbunnyRepo.UpdateAccountBalance(ctx, tx, cashbunny_repository.UpdateAccountBalanceParams{
-		UserID:  userID,
-		ID:      da.ID,
-		Balance: da.Balance.AsMajorUnits(),
-	})
-	if err != nil {
-		return err
-	}
-
-	err = s.cashbunnyRepo.DeleteTransaction(ctx, tx, cashbunny_repository.DeleteTransactionParams{
+	return s.trRepo.DeleteTransaction(ctx, s.db, DeleteTransactionParams{
 		UserID: userID,
 		ID:     transactionID,
 	})
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
 }
