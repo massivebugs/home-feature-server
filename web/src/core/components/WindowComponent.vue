@@ -51,7 +51,7 @@
       <WindowToolbarComponent v-if="toolbar" :rows="toolbar" />
     </div>
     <div class="hfs-window__contents">
-      <slot :window-el="windowEl" />
+      <slot :window-el="windowEl" :window-size-query="windowSizeQuery" />
     </div>
     <div v-if="statusBarInfo" class="hfs-window__status-bar">
       <p v-for="info in statusBarInfo || []" :key="info">
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { provide, ref } from 'vue'
+import { onBeforeUnmount, onMounted, provide, reactive, ref } from 'vue'
 import { ResizeDirection, useDragResize } from '../composables/useDragResize'
 import { RelativePosition } from '../models/relativePosition'
 import type { RelativeSize } from '../models/relativeSize'
@@ -73,14 +73,26 @@ import MinimizeMaximizeIconComponent from './MinimizeMaximizeIconComponent.vue'
 import WindowToolbarComponent, { type WindowToolbarRow } from './WindowToolbarComponent.vue'
 
 export type WindowUID = string
+
+export type WindowSizeQuery = {
+  md: boolean
+  lg: boolean
+  xl: boolean
+}
+
 export type BlockWindowFunc = (block: boolean) => void
+
 export type ToggleWindowResizeHandlerFunc = (handlerFunc: () => void) => void
+
 export type WindowTitleBarControls = {
   minimize: boolean
   maximize: boolean
   close: boolean
 }
 
+const BREAKPOINT_MD = 768
+const BREAKPOINT_LG = 992
+const BREAKPOINT_XL = 1200
 const TOGGLE_SIZE_SECONDS = 0.3
 
 const emit = defineEmits<{
@@ -121,7 +133,8 @@ const {
   props.pos
     ? props.pos
     : !props.pos && props.size
-      ? new RelativePosition(windowIdx + 50 - props.size.w / 2, windowIdx + 50 - props.size.h / 2)
+      ? // TODO: This doesn't make sense as it's relative size...
+        new RelativePosition(windowIdx + 50 - props.size.w / 2, windowIdx + 50 - props.size.h / 2)
       : undefined,
   props.size,
   undefined,
@@ -131,7 +144,14 @@ const {
     windowEl.value?.dispatchEvent(event)
   },
 )
+const windowSizeQuery = reactive<WindowSizeQuery>({
+  md: false,
+  lg: false,
+  xl: false,
+})
+let resizeObserver: ResizeObserver | null = null
 
+// TODO: Remove resize listener and use resize observer only
 const addWindowResizeListener: ToggleWindowResizeHandlerFunc = (handlerFunc: () => void) => {
   windowEl.value?.addEventListener('resize', handlerFunc)
 }
@@ -144,6 +164,7 @@ const blockWindow: BlockWindowFunc = (blocked: boolean) => {
   isBlocked.value = blocked
 }
 
+provide('windowSizeQuery', windowSizeQuery)
 provide('addWindowResizeListener', addWindowResizeListener)
 provide('removeWindowResizeListener', removeWindowResizeListener)
 provide('blockParentWindow', blockWindow)
@@ -161,6 +182,27 @@ const onClickToggleSize = () => {
       : maximizeSize(ResizeDirection.All, TOGGLE_SIZE_SECONDS)
   }
 }
+
+onMounted(() => {
+  if (windowEl.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
+        const width = entry.contentRect.width
+        windowSizeQuery.md = width >= BREAKPOINT_MD
+        windowSizeQuery.lg = width >= BREAKPOINT_LG
+        windowSizeQuery.xl = width >= BREAKPOINT_XL
+      })
+    })
+
+    resizeObserver.observe(windowEl.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (resizeObserver && windowEl.value) {
+    resizeObserver.unobserve(windowEl.value)
+  }
+})
 </script>
 
 <style scoped lang="scss">

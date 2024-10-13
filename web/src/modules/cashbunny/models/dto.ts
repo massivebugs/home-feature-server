@@ -1,6 +1,10 @@
+import type { FrequencyStr } from './recurrence_rule'
+
 export type OverviewDto = {
   net_worth: { [key: string]: string }
-  summaries: { [key: string]: { revenue: string; expense: string; profit: string } }
+  profit_loss_summary: { [key: string]: { revenue: string; expense: string; profit: string } }
+  asset_accounts: AccountDto[]
+  liability_accounts: AccountDto[]
   transactions: TransactionDto[]
   transactions_from_scheduled: TransactionDto[]
 }
@@ -13,12 +17,67 @@ export type UserPreferencesDto = {
   user_currencies: string[]
 }
 
+export type PlannerAssetDto = {
+  asset_account_id: string
+  name: string
+  description: string
+  amount: number
+  currency: string
+}
+
+export type PlannerRevenueDto = {
+  scheduled_transaction_id: string
+  description: string
+  amount: number
+  currency: string
+  source_revenue_account_id: string
+  source_revenue_account_name: string
+  destination_asset_account_id: string
+  destination_asset_account_name: string
+  recurrence_rule: RecurrenceRuleDto
+  transaction_category: TransactionCategoryDto | null
+}
+
+export type PlannerLiabilityDto = {
+  scheduled_transaction_id: string
+  description: string
+  amount: number
+  currency: string
+  source_asset_account_id: string
+  source_asset_account_name: string
+  destination_liability_account_id: string
+  destination_liability_account_name: string
+  recurrence_rule: RecurrenceRuleDto
+  transaction_category: TransactionCategoryDto | null
+}
+
+export type PlannerExpenseDto = {
+  scheduled_transaction_id: string
+  description: string
+  amount: number
+  currency: string
+  source_asset_account_id: string
+  source_asset_account_name: string
+  destination_expense_account_id: string
+  destination_expense_account_name: string
+  recurrence_rule: RecurrenceRuleDto
+  transaction_category: TransactionCategoryDto | null
+}
+
+export type PlannerParametersDto = {
+  assets: PlannerAssetDto[]
+  revenues: PlannerRevenueDto[]
+  liabilities: PlannerLiabilityDto[]
+  transaction_categories: TransactionCategoryDto[]
+}
+
 export type AccountDto = {
   id: number
   category: string
   name: string
   description: string
-  balance: number
+  amount: number
+  amount_display: string
   currency: string
   type: string
   created_at: string
@@ -30,13 +89,18 @@ export type CreateAccountDto = {
   category: string
   description: string
   currency: string
-  order_index: number
+  order_index?: number
 }
 
 export type UpdateAccountDto = {
   name?: string
   description?: string
   order_index?: number
+}
+
+export type TransactionCategoryDto = {
+  id: number
+  name: string
 }
 
 export type TransactionDto = {
@@ -71,7 +135,7 @@ export type ScheduledTransactionDto = {
 }
 
 export type RecurrenceRuleDto = {
-  freq: string
+  freq: FrequencyStr
   dtstart: string
   count: number
   interval: number

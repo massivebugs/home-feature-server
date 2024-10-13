@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
-	"github.com/massivebugs/home-feature-server/api/config"
-	"github.com/massivebugs/home-feature-server/db/seeder"
-	"github.com/massivebugs/home-feature-server/db/service/auth_repository"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db"
+	"github.com/massivebugs/home-feature-server/db/queries"
+	"github.com/massivebugs/home-feature-server/http"
+	"github.com/massivebugs/home-feature-server/seeder"
 )
 
 func main() {
@@ -21,21 +19,29 @@ func main() {
 	}
 
 	fmt.Println("Checking config...")
-	cfg := config.NewConfig()
+	cfg := http.NewConfig()
 	if err := cfg.Load(); err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Creating database connection...")
-	db, err := config.CreateDatabaseConnection(cfg)
+	db, err := db.OpenMySQLDatabase(cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBDatabase)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	seeder.NewSeeder(
+	seeder := seeder.NewSeeder(
 		db,
-		cfg,
-		auth_repository.New(),
-		cashbunny_repository.NewCashbunnyRepository(),
-	).Seed(context.Background())
+		queries.New(),
+	)
+
+	switch cfg.Environment {
+	case http.EnvironmentLocal:
+		err = seeder.SeedForLocal(context.Background())
+	case http.EnvironmentProduction:
+		err = seeder.SeedForProduction(context.Background())
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
 }

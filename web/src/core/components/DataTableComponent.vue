@@ -1,23 +1,51 @@
 <template>
+  <!-- https://vue-land.github.io/faq/forwarding-slots#passing-all-slots -->
   <DataTable
-    :columns="columns"
+    :columns="tableColumns"
     :data="data"
     :options="dtConfig"
     ref="table"
     class="table display nowrap compact hfs-datatable"
-  />
+  >
+    <template v-for="(_, slotName) in $slots" v-slot:[slotName]="slotProps">
+      <slot :name="slotName" v-bind="slotProps ?? {}" />
+    </template>
+    <template #column-action="row">
+      <div class="datatable__action-group">
+        <ButtonComponent
+          class="datatable__action-button"
+          type="warning"
+          @click="emit('editRow', { row: row.rowData })"
+        >
+          <EditIconComponent />
+        </ButtonComponent>
+        <ButtonComponent
+          class="datatable__action-button"
+          type="danger"
+          @click="emit('deleteRows', { rows: [row.rowData] })"
+        >
+          <TrashIconComponent />
+        </ButtonComponent>
+      </div>
+    </template>
+  </DataTable>
 </template>
 
 <script setup lang="ts">
-import DataTablesCore from 'datatables.net'
+import DataTablesCore from 'datatables.net-dt'
 import type { Api, Config, ConfigColumns } from 'datatables.net-dt'
 import 'datatables.net-responsive'
 import 'datatables.net-select'
 import DataTable from 'datatables.net-vue3'
-import { inject, onMounted, onUnmounted, ref } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { type ToggleWindowResizeHandlerFunc } from '@/core/components/WindowComponent.vue'
 import { AbsolutePosition } from '@/core/models/absolutePosition'
 import type { SetContextMenu } from '@/core/views/DesktopView.vue'
+import ButtonComponent from './ButtonComponent.vue'
+import type { ContextMenuOptions } from './ContextMenuComponent.vue'
+import EditIconComponent from './EditIconComponent.vue'
+import TrashIconComponent from './TrashIconComponent.vue'
 
 DataTable.use(DataTablesCore)
 
@@ -44,7 +72,7 @@ export type DataTableRowEditEvent<T> = {
   row: T
 }
 
-export type DataTableRowDeleteEvent<T> = {
+export type DataTableRowsDeleteEvent<T> = {
   rows: T[]
 }
 
@@ -54,22 +82,38 @@ export type DataTableLoadedEvent = {
 
 const emit = defineEmits<{
   (e: 'editRow', payload: DataTableRowEditEvent<any>): void
-  (e: 'deleteRow', payload: DataTableRowDeleteEvent<any>): void
+  (e: 'deleteRows', payload: DataTableRowsDeleteEvent<any>): void
   (e: 'loaded', payload: DataTableLoadedEvent): void
 }>()
 
 const props = defineProps<{
   data?: Object[]
-  columns?: ConfigColumns[]
-  options?: Config
+  columns: ConfigColumns[]
+  contextMenu?: ContextMenuOptions | { edit: boolean; delete: boolean }
+  info?: boolean
+  paging?: boolean
+  searching?: boolean
+  ordering?: boolean
+  select?: boolean
+  actionColumn?: boolean
 }>()
+
+const { t } = useI18n()
+const tableColumns = computed(() => {
+  if (props.actionColumn) {
+    return [
+      ...props.columns,
+      { data: null, name: 'action', title: t('common.action'), responsivePriority: 1 },
+    ]
+  }
+  return props.columns
+})
 
 const dtConfig: Config = {
   drawCallback: (settings) => {
     settings.api.responsive.recalc()
   },
   responsive: true,
-  select: true,
   layout: {
     topStart: {
       pageLength: {},
@@ -78,7 +122,11 @@ const dtConfig: Config = {
       search: {},
     },
   },
-  ...props.options,
+  info: props.info,
+  paging: props.paging,
+  searching: props.searching,
+  ordering: props.ordering,
+  select: props.select,
 }
 
 const getTargetRowData = () => {
@@ -128,7 +176,7 @@ onMounted(async () => {
               onClick: () => {
                 showConfirmDeleteDialog.value = false
                 const rows = getTargetRowData()
-                emit('deleteRow', { rows })
+                emit('deleteRows', { rows })
               },
             },
           ],
@@ -148,4 +196,15 @@ onUnmounted(() => {
 @import 'datatables.net-dt';
 @import 'datatables.net-responsive-dt';
 @import 'datatables.net-select-dt';
+</style>
+
+<style scoped lang="scss">
+.datatable__action-group {
+  display: flex;
+  gap: 5px;
+}
+
+.datatable__action-button {
+  padding: 0.1em 0.4em;
+}
 </style>

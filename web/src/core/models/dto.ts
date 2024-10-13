@@ -21,3 +21,7 @@ export type AuthUserDto = {
   created_at: string // time
 }
 export type AuthUserResponse = APIResponse<AuthUserDto>
+
+export type UserSystemPreferenceDto = {
+  language: string | null
+}

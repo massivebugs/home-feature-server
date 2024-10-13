@@ -3,13 +3,13 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { APIResponse } from '@/core/models/dto'
 import { APIEndpoints, api } from '@/utils/api'
-import type { Currency } from '../models/currency'
 import {
   type AccountDto,
   type CreateAccountDto,
   type CreateTransactionDto,
   type GetAllCurrenciesDto,
   type OverviewDto,
+  type PlannerParametersDto,
   type TransactionDto,
   type UpdateAccountDto,
   type UpdateTransactionDto,
@@ -17,12 +17,13 @@ import {
 } from '../models/dto'
 
 export const useCashbunnyStore = defineStore('cashbunny', () => {
-  const currencies = ref<Currency[]>([])
+  // Currency Code and Grapheme pair
+  const currencies = ref<Record<string, string>>({})
   const userPreferences = ref<UserPreferencesDto | null>(null)
 
   const setCurrencies = (dto: GetAllCurrenciesDto) => {
-    for (const [key, value] of Object.entries(dto.currencies_and_grapheme)) {
-      currencies.value.push({ code: key, grapheme: value })
+    for (const [code, grapheme] of Object.entries(dto.currencies_and_grapheme)) {
+      currencies.value[code] = grapheme
     }
   }
 
@@ -35,6 +36,9 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
           }
         : undefined,
     })
+
+  const getPlannerParameters = () =>
+    api.get<APIResponse<PlannerParametersDto>>(APIEndpoints.v1.secure.cashbunny.plannerParameters)
 
   const getAllCurrencies = () =>
     api.get<APIResponse<GetAllCurrenciesDto>>(APIEndpoints.v1.secure.cashbunny.currencies)
@@ -76,6 +80,7 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     userPreferences,
     setCurrencies,
     getOverview,
+    getPlannerParameters,
     getAllCurrencies,
     getUserPreferences,
     createUserPreferences,

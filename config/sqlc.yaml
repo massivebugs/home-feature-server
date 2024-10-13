@@ -7,24 +7,13 @@ overrides:
           type: "float64"
 sql:
   - engine: "mysql"
-    queries: "../db/service/auth_repository/query.sql"
+    queries: "../db/sqlc"
     schema: "../db/migration"
     gen:
       go:
         sql_package: "database/sql"
-        out: "../db/service/auth_repository"
-        emit_methods_with_db_argument: true
-        emit_interface: true
-        emit_result_struct_pointers: true
-        omit_unused_structs: true
-        emit_empty_slices: true
-  - engine: "mysql"
-    queries: "../db/service/cashbunny_repository/query.sql"
-    schema: "../db/migration"
-    gen:
-      go:
-        sql_package: "database/sql"
-        out: "../db/service/cashbunny_repository"
+        out: "../db/queries"
+        package: "queries"
         emit_methods_with_db_argument: true
         emit_interface: true
         emit_result_struct_pointers: true

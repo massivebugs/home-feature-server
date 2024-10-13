@@ -2,7 +2,9 @@
   <div class="hfs-input-group">
     <label v-if="label" :for="name">{{ label }}</label>
     <input
+      :required="required"
       :disabled="disabled"
+      :max="max"
       class="hfs-input-group__input"
       :class="{
         'hfs-input-group_has-error': !!errorMessage,
@@ -33,6 +35,8 @@ defineProps<{
   type?: string
   disabled?: boolean
   autocomplete?: string
+  required?: boolean
+  max?: number
 }>()
 
 const value = defineModel()
@@ -59,6 +63,7 @@ const value = defineModel()
   padding: 0.5em 0.3em;
   border: 1px solid colors.$light-grey;
   transition: box-shadow 0.2s;
+  background-color: white;
 
   &:focus:not(:disabled):not(.hfs-input-group_has-error) {
     outline: none;

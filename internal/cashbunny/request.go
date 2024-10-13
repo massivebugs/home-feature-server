@@ -6,15 +6,22 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
-type CreateAccountRequestDTO struct {
-	Name        string `json:"name"`
-	Category    string `json:"category"`
-	Description string `json:"description"`
-	Currency    string `json:"currency"`
-	OrderIndex  uint32 `json:"order_index"`
+type SavePlannerParametersRequest struct {
 }
 
-func (r *CreateAccountRequestDTO) Validate() error {
+func (r *SavePlannerParametersRequest) Validate() error {
+	return nil
+}
+
+type CreateAccountRequest struct {
+	Name        string  `json:"name"`
+	Category    string  `json:"category"`
+	Description string  `json:"description"`
+	Currency    string  `json:"currency"`
+	OrderIndex  *uint32 `json:"order_index"`
+}
+
+func (r *CreateAccountRequest) Validate() error {
 	return validation.ValidateStruct(
 		r,
 		validation.Field(
@@ -39,7 +46,7 @@ func (r *CreateAccountRequestDTO) Validate() error {
 		validation.Field(
 			&r.Currency,
 			validation.Required,
-			validation.By(IsValidCurrency(r.Currency)),
+			validation.By(isValidCurrency(r.Currency)),
 		),
 		validation.Field(
 			&r.OrderIndex,
@@ -47,7 +54,7 @@ func (r *CreateAccountRequestDTO) Validate() error {
 	)
 }
 
-type CreateTransactionRequestDTO struct {
+type CreateTransactionRequest struct {
 	Description          string  `json:"description"`
 	Amount               float64 `json:"amount"`
 	Currency             string  `json:"currency"`
@@ -56,7 +63,7 @@ type CreateTransactionRequestDTO struct {
 	TransactedAt         string  `json:"transacted_at"`
 }
 
-func (r *CreateTransactionRequestDTO) Validate() error {
+func (r *CreateTransactionRequest) Validate() error {
 	return validation.ValidateStruct(
 		r,
 		validation.Field(
@@ -70,7 +77,7 @@ func (r *CreateTransactionRequestDTO) Validate() error {
 		validation.Field(
 			&r.Currency,
 			validation.Required,
-			validation.By(IsValidCurrency(r.Currency)),
+			validation.By(isValidCurrency(r.Currency)),
 		),
 		validation.Field(
 			&r.SourceAccountID,

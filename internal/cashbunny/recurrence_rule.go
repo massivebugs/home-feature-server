@@ -3,12 +3,12 @@ package cashbunny
 import (
 	"time"
 
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/teambition/rrule-go"
 )
 
 type RecurrenceRule struct {
-	Rule *rrule.RRule
+	rule *rrule.RRule
 }
 
 func NewRecurrenceRuleWithDefaultParams(freq rrule.Frequency, dtStart time.Time) (*RecurrenceRule, error) {
@@ -21,11 +21,11 @@ func NewRecurrenceRuleWithDefaultParams(freq rrule.Frequency, dtStart time.Time)
 	}
 
 	return &RecurrenceRule{
-		Rule: rr,
+		rule: rr,
 	}, err
 }
 
-func NewRecurrenceRuleFromData(data *cashbunny_repository.CashbunnyRecurrenceRule) (*RecurrenceRule, error) {
+func NewRecurrenceRuleFromQueries(data *queries.CashbunnyRecurrenceRule) (*RecurrenceRule, error) {
 	rrFreq, err := rrule.StrToFreq(data.Freq)
 	if err != nil {
 		return nil, err
@@ -43,6 +43,6 @@ func NewRecurrenceRuleFromData(data *cashbunny_repository.CashbunnyRecurrenceRul
 	}
 
 	return &RecurrenceRule{
-		Rule: rr,
+		rule: rr,
 	}, nil
 }

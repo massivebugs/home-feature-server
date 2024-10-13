@@ -3,22 +3,22 @@ package cashbunny
 import (
 	"time"
 
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
 type UserPreferences struct {
-	UserCurrencies []*cashbunny_repository.CashbunnyUserCurrency
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	userCurrencies []string
+	createdAt      time.Time
+	updatedAt      time.Time
 }
 
-func NewUserPreferences(
-	up *cashbunny_repository.CashbunnyUserPreference,
-	uc []*cashbunny_repository.CashbunnyUserCurrency,
+func NewUserPreferencesFromQueries(
+	up *queries.CashbunnyUserPreference,
+	ucs []string,
 ) *UserPreferences {
 	return &UserPreferences{
-		UserCurrencies: uc,
-		CreatedAt:      up.CreatedAt,
-		UpdatedAt:      up.UpdatedAt,
+		userCurrencies: ucs,
+		createdAt:      up.CreatedAt,
+		updatedAt:      up.UpdatedAt,
 	}
 }

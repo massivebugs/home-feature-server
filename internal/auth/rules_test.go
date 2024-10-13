@@ -71,7 +71,7 @@ func TestIsValidPassword(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validateFunc := IsValidPassword(tt.args.minLength, tt.args.maxLength)
+			validateFunc := isValidPassword(tt.args.minLength, tt.args.maxLength)
 			if err := validateFunc(tt.args.value); (err != nil) != tt.wantErr {
 				t.Errorf("IsValidPassword() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -2,11 +2,11 @@ package repeat
 
 import validation "github.com/go-ozzo/ozzo-validation"
 
-type RepeatRequestDTO struct {
+type RepeatRequest struct {
 	Message string `json:"message"`
 }
 
-func (r *RepeatRequestDTO) Validate() error {
+func (r *RepeatRequest) Validate() error {
 	return validation.ValidateStruct(
 		r,
 		validation.Field(
