@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/massivebugs/home-feature-server/db"
-	"github.com/massivebugs/home-feature-server/http"
+	"github.com/massivebugs/home-feature-server/rest"
 )
 
 type apiMiddlewares struct {
@@ -26,7 +26,7 @@ func main() {
 	}
 
 	fmt.Println("Checking config...")
-	cfg := http.NewConfig()
+	cfg := rest.NewConfig()
 	if err := cfg.Load(); err != nil {
 		log.Fatal(err)
 	}
@@ -38,15 +38,15 @@ func main() {
 	}
 
 	e := echo.New()
-	e.Validator = &http.RequestValidator{}
+	e.Validator = &rest.RequestValidator{}
 
 	fmt.Println("Attaching middlewares...")
 
 	apiMiddlewares := apiMiddlewares{
-		CSRF:       http.NewCSRFMiddleware(cfg),
-		CORS:       http.NewCORSMiddleware(cfg),
-		JWT:        http.NewJWTMiddleware(cfg),
-		JWTRefresh: http.NewJWTRefreshMiddleware(cfg),
+		CSRF:       rest.NewCSRFMiddleware(cfg),
+		CORS:       rest.NewCORSMiddleware(cfg),
+		JWT:        rest.NewJWTMiddleware(cfg),
+		JWTRefresh: rest.NewJWTRefreshMiddleware(cfg),
 	}
 
 	// Globally applied middleware

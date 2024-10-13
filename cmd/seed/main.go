@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
-	"github.com/massivebugs/home-feature-server/http"
+	"github.com/massivebugs/home-feature-server/rest"
 	"github.com/massivebugs/home-feature-server/seeder"
 )
 
@@ -19,7 +19,7 @@ func main() {
 	}
 
 	fmt.Println("Checking config...")
-	cfg := http.NewConfig()
+	cfg := rest.NewConfig()
 	if err := cfg.Load(); err != nil {
 		log.Fatal(err)
 	}
@@ -36,9 +36,9 @@ func main() {
 	)
 
 	switch cfg.Environment {
-	case http.EnvironmentLocal:
+	case rest.EnvironmentLocal:
 		err = seeder.SeedForLocal(context.Background())
-	case http.EnvironmentProduction:
+	case rest.EnvironmentProduction:
 		err = seeder.SeedForProduction(context.Background())
 	}
 	if err != nil {
