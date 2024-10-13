@@ -8,17 +8,19 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
-type UserPreferencesDBRepository struct {
+type UserPreferencesRepository struct {
 	querier queries.Querier
 }
 
-func NewUserPreferencesDBRepository(querier queries.Querier) *UserPreferencesDBRepository {
-	return &UserPreferencesDBRepository{
+var _ cashbunny.IUserPreferencesRepository = (*UserPreferencesRepository)(nil)
+
+func NewUserPreferencesRepository(querier queries.Querier) *UserPreferencesRepository {
+	return &UserPreferencesRepository{
 		querier: querier,
 	}
 }
 
-func (r *UserPreferencesDBRepository) GetUserPreferenceExistsByUserID(ctx context.Context, db db.DB, userID uint32) (bool, error) {
+func (r *UserPreferencesRepository) GetUserPreferenceExistsByUserID(ctx context.Context, db db.DB, userID uint32) (bool, error) {
 	result, err := r.querier.GetUserPreferenceExistsByUserID(ctx, db, userID)
 	if err != nil {
 		return false, err
@@ -26,7 +28,7 @@ func (r *UserPreferencesDBRepository) GetUserPreferenceExistsByUserID(ctx contex
 	return result, nil
 }
 
-func (r *UserPreferencesDBRepository) CreateUserPreferences(ctx context.Context, db db.DB, userID uint32) (uint32, error) {
+func (r *UserPreferencesRepository) CreateUserPreferences(ctx context.Context, db db.DB, userID uint32) (uint32, error) {
 	result, err := r.querier.CreateUserPreferences(ctx, db, userID)
 	if err != nil {
 		return 0, err
@@ -40,7 +42,7 @@ func (r *UserPreferencesDBRepository) CreateUserPreferences(ctx context.Context,
 	return uint32(id), nil
 }
 
-func (r *UserPreferencesDBRepository) GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*cashbunny.UserPreferences, error) {
+func (r *UserPreferencesRepository) GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*cashbunny.UserPreferences, error) {
 	ucs, err := r.ListUserCurrencies(ctx, db, userID)
 	if err != nil {
 		return nil, err
@@ -56,7 +58,7 @@ func (r *UserPreferencesDBRepository) GetUserPreferencesByUserID(ctx context.Con
 	return up, nil
 }
 
-func (r *UserPreferencesDBRepository) CreateUserCurrency(ctx context.Context, db db.DB, params cashbunny.CreateUserCurrencyParams) (uint32, error) {
+func (r *UserPreferencesRepository) CreateUserCurrency(ctx context.Context, db db.DB, params cashbunny.CreateUserCurrencyParams) (uint32, error) {
 	result, err := r.querier.CreateUserCurrency(ctx, db, queries.CreateUserCurrencyParams{
 		UserID:       params.UserID,
 		CurrencyCode: params.CurrencyCode,
@@ -73,7 +75,7 @@ func (r *UserPreferencesDBRepository) CreateUserCurrency(ctx context.Context, db
 	return uint32(id), nil
 }
 
-func (r *UserPreferencesDBRepository) ListUserCurrencies(ctx context.Context, db db.DB, userID uint32) ([]string, error) {
+func (r *UserPreferencesRepository) ListUserCurrencies(ctx context.Context, db db.DB, userID uint32) ([]string, error) {
 	data, err := r.querier.ListUserCurrencies(ctx, db, userID)
 	if err != nil {
 		return nil, err

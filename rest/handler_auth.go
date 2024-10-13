@@ -22,9 +22,9 @@ func NewAuthHandler(cfg *Config, db *db.Handle, querier queries.Querier) *AuthHa
 		cfg: cfg,
 		auth: auth.NewAuth(
 			db,
-			repository.NewUserDBRepository(querier),
-			repository.NewUserPasswordDBRepository(querier),
-			repository.NewUserRefreshTokenDBRepository(querier),
+			repository.NewUserRepository(querier),
+			repository.NewUserPasswordRepository(querier),
+			repository.NewUserRefreshTokenRepository(querier),
 		),
 	}
 }

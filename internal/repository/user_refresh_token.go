@@ -8,17 +8,19 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/auth"
 )
 
-type UserRefreshTokenDBRepository struct {
+type UserRefreshTokenRepository struct {
 	querier queries.Querier
 }
 
-func NewUserRefreshTokenDBRepository(querier queries.Querier) *UserRefreshTokenDBRepository {
-	return &UserRefreshTokenDBRepository{
+var _ auth.IUserRefreshTokenRepository = (*UserRefreshTokenRepository)(nil)
+
+func NewUserRefreshTokenRepository(querier queries.Querier) *UserRefreshTokenRepository {
+	return &UserRefreshTokenRepository{
 		querier: querier,
 	}
 }
 
-func (r *UserRefreshTokenDBRepository) CreateUserRefreshToken(ctx context.Context, db db.DB, arg auth.CreateUserRefreshTokenParams) error {
+func (r *UserRefreshTokenRepository) CreateUserRefreshToken(ctx context.Context, db db.DB, arg auth.CreateUserRefreshTokenParams) error {
 	_, err := r.querier.CreateUserRefreshToken(
 		ctx,
 		db,
@@ -31,7 +33,7 @@ func (r *UserRefreshTokenDBRepository) CreateUserRefreshToken(ctx context.Contex
 	return err
 }
 
-func (r *UserRefreshTokenDBRepository) GetUserRefreshTokenExistsByValue(ctx context.Context, db db.DB, arg auth.GetUserRefreshTokenExistsByValueParams) (bool, error) {
+func (r *UserRefreshTokenRepository) GetUserRefreshTokenExistsByValue(ctx context.Context, db db.DB, arg auth.GetUserRefreshTokenExistsByValueParams) (bool, error) {
 	return r.querier.GetUserRefreshTokenExistsByValue(ctx, db, queries.GetUserRefreshTokenExistsByValueParams{
 		UserID: arg.UserID,
 		Value:  arg.Value,

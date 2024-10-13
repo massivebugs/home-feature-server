@@ -9,21 +9,23 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/auth"
 )
 
-type UserDBRepository struct {
+type UserRepository struct {
 	querier queries.Querier
 }
 
-func NewUserDBRepository(querier queries.Querier) *UserDBRepository {
-	return &UserDBRepository{
+var _ auth.IUserRepository = (*UserRepository)(nil)
+
+func NewUserRepository(querier queries.Querier) *UserRepository {
+	return &UserRepository{
 		querier: querier,
 	}
 }
 
-func (r *UserDBRepository) GetUsernameExists(ctx context.Context, db db.DB, name string) (bool, error) {
+func (r *UserRepository) GetUsernameExists(ctx context.Context, db db.DB, name string) (bool, error) {
 	return r.querier.GetUsernameExists(ctx, db, name)
 }
 
-func (r *UserDBRepository) CreateUser(ctx context.Context, db db.DB, name string) (uint32, error) {
+func (r *UserRepository) CreateUser(ctx context.Context, db db.DB, name string) (uint32, error) {
 	result, err := r.querier.CreateUser(ctx, db, name)
 	if err != nil {
 		return 0, err
@@ -37,11 +39,11 @@ func (r *UserDBRepository) CreateUser(ctx context.Context, db db.DB, name string
 	return uint32(id), nil
 }
 
-func (r *UserDBRepository) DeleteUser(ctx context.Context, db db.DB, id uint32) error {
+func (r *UserRepository) DeleteUser(ctx context.Context, db db.DB, id uint32) error {
 	return errors.New("not implemented yet")
 }
 
-func (r *UserDBRepository) GetUser(ctx context.Context, db db.DB, id uint32) (*auth.AuthUser, error) {
+func (r *UserRepository) GetUser(ctx context.Context, db db.DB, id uint32) (*auth.AuthUser, error) {
 	data, err := r.querier.GetUser(ctx, db, id)
 	if err != nil {
 		return nil, err
@@ -50,7 +52,7 @@ func (r *UserDBRepository) GetUser(ctx context.Context, db db.DB, id uint32) (*a
 	return auth.NewAuthUserFromQueries(data), nil
 }
 
-func (r *UserDBRepository) GetUserByName(ctx context.Context, db db.DB, name string) (*auth.AuthUser, error) {
+func (r *UserRepository) GetUserByName(ctx context.Context, db db.DB, name string) (*auth.AuthUser, error) {
 	data, err := r.querier.GetUserByName(ctx, db, name)
 	if err != nil {
 		return nil, err
@@ -59,6 +61,6 @@ func (r *UserDBRepository) GetUserByName(ctx context.Context, db db.DB, name str
 	return auth.NewAuthUserFromQueries(data), nil
 }
 
-func (r *UserDBRepository) UpdateUser(ctx context.Context, db db.DB, arg auth.UpdateUserParams) error {
+func (r *UserRepository) UpdateUser(ctx context.Context, db db.DB, arg auth.UpdateUserParams) error {
 	return errors.New("not implemented yet")
 }

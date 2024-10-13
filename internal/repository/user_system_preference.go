@@ -12,6 +12,8 @@ type UserSystemPreferenceRepository struct {
 	querier queries.Querier
 }
 
+var _ system_preference.ISystemPreferenceRepository = (*UserSystemPreferenceRepository)(nil)
+
 func NewUserSystemPreferenceRepository(querier queries.Querier) *UserSystemPreferenceRepository {
 	return &UserSystemPreferenceRepository{
 		querier: querier,

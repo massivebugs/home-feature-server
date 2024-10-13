@@ -8,17 +8,19 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
-type AccountDBRepository struct {
+type AccountRepository struct {
 	querier queries.Querier
 }
 
-func NewAccountDBRepository(querier queries.Querier) *AccountDBRepository {
-	return &AccountDBRepository{
+var _ cashbunny.IAccountRepository = (*AccountRepository)(nil)
+
+func NewAccountRepository(querier queries.Querier) *AccountRepository {
+	return &AccountRepository{
 		querier: querier,
 	}
 }
 
-func (r *AccountDBRepository) CreateAccount(ctx context.Context, db db.DB, params cashbunny.CreateAccountParams) (uint32, error) {
+func (r *AccountRepository) CreateAccount(ctx context.Context, db db.DB, params cashbunny.CreateAccountParams) (uint32, error) {
 	result, err := r.querier.CreateAccount(ctx, db, queries.CreateAccountParams{
 		UserID:      params.UserID,
 		Category:    string(params.Category),
@@ -39,7 +41,7 @@ func (r *AccountDBRepository) CreateAccount(ctx context.Context, db db.DB, param
 	return uint32(id), nil
 }
 
-func (r *AccountDBRepository) ListAccountsAndAmountBetweenDates(ctx context.Context, db db.DB, params cashbunny.ListAccountsAndAmountBetweenDatesParams) ([]*cashbunny.Account, error) {
+func (r *AccountRepository) ListAccountsAndAmountBetweenDates(ctx context.Context, db db.DB, params cashbunny.ListAccountsAndAmountBetweenDatesParams) ([]*cashbunny.Account, error) {
 	data, err := r.querier.ListAccountsAndAmountBetweenDates(ctx, db, queries.ListAccountsAndAmountBetweenDatesParams{
 		UserID:           params.UserID,
 		FromTransactedAt: params.FromTransactedAt,
@@ -57,7 +59,7 @@ func (r *AccountDBRepository) ListAccountsAndAmountBetweenDates(ctx context.Cont
 	return accounts, nil
 }
 
-func (r *AccountDBRepository) ListAccountsAndAmountByCategory(ctx context.Context, db db.DB, params cashbunny.ListAccountsAndAmountByCategoryParams) ([]*cashbunny.Account, error) {
+func (r *AccountRepository) ListAccountsAndAmountByCategory(ctx context.Context, db db.DB, params cashbunny.ListAccountsAndAmountByCategoryParams) ([]*cashbunny.Account, error) {
 	data, err := r.querier.ListAccountsAndAmountByCategory(ctx, db, queries.ListAccountsAndAmountByCategoryParams{
 		UserID:   params.UserID,
 		Category: string(params.Category),
@@ -74,7 +76,7 @@ func (r *AccountDBRepository) ListAccountsAndAmountByCategory(ctx context.Contex
 	return assetAccs, nil
 }
 
-func (r *AccountDBRepository) ListAccountsByIDs(ctx context.Context, db db.DB, params cashbunny.ListAccountsByIDsParams) ([]*cashbunny.Account, error) {
+func (r *AccountRepository) ListAccountsByIDs(ctx context.Context, db db.DB, params cashbunny.ListAccountsByIDsParams) ([]*cashbunny.Account, error) {
 	data, err := r.querier.ListAccountsByIDs(ctx, db, queries.ListAccountsByIDsParams{
 		UserID: params.UserID,
 		IDs:    params.IDs,
@@ -91,7 +93,7 @@ func (r *AccountDBRepository) ListAccountsByIDs(ctx context.Context, db db.DB, p
 	return accs, nil
 }
 
-func (r *AccountDBRepository) IncrementAccountIndices(ctx context.Context, db db.DB, params cashbunny.IncrementAccountIndicesParams) error {
+func (r *AccountRepository) IncrementAccountIndices(ctx context.Context, db db.DB, params cashbunny.IncrementAccountIndicesParams) error {
 	err := r.querier.IncrementAccountIndices(ctx, db, queries.IncrementAccountIndicesParams{
 		UserID:     params.UserID,
 		OrderIndex: params.OrderIndex,
@@ -104,14 +106,14 @@ func (r *AccountDBRepository) IncrementAccountIndices(ctx context.Context, db db
 	return nil
 }
 
-func (r *AccountDBRepository) DeleteAccount(ctx context.Context, db db.DB, params cashbunny.DeleteAccountParams) error {
+func (r *AccountRepository) DeleteAccount(ctx context.Context, db db.DB, params cashbunny.DeleteAccountParams) error {
 	return r.querier.DeleteAccount(ctx, db, queries.DeleteAccountParams{
 		UserID: params.UserID,
 		ID:     params.ID,
 	})
 }
 
-func (r *AccountDBRepository) GetAccountByID(ctx context.Context, db db.DB, params cashbunny.GetAccountByIDParams) (*cashbunny.Account, error) {
+func (r *AccountRepository) GetAccountByID(ctx context.Context, db db.DB, params cashbunny.GetAccountByIDParams) (*cashbunny.Account, error) {
 	data, err := r.querier.GetAccountByID(ctx, db, queries.GetAccountByIDParams{
 		UserID: params.UserID,
 		ID:     params.ID,

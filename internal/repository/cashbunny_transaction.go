@@ -8,17 +8,19 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
-type TransactionDBRepository struct {
+type TransactionRepository struct {
 	querier queries.Querier
 }
 
-func NewTransactionDBRepository(querier queries.Querier) *TransactionDBRepository {
-	return &TransactionDBRepository{
+var _ cashbunny.ITransactionRepository = (*TransactionRepository)(nil)
+
+func NewTransactionRepository(querier queries.Querier) *TransactionRepository {
+	return &TransactionRepository{
 		querier: querier,
 	}
 }
 
-func (r *TransactionDBRepository) CreateTransaction(ctx context.Context, db db.DB, params cashbunny.CreateTransactionParams) (uint32, error) {
+func (r *TransactionRepository) CreateTransaction(ctx context.Context, db db.DB, params cashbunny.CreateTransactionParams) (uint32, error) {
 	result, err := r.querier.CreateTransaction(ctx, db, queries.CreateTransactionParams{
 		UserID:        params.UserID,
 		SrcAccountID:  params.SrcAccountID,
@@ -40,21 +42,21 @@ func (r *TransactionDBRepository) CreateTransaction(ctx context.Context, db db.D
 	return uint32(id), nil
 }
 
-func (r *TransactionDBRepository) DeleteTransaction(ctx context.Context, db db.DB, params cashbunny.DeleteTransactionParams) error {
+func (r *TransactionRepository) DeleteTransaction(ctx context.Context, db db.DB, params cashbunny.DeleteTransactionParams) error {
 	return r.querier.DeleteTransaction(ctx, db, queries.DeleteTransactionParams{
 		UserID: params.UserID,
 		ID:     params.ID,
 	})
 }
 
-func (r *TransactionDBRepository) DeleteTransactionsByAccountID(ctx context.Context, db db.DB, params cashbunny.DeleteTransactionsByAccountIDParams) error {
+func (r *TransactionRepository) DeleteTransactionsByAccountID(ctx context.Context, db db.DB, params cashbunny.DeleteTransactionsByAccountIDParams) error {
 	return r.querier.DeleteTransactionsByAccountID(ctx, db, queries.DeleteTransactionsByAccountIDParams{
 		UserID:    params.UserID,
 		AccountID: params.AccountID,
 	})
 }
 
-func (r *TransactionDBRepository) GetTransactionByID(ctx context.Context, db db.DB, params cashbunny.GetTransactionByIDParams) (*cashbunny.Transaction, error) {
+func (r *TransactionRepository) GetTransactionByID(ctx context.Context, db db.DB, params cashbunny.GetTransactionByIDParams) (*cashbunny.Transaction, error) {
 	data, err := r.querier.GetTransactionByID(ctx, db, queries.GetTransactionByIDParams{
 		UserID: params.UserID,
 		ID:     params.ID,
@@ -66,7 +68,7 @@ func (r *TransactionDBRepository) GetTransactionByID(ctx context.Context, db db.
 	return cashbunny.NewTransactionFromQueries(data), nil
 }
 
-func (r *TransactionDBRepository) ListTransactions(ctx context.Context, db db.DB, userID uint32) ([]*cashbunny.Transaction, error) {
+func (r *TransactionRepository) ListTransactions(ctx context.Context, db db.DB, userID uint32) ([]*cashbunny.Transaction, error) {
 	data, err := r.querier.ListTransactions(ctx, db, userID)
 	if err != nil {
 		return nil, err
@@ -80,7 +82,7 @@ func (r *TransactionDBRepository) ListTransactions(ctx context.Context, db db.DB
 	return trs, nil
 }
 
-func (r *TransactionDBRepository) ListTransactionsBetweenDates(ctx context.Context, db db.DB, params cashbunny.ListTransactionsBetweenDatesParams) ([]*cashbunny.Transaction, error) {
+func (r *TransactionRepository) ListTransactionsBetweenDates(ctx context.Context, db db.DB, params cashbunny.ListTransactionsBetweenDatesParams) ([]*cashbunny.Transaction, error) {
 	tRows, err := r.querier.ListTransactionsBetweenDates(
 		ctx,
 		db,

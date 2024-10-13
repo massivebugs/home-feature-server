@@ -8,21 +8,23 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
-type TransactionCategoryDBRepository struct {
+type TransactionCategoryRepository struct {
 	querier queries.Querier
 }
 
-func NewTransactionCategoryDBRepository(querier queries.Querier) *TransactionCategoryDBRepository {
-	return &TransactionCategoryDBRepository{
+var _ cashbunny.ITransactionCategoryRepository = (*TransactionCategoryRepository)(nil)
+
+func NewTransactionCategoryRepository(querier queries.Querier) *TransactionCategoryRepository {
+	return &TransactionCategoryRepository{
 		querier: querier,
 	}
 }
 
-func (r *TransactionCategoryDBRepository) CreateTransactionCategory(ctx context.Context, db db.DB, arg cashbunny.CreateTransactionCategoryParams) (uint32, error) {
+func (r *TransactionCategoryRepository) CreateTransactionCategory(ctx context.Context, db db.DB, arg cashbunny.CreateTransactionCategoryParams) (uint32, error) {
 	return 0, nil
 }
 
-func (r *TransactionCategoryDBRepository) ListTransactionCategoriesWithAllocations(ctx context.Context, db db.DB, userID uint32) ([]*cashbunny.TransactionCategory, error) {
+func (r *TransactionCategoryRepository) ListTransactionCategoriesWithAllocations(ctx context.Context, db db.DB, userID uint32) ([]*cashbunny.TransactionCategory, error) {
 	// Preload category allocations
 	alcRows, err := r.querier.ListTransactionCategoryAllocations(ctx, db, userID)
 	if err != nil {

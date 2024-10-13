@@ -20,13 +20,13 @@ func NewCashbunnyHandler(db *db.Handle, querier queries.Querier) *CashbunnyHandl
 	return &CashbunnyHandler{
 		cashbunny: cashbunny.NewCashbunny(
 			db,
-			repository.NewAccountDBRepository(querier),
-			repository.NewScheduledTransactionDBRepository(querier),
-			repository.NewTransactionDBRepository(querier),
-			repository.NewTransactionCategoryDBRepository(querier),
-			repository.NewRecurrenceRuleDBRepository(querier),
-			repository.NewCurrencyDBRepository(querier),
-			repository.NewUserPreferencesDBRepository(querier),
+			repository.NewAccountRepository(querier),
+			repository.NewScheduledTransactionRepository(querier),
+			repository.NewTransactionRepository(querier),
+			repository.NewTransactionCategoryRepository(querier),
+			repository.NewRecurrenceRuleRepository(querier),
+			repository.NewCurrencyRepository(querier),
+			repository.NewUserPreferencesRepository(querier),
 		),
 	}
 }

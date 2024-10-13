@@ -8,17 +8,19 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
 
-type ScheduledTransactionDBRepository struct {
+type ScheduledTransactionRepository struct {
 	querier queries.Querier
 }
 
-func NewScheduledTransactionDBRepository(querier queries.Querier) *ScheduledTransactionDBRepository {
-	return &ScheduledTransactionDBRepository{
+var _ cashbunny.IScheduledTransactionRepository = (*ScheduledTransactionRepository)(nil)
+
+func NewScheduledTransactionRepository(querier queries.Querier) *ScheduledTransactionRepository {
+	return &ScheduledTransactionRepository{
 		querier: querier,
 	}
 }
 
-func (r *ScheduledTransactionDBRepository) ListScheduledTransactionsWithAllRelations(ctx context.Context, db db.DB, userID uint32) ([]*cashbunny.ScheduledTransaction, error) {
+func (r *ScheduledTransactionRepository) ListScheduledTransactionsWithAllRelations(ctx context.Context, db db.DB, userID uint32) ([]*cashbunny.ScheduledTransaction, error) {
 	stListRows, err := r.querier.ListScheduledTransactionsWithAllRelations(ctx, db, userID)
 	if err != nil {
 		return nil, err
