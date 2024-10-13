@@ -1,6 +1,6 @@
 <template>
   <main ref="desktopViewEl" class="hfs-desktop">
-    <h1 class="hfs-desktop__logo">massivebugs.github.io</h1>
+    <h1 class="hfs-desktop__logo">{{ t('app.name') }} v.0.0.1</h1>
     <FileListComponent class="hfs-desktop__file-list" :files="fileOptions" />
     <div class="hfs-desktop__taskbar-container">
       <TaskbarComponent
@@ -45,6 +45,7 @@ import { uniqueId } from 'lodash'
 import { onMounted, onUnmounted, provide, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import { isAPIError } from '@/utils/api'
 import ConfirmDialogComponent from '../components/ConfirmDialogComponent.vue'
 import ContextMenuComponent, {
   type ContextMenuOptions,
@@ -55,6 +56,7 @@ import TaskbarComponent, {
   type TaskbarSelectProcessEvent,
 } from '../components/TaskbarComponent.vue'
 import type { AbsolutePosition } from '../models/absolutePosition'
+import type { APIResponse } from '../models/dto'
 import { Process } from '../models/process'
 import { RelativePosition } from '../models/relativePosition'
 import { useCoreStore } from '../stores'
@@ -65,7 +67,7 @@ export type SetContextMenu = (
   pos?: AbsolutePosition,
 ) => void
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useCoreStore()
@@ -129,12 +131,33 @@ const onSelectProcess = (payload: TaskbarSelectProcessEvent) => {
   store.setTopLevelProcess(payload.processId)
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('click', clearContextMenu)
+
+  // Load user data
+  try {
+    const res = await store.getUserSystemPreferences()
+    store.preferences = res.data.data
+
+    locale.value = store.preferences.language ?? navigator.language
+  } catch (e) {
+    if (isAPIError(e)) {
+      const res = e.response?.data as APIResponse<null>
+      // TODO: Group API error codes
+      if (res.error?.code === 'not_found') {
+        const res = await store.createUserSystemPreferences()
+        store.preferences = res.data.data
+      } else {
+        throw e
+      }
+    } else {
+      throw e
+    }
+  }
 
   store.programs.forEach((program) => {
     fileOptions.value.push({
-      name: program.name,
+      name: t(`${program.id}.name`),
       icon: program.icon,
       onDblClick: () => {
         const process = new Process(uniqueId('pid_'), program)
@@ -164,14 +187,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@/assets/media-query';
 @use '@/assets/colors';
-$taskbarHeight: 5em;
-$taskbarBottom: 1em;
+$taskbarHeight: 4em;
+$taskbarBottom: 0.7em;
+$taskbarHeightMd: 5em;
+$taskbarBottomMd: 1em;
 
 .hfs-desktop {
   position: relative;
   width: 100%;
   height: calc(100% - $taskbarHeight - $taskbarBottom - 0.2em);
+  @include media-query.md {
+    height: calc(100% - $taskbarHeightMd - $taskbarBottomMd - 0.2em);
+  }
 
   > .hfs-window:not(.hfs-dialog) {
     position: absolute !important;
@@ -179,19 +208,20 @@ $taskbarBottom: 1em;
 }
 
 .hfs-desktop__logo {
-  position: absolute;
+  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -150%);
   color: colors.$light-grey;
   font-family: monospace;
-  font-size: 4em;
+  font-size: calc(1vw + 1em);
   font-style: italic;
   user-select: none;
   pointer-events: none;
 }
 
 .hfs-desktop__file-list {
+  position: relative;
   height: 100%;
   width: 100%;
 }
@@ -199,16 +229,21 @@ $taskbarBottom: 1em;
 // Make height shorter on smaller screens!
 .hfs-desktop__taskbar-container {
   position: fixed;
-  bottom: $taskbarBottom;
   left: 5%;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
   width: 90%;
+  bottom: $taskbarBottom;
+  @include media-query.md {
+    bottom: $taskbarBottomMd;
+  }
 
   > .hfs-desktop__taskbar {
     height: $taskbarHeight;
+    @include media-query.md {
+      height: $taskbarHeightMd;
+    }
   }
 }
 </style>

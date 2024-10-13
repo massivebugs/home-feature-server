@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="cashbunny-transactions-datatable">
     <div class="controls">
       <div></div>
       <button @click="onClickAddTransaction">{{ t('cashbunny.createTransaction') }}</button>
@@ -7,8 +7,13 @@
     <DataTableComponent
       :columns="columns"
       :data="data"
+      :info="true"
+      :paging="true"
+      :searching="true"
+      :ordering="true"
+      :select="true"
       @edit-row="onRowEdit"
-      @delete-row="onRowDelete"
+      @delete-rows="onRowsDelete"
     />
     <ConfirmDialogComponent
       v-if="rowsToDelete"
@@ -42,8 +47,8 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ConfirmDialogComponent from '@/core/components/ConfirmDialogComponent.vue'
 import DataTableComponent, {
-  type DataTableRowDeleteEvent,
   type DataTableRowEditEvent,
+  type DataTableRowsDeleteEvent,
 } from '@/core/components/DataTableComponent.vue'
 import type { TransactionDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
@@ -143,7 +148,7 @@ const onRowEdit = ({ row }: DataTableRowEditEvent<TransactionDto>) => {
   rowToEdit.value = row
 }
 
-const onRowDelete = ({ rows }: DataTableRowDeleteEvent<TransactionDto>) => {
+const onRowsDelete = ({ rows }: DataTableRowsDeleteEvent<TransactionDto>) => {
   rowsToDelete.value = rows
 }
 
@@ -175,6 +180,14 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@/assets/colors';
+
+.cashbunny-transactions-datatable {
+  background-color: colors.$high-opacity-white;
+  height: 100%;
+  padding: 1em;
+}
+
 .controls {
   display: flex;
   justify-content: space-between;

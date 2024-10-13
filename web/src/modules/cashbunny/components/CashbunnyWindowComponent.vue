@@ -1,6 +1,5 @@
 <template>
   <WindowComponent
-    class="cashbunny-window"
     :size="new RelativeSize(60, 70)"
     :title="t('cashbunny.title')"
     :controls="{
@@ -12,10 +11,19 @@
     :statusBarInfo="['Something goes here...', 'Something else here']"
     :resizable="true"
     @click-close="emit('clickClose')"
+    v-slot="windowProps"
   >
-    <div class="cashbunny-window__container">
+    <div
+      class="cashbunny-window__body"
+      :class="{
+        'cashbunny-window__tab-body_fix-height': !windowProps.windowSizeQuery.md,
+      }"
+    >
       <TabGroupComponent
         class="cashbunny-window__tab-group"
+        :class="{
+          'cashbunny-window__tab-group_stretch': !windowProps.windowSizeQuery.lg,
+        }"
         @tab-click="(e) => (currentTab = e.tabId)"
         :selected-tab-id="currentTab"
         :tabs="[
@@ -36,74 +44,49 @@
           },
         ]"
       >
-        <template #overview_label>
-          <div class="cashbunny__tab-label">
-            <OverviewTabIconComponent
-              :fill="currentTab === Tabs.overview ? '#ebebeb' : undefined"
-            />
-            {{ t('cashbunny.overview') }}
-          </div>
-        </template>
         <template #overview>
-          <div class="cashbunny__tab-body">
-            <OverviewComponent />
-          </div>
-        </template>
-        <template #planner_label>
-          <div class="cashbunny__tab-label">
-            <PlannerTabIconComponent
-              width="30"
-              height="30"
-              :fill="currentTab === Tabs.planner ? '#ebebeb' : undefined"
-            />
-            {{ t('cashbunny.planner') }}
-          </div>
+          <OverviewTabIconComponent :fill="currentTab === Tabs.overview ? '#ebebeb' : undefined" />
+          {{ t('cashbunny.overview') }}
         </template>
         <template #planner>
-          <div class="cashbunny__tab-body"></div>
-        </template>
-        <template #schedules_label>
-          <div class="cashbunny__tab-label">
-            <SchedulesTabIconComponent
-              :color="currentTab === Tabs.schedules ? '#ebebeb' : undefined"
-              :day="today.getDate()"
-            />
-            {{ t('cashbunny.schedules') }}
-          </div>
+          <PlannerTabIconComponent
+            width="30"
+            height="30"
+            :fill="currentTab === Tabs.planner ? '#ebebeb' : undefined"
+          />
+          {{ t('cashbunny.planner.name') }}
         </template>
         <template #schedules>
-          <div class="cashbunny__tab-body">
-            <SchedulesComponent />
-          </div>
-        </template>
-        <template #accounts_label>
-          <div class="cashbunny__tab-label">
-            <AccountsTabIconComponent
-              :fill="currentTab === Tabs.accounts ? '#ebebeb' : undefined"
-            />
-            {{ t('cashbunny.accounts') }}
-          </div>
+          <SchedulesTabIconComponent
+            :color="currentTab === Tabs.schedules ? '#ebebeb' : undefined"
+            :day="today.getDate()"
+          />
+          {{ t('cashbunny.schedules') }}
         </template>
         <template #accounts>
-          <div class="cashbunny__tab-body">
-            <AccountDataTableComponent />
-          </div>
-        </template>
-        <template #transactions_label>
-          <div class="cashbunny__tab-label">
-            <TransactionsTabIconComponent
-              :fill="currentTab === Tabs.transactions ? '#ebebeb' : undefined"
-            />
-            {{ t('cashbunny.transactions') }}
-          </div>
+          <AccountsTabIconComponent :fill="currentTab === Tabs.accounts ? '#ebebeb' : undefined" />
+          {{ t('cashbunny.accounts') }}
         </template>
         <template #transactions>
-          <div class="cashbunny__tab-body">
-            <TransactionDataTableComponent />
-          </div>
+          <TransactionsTabIconComponent
+            :fill="currentTab === Tabs.transactions ? '#ebebeb' : undefined"
+          />
+          {{ t('cashbunny.transactions') }}
         </template>
       </TabGroupComponent>
+      <div class="cashbunny-window__tab-body">
+        <OverviewComponent v-if="currentTab === Tabs.overview" />
+        <PlannerComponent v-else-if="currentTab === Tabs.planner" />
+        <SchedulesComponent v-else-if="currentTab === Tabs.schedules" />
+        <AccountDataTableComponent v-else-if="currentTab === Tabs.accounts" />
+        <TransactionDataTableComponent v-else-if="currentTab === Tabs.transactions" />
+      </div>
     </div>
+    <FeaturesOverviewDialogComponent
+      v-if="showFeaturesOverviewDialog"
+      :size="new RelativeSize(50, 60)"
+      @click-close="onClickCloseFeaturesOverviewDialog"
+    />
   </WindowComponent>
 </template>
 
@@ -118,7 +101,9 @@ import AccountDataTableComponent from '@/modules/cashbunny/components/AccountDat
 import AccountsTabIconComponent from '@/modules/cashbunny/components/AccountsTabIconComponent.vue'
 import OverviewTabIconComponent from '@/modules/cashbunny/components/OverviewTabIconComponent.vue'
 import TransactionsTabIconComponent from '@/modules/cashbunny/components/TransactionsTabIconComponent.vue'
+import FeaturesOverviewDialogComponent from './FeaturesOverviewDialogComponent.vue'
 import OverviewComponent from './OverviewComponent.vue'
+import PlannerComponent from './PlannerComponent.vue'
 import PlannerTabIconComponent from './PlannerTabIconComponent.vue'
 import SchedulesComponent from './SchedulesComponent.vue'
 import SchedulesTabIconComponent from './SchedulesTabIconComponent.vue'
@@ -132,14 +117,13 @@ const Tabs = {
   transactions: 'transactions',
 } as const
 
-// type TabTypes = (typeof Tabs)[keyof typeof Tabs]
-
 const emit = defineEmits<{
   (e: 'clickClose'): void
 }>()
 
 const { t } = useI18n()
 const currentTab = ref<string>(Tabs.overview)
+const showFeaturesOverviewDialog = ref<boolean>(false)
 const today = new Date()
 const toolbarOptions = computed<WindowToolbarRow[]>(() => [
   {
@@ -156,13 +140,13 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
                 shortcutKey: 'Ctrl+A',
                 isDisabled: false,
                 onClick: () => {
-                  console.log('Clicked Foo')
+                  console.log('Clicked CSV')
                 },
               },
             ],
             [
               {
-                label: 'Exit',
+                label: t('common.close'),
                 shortcutKey: 'Alt+F4',
                 isDisabled: false,
                 onClick: () => {
@@ -180,129 +164,53 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
         label: 'View',
       },
       {
-        label: 'Favorites',
+        label: 'Help',
         contextMenuOptions: {
           itemGroups: [
             [
               {
-                icon: 'check',
-                label: 'Foo',
-                shortcutKey: 'Ctrl+A',
-                isDisabled: false,
+                label: t('cashbunny.featuresOverview.name'),
                 onClick: () => {
-                  console.log('Clicked Foo')
+                  showFeaturesOverviewDialog.value = true
                 },
-              },
-              {
-                label: 'Scan with TeamViewer_setup.exe',
-                shortcutKey: 'Ctrl+B',
-                isDisabled: true,
-                onClick: () => {
-                  console.log('Clicked Bar')
-                },
-                children: [
-                  [
-                    {
-                      label: 'Child of Bar',
-                    },
-                  ],
-                ],
-              },
-              {
-                label: 'Baz',
-                shortcutKey: 'Ctrl+C',
-                isDisabled: false,
-                onClick: () => {
-                  console.log('Clicked Baz')
-                },
-                children: [
-                  [
-                    {
-                      label: 'Child of Baz',
-                    },
-                  ],
-                ],
-              },
-            ],
-            [
-              {
-                icon: 'check',
-                label: 'Foo',
-                shortcutKey: 'Ctrl+A',
-                isDisabled: false,
-                onClick: () => {
-                  console.log('Clicked Foo')
-                },
-              },
-              {
-                label: 'Scan with TeamViewer_setup.exe',
-                shortcutKey: 'Ctrl+B',
-                isDisabled: true,
-                onClick: () => {
-                  console.log('Clicked Bar')
-                },
-                children: [
-                  [
-                    {
-                      label: 'Child of Bar',
-                    },
-                  ],
-                ],
-              },
-              {
-                label: 'Baz',
-                shortcutKey: 'Ctrl+C',
-                isDisabled: false,
-                onClick: () => {
-                  console.log('Clicked Baz')
-                },
-                children: [
-                  [
-                    {
-                      label: 'Child of Baz',
-                    },
-                  ],
-                ],
               },
             ],
           ],
         },
       },
-      {
-        label: 'Tools',
-      },
-      {
-        label: 'Help',
-      },
     ],
   },
 ])
+
+const onClickCloseFeaturesOverviewDialog = () => {
+  showFeaturesOverviewDialog.value = false
+}
 </script>
 
 <style scoped lang="scss">
 @use '@/assets/colors';
-.cashbunny-window__container {
-  width: 100%;
+.cashbunny-window__body {
   height: 100%;
-  padding: 5px;
-  background: colors.$light-grey;
-}
-
-.cashbunny__tab-label {
-  padding: 5px 0;
   display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: bold;
+  flex-direction: column;
 }
 
 .cashbunny-window__tab-group {
-  height: 100%;
+  max-width: 100%;
 }
 
-.cashbunny__tab-body {
-  height: 100%;
-  background-color: colors.$white;
-  border-radius: 3px;
+.cashbunny-window__tab-group_stretch {
+  > * {
+    flex: 1;
+  }
+}
+
+.cashbunny-window__tab-body {
+  flex: 1;
+  overflow: auto;
+}
+
+.cashbunny-window__tab-body_fix-height {
+  overflow: hidden;
 }
 </style>

@@ -1,0 +1,137 @@
+<template>
+  <WindowComponent
+    :size="new RelativeSize(70, 80)"
+    :title="t('systemSettings.name')"
+    :controls="{
+      minimize: true,
+      maximize: true,
+      close: true,
+    }"
+    :toolbar="toolbarOptions"
+    :statusBarInfo="['Something goes here...', 'Something else here']"
+    :resizable="true"
+    @click-close="emit('clickClose')"
+    v-slot="{ windowSizeQuery }"
+  >
+    <div
+      class="system-settings__container"
+      :class="{
+        'system-settings__container-md': windowSizeQuery.md,
+        'system-settings__container-lg': windowSizeQuery.lg,
+      }"
+    >
+      <SystemSettingsSectionComponent :title="t('systemSettings.preferences.title')">
+        <form @change="onChangePreferences">
+          <SystemSettingsItemComponent :name="t('systemSettings.preferences.language.title')">
+            <template #icon>
+              <LanguageIconComponent width="100%" height="100%" />
+            </template>
+            <SelectInputComponent
+              class="system-settings__input"
+              :options="localeOptions"
+              v-model="store.preferences.language"
+            />
+          </SystemSettingsItemComponent>
+        </form>
+      </SystemSettingsSectionComponent>
+    </div>
+  </WindowComponent>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
+import WindowComponent from '@/core/components/WindowComponent.vue'
+import type { WindowToolbarRow } from '@/core/components/WindowToolbarComponent.vue'
+import { RelativeSize } from '@/core/models/relativeSize'
+import { Locales } from '@/i18n'
+import { useCoreStore } from '../stores'
+import LanguageIconComponent from './LanguageIconComponent.vue'
+import SystemSettingsItemComponent from './SystemSettingsItemComponent.vue'
+import SystemSettingsSectionComponent from './SystemSettingsSectionComponent.vue'
+
+const emit = defineEmits<{
+  (e: 'clickClose'): void
+}>()
+
+const { t, locale } = useI18n()
+const store = useCoreStore()
+const localeOptions: { label: string; value: any }[] = [
+  { label: t('systemSettings.locale.default'), value: null },
+  ...Object.values(Locales).map((v) => ({ label: t(`systemSettings.locale.${v}`), value: v })),
+]
+const toolbarOptions = computed<WindowToolbarRow[]>(() => [
+  {
+    isMenu: true,
+    items: [
+      {
+        label: t('common.file'),
+        contextMenuOptions: {
+          itemGroups: [
+            [
+              {
+                label: t('common.exit'),
+                shortcutKey: 'Alt+F4',
+                isDisabled: false,
+                onClick: () => {
+                  emit('clickClose')
+                },
+              },
+            ],
+          ],
+        },
+      },
+      {
+        label: t('common.help'),
+        contextMenuOptions: {
+          itemGroups: [
+            [
+              {
+                label: t('common.about'),
+                isDisabled: false,
+                onClick: () => {
+                  //
+                },
+              },
+            ],
+          ],
+        },
+      },
+    ],
+  },
+])
+
+const onChangePreferences = async () => {
+  // TODO: API Update preferences
+  locale.value = store.preferences.language ?? navigator.language
+  await store.updateUserSystemPreferences()
+}
+</script>
+
+<style scoped lang="scss">
+@use '@/assets/colors';
+
+.system-settings__container {
+  width: 100%;
+  min-height: 100%;
+  padding: 0.5em 0.5em;
+  background-color: colors.$light-grey;
+  display: flex;
+  flex-direction: column;
+}
+
+.system-settings__container-md {
+  padding: 1em 7em;
+}
+
+.system-settings__container-lg {
+  padding: 1em 10em;
+}
+
+.system-settings__input {
+  > * {
+    padding: 0 1em;
+  }
+}
+</style>

@@ -5,66 +5,64 @@ import (
 
 	"github.com/Rhymond/go-money"
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
 type Transaction struct {
-	ID            uint32
-	SrcAccountID  uint32
-	DestAccountID uint32
-	Description   string
-	Amount        *money.Money
-	TransactedAt  time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	id            uint32
+	srcAccountID  uint32
+	destAccountID uint32
+	description   string
+	amount        *money.Money
+	transactedAt  time.Time
+	createdAt     time.Time
+	updatedAt     time.Time
 
-	SourceAccount        *Account
-	DestinationAccount   *Account
-	ScheduledTransaction *ScheduledTransaction
+	sourceAccount        *Account
+	destinationAccount   *Account
+	scheduledTransaction *ScheduledTransaction
 }
 
-func NewTransaction(transaction *cashbunny_repository.CashbunnyTransaction) (*Transaction, error) {
-	t := &Transaction{
-		ID:            transaction.ID,
-		SrcAccountID:  transaction.SrcAccountID,
-		DestAccountID: transaction.DestAccountID,
-		Description:   transaction.Description,
-		Amount:        money.NewFromFloat(transaction.Amount, transaction.Currency),
-		TransactedAt:  transaction.TransactedAt,
-		CreatedAt:     transaction.CreatedAt,
-		UpdatedAt:     transaction.UpdatedAt,
+func NewTransactionFromQueries(data *queries.CashbunnyTransaction) *Transaction {
+	return &Transaction{
+		id:            data.ID,
+		srcAccountID:  data.SrcAccountID,
+		destAccountID: data.DestAccountID,
+		description:   data.Description,
+		amount:        money.NewFromFloat(data.Amount, data.Currency),
+		transactedAt:  data.TransactedAt,
+		createdAt:     data.CreatedAt,
+		updatedAt:     data.UpdatedAt,
 	}
-
-	return t, t.validate()
 }
 
-func (tr *Transaction) validate() error {
+func (tr *Transaction) Validate() error {
 	return validation.ValidateStruct(
 		tr,
 		validation.Field(
-			&tr.ID,
+			&tr.id,
 			validation.Required,
 		),
 		validation.Field(
-			&tr.Description,
+			&tr.description,
 			validation.Required,
 		),
 		validation.Field(
-			&tr.Amount,
+			&tr.amount,
 			validation.Required,
-			validation.By(IsMoneyNotNegative(tr.Amount)),
+			validation.By(isMoneyNotNegative(tr.amount)),
 		),
 		validation.Field(
-			&tr.TransactedAt,
+			&tr.transactedAt,
 			validation.Required,
 		),
 	)
 }
 
 func (tr *Transaction) IsSourceAccount(a *Account) bool {
-	return tr.SrcAccountID == a.ID
+	return tr.srcAccountID == a.id
 }
 
 func (tr *Transaction) IsDestinationAccount(a *Account) bool {
-	return tr.DestAccountID == a.ID
+	return tr.destAccountID == a.id
 }

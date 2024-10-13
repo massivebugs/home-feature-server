@@ -1,9 +1,14 @@
 <template>
-  <div ref="overviewContainer" class="cashbunny-overview" :style="dragStyle">
+  <div
+    ref="overviewContainer"
+    class="cashbunny-overview"
+    :class="{ 'cashbunny-overview_column': isColumnLayout }"
+    :style="dragStyle"
+  >
     <CalendarComponent
       class="cashbunny-overview__calendar"
       height="100%"
-      :style="{ width: 100 - currentSize.w + '%' }"
+      :style="{ width: isColumnLayout ? undefined : 100 - currentSize.w + '%' }"
       :tabs="[CalendarTabs.year, CalendarTabs.month, CalendarTabs.week, CalendarTabs.day]"
       more-link-action="day"
       :events="calendarEvents"
@@ -14,7 +19,10 @@
     <div
       ref="detailSection"
       class="cashbunny-overview__report"
-      :style="{ width: currentSize.w + '%' }"
+      :class="{
+        'cashbunny-overview__report_resizable': !isColumnLayout,
+      }"
+      :style="{ width: isColumnLayout ? undefined : currentSize.w + '%' }"
       @mousedown.stop="onDetailSectionResizeStart"
       @touchstart.stop="onDetailSectionResizeStart"
     >
@@ -50,20 +58,12 @@
             { data: 'amount', title: 'Amount' },
           ]"
           :data="netWorthData"
-          :options="{
-            info: false,
-            paging: false,
-            searching: false,
-            ordering: false,
-            select: false,
-          }"
-          class="table display nowrap compact"
           @loaded="onNetWorthDataTableLoaded"
         />
       </section>
       <section class="cashbunny-overview__report__section">
         <h3 class="cashbunny-overview__report__section-header">
-          {{ t('cashbunny.overviewSummary') }}
+          {{ t('cashbunny.overviewProfitLossSummary') }}
         </h3>
         <DataTableComponent
           :columns="[
@@ -73,15 +73,33 @@
             { data: 'profit', title: 'Profit' },
           ]"
           :data="summaryData"
-          :options="{
-            info: false,
-            paging: false,
-            searching: false,
-            ordering: false,
-            select: false,
-          }"
-          class="table display nowrap compact"
           @loaded="onSummaryDataTableLoaded"
+        />
+      </section>
+      <section class="cashbunny-overview__report__section">
+        <h3 class="cashbunny-overview__report__section-header">
+          {{ t('cashbunny.assets.name') }}
+        </h3>
+        <DataTableComponent
+          :columns="[
+            { data: 'name', title: 'Name' },
+            { data: 'amount_display', title: 'Amount' },
+          ]"
+          :data="selectedData ? selectedData.asset_accounts : viewData?.asset_accounts"
+          @loaded="onAssetAccountDataTableLoaded"
+        />
+      </section>
+      <section class="cashbunny-overview__report__section">
+        <h3 class="cashbunny-overview__report__section-header">
+          {{ t('cashbunny.liabilities.name') }}
+        </h3>
+        <DataTableComponent
+          :columns="[
+            { data: 'name', title: 'Name' },
+            { data: 'amount_display', title: 'Amount' },
+          ]"
+          :data="selectedData ? selectedData.liability_accounts : viewData?.liability_accounts"
+          @loaded="onLiabilityAccountDataTableLoaded"
         />
       </section>
       <section class="cashbunny-overview__report__section">
@@ -90,19 +108,12 @@
         </h3>
         <DataTableComponent
           :columns="[
-            { data: 'to', title: 'To' },
-            { data: 'from', title: 'From' },
+            { data: 'description', title: 'Description' },
+            { data: 'destination_account_name', title: 'To' },
+            { data: 'source_account_name', title: 'From' },
             { data: 'amount', title: 'Amount' },
           ]"
-          :data="transactionData"
-          :options="{
-            info: false,
-            paging: false,
-            searching: false,
-            ordering: false,
-            select: false,
-          }"
-          class="table display nowrap compact"
+          :data="selectedData ? selectedData.transactions : viewData?.transactions"
           @loaded="onTransactionDataTableLoaded"
         />
       </section>
@@ -112,19 +123,16 @@
         </h3>
         <DataTableComponent
           :columns="[
-            { data: 'to', title: 'To' },
-            { data: 'from', title: 'From' },
+            { data: 'description', title: 'Description' },
+            { data: 'destination_account_name', title: 'To' },
+            { data: 'source_account_name', title: 'From' },
             { data: 'amount', title: 'Amount' },
           ]"
-          :data="scheduledTransactionData"
-          :options="{
-            info: false,
-            paging: false,
-            searching: false,
-            ordering: false,
-            select: false,
-          }"
-          class="table display nowrap compact"
+          :data="
+            selectedData
+              ? selectedData.transactions_from_scheduled
+              : viewData?.transactions_from_scheduled
+          "
           @loaded="onScheduledTransactionDataTableLoaded"
         />
       </section>
@@ -148,7 +156,10 @@ import DataTableComponent, {
   type DataTableLoadedEvent,
 } from '@/core/components/DataTableComponent.vue'
 import ErrorDialogComponent from '@/core/components/ErrorDialogComponent.vue'
-import type { ToggleWindowResizeHandlerFunc } from '@/core/components/WindowComponent.vue'
+import type {
+  ToggleWindowResizeHandlerFunc,
+  WindowSizeQuery,
+} from '@/core/components/WindowComponent.vue'
 import { ResizeDirection, useDragResize } from '@/core/composables/useDragResize'
 import type { APIResponse } from '@/core/models/dto'
 import { RelativePosition } from '@/core/models/relativePosition'
@@ -177,9 +188,12 @@ const selectedDateStart = ref<Dayjs | null>()
 const selectedDateEnd = ref<Dayjs | null>()
 let netWorthDataTableResizeFunc: () => void
 let summaryDataTableResizeFunc: () => void
+let assetAccountDataTableResizeFunc: () => void
+let liabilityAccountDataTableResizeFunc: () => void
 let transactionDataTableResizeFunc: () => void
 let scheduledTransactionDataTableResizeFunc: () => void
 let calendarResizeFunc: () => void
+const windowSizeQuery = inject<WindowSizeQuery>('windowSizeQuery')
 const addWindowResizeListener = inject('addWindowResizeListener') as ToggleWindowResizeHandlerFunc
 const removeWindowResizeListener = inject(
   'removeWindowResizeListener',
@@ -201,11 +215,16 @@ const {
   () => {
     netWorthDataTableResizeFunc()
     summaryDataTableResizeFunc()
+    assetAccountDataTableResizeFunc()
+    liabilityAccountDataTableResizeFunc()
     transactionDataTableResizeFunc()
     scheduledTransactionDataTableResizeFunc()
     calendarResizeFunc()
   },
 )
+const isColumnLayout = computed(() => {
+  return !windowSizeQuery?.md
+})
 
 const netWorthData = computed(() => {
   if (selectedData.value) {
@@ -222,54 +241,12 @@ const netWorthData = computed(() => {
 
 const summaryData = computed(() => {
   if (selectedData.value) {
-    return Object.entries(selectedData.value.summaries).map(([key, value]) => {
+    return Object.entries(selectedData.value.profit_loss_summary).map(([key, value]) => {
       return { currency: key, ...value }
     })
   } else if (viewData.value) {
-    return Object.entries(viewData.value.summaries).map(([key, value]) => {
+    return Object.entries(viewData.value.profit_loss_summary).map(([key, value]) => {
       return { currency: key, ...value }
-    })
-  }
-  return []
-})
-
-const transactionData = computed(() => {
-  if (selectedData.value) {
-    return Object.values(selectedData.value.transactions).map((value) => {
-      return {
-        to: value.destination_account_name,
-        from: value.source_account_name,
-        amount: value.amount_display,
-      }
-    })
-  } else if (viewData.value) {
-    return Object.values(viewData.value.transactions).map((value) => {
-      return {
-        to: value.destination_account_name,
-        from: value.source_account_name,
-        amount: value.amount_display,
-      }
-    })
-  }
-  return []
-})
-
-const scheduledTransactionData = computed(() => {
-  if (selectedData.value) {
-    return Object.values(selectedData.value.transactions_from_scheduled).map((value) => {
-      return {
-        to: value.destination_account_name,
-        from: value.source_account_name,
-        amount: value.amount_display,
-      }
-    })
-  } else if (viewData.value) {
-    return Object.values(viewData.value.transactions_from_scheduled).map((value) => {
-      return {
-        to: value.destination_account_name,
-        from: value.source_account_name,
-        amount: value.amount_display,
-      }
     })
   }
   return []
@@ -300,6 +277,14 @@ const onNetWorthDataTableLoaded = (payload: DataTableLoadedEvent) => {
 
 const onSummaryDataTableLoaded = (payload: DataTableLoadedEvent) => {
   summaryDataTableResizeFunc = payload.resizeFunc
+}
+
+const onAssetAccountDataTableLoaded = (payload: DataTableLoadedEvent) => {
+  assetAccountDataTableResizeFunc = payload.resizeFunc
+}
+
+const onLiabilityAccountDataTableLoaded = (payload: DataTableLoadedEvent) => {
+  liabilityAccountDataTableResizeFunc = payload.resizeFunc
 }
 
 const onTransactionDataTableLoaded = (payload: DataTableLoadedEvent) => {
@@ -376,25 +361,39 @@ onBeforeUnmount(() => {
 
 .cashbunny-overview {
   position: relative;
-  height: 100%;
   display: flex;
+  height: 100%;
+  padding: 0.5em;
+  gap: 0.5em;
+  background-color: colors.$low-opacity-light-grey;
+}
+
+.cashbunny-overview_column {
+  height: auto;
+  flex-direction: column;
+
+  .cashbunny-overview__calendar {
+    height: 500px !important;
+  }
 }
 
 .cashbunny-overview__calendar {
-  padding: 1em;
-  border-right: 5px solid colors.$light-grey;
+  background-color: colors.$white;
 }
 
 .cashbunny-overview__report {
-  padding: 1em;
-  overflow: hidden;
-  background-color: colors.$low-opacity-light-grey;
+  overflow-y: auto;
+  background-color: colors.$white;
 
   :deep(.datatable) {
     .dt-layout-row {
       margin: 0;
     }
   }
+}
+
+.cashbunny-overview__report_resizable {
+  border-left: 3px double colors.$light-grey;
 }
 
 .cashbunny-overview__report__title {

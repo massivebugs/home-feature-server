@@ -12,12 +12,12 @@ const (
 	MAX_PASSWORD_LENGTH int = 72 // bcrypt length limit
 )
 
-type CreateUserRequestDTO struct {
+type CreateAuthUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-func (r *CreateUserRequestDTO) Validate() error {
+func (r *CreateAuthUserRequest) Validate() error {
 	return validation.ValidateStruct(
 		r,
 		validation.Field(
@@ -29,25 +29,21 @@ func (r *CreateUserRequestDTO) Validate() error {
 		validation.Field(
 			&r.Password,
 			validation.Required,
-			validation.By(IsValidPassword(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH)),
+			validation.By(isValidPassword(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH)),
 		),
 	)
 }
 
-type UserAuthRequestDTO struct {
+type UserAuthRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-func (r *UserAuthRequestDTO) Validate() error {
+func (r *UserAuthRequest) Validate() error {
 	return validation.ValidateStruct(
 		r,
 		validation.Field(
 			&r.Username,
-			validation.Required,
-		),
-		validation.Field(
-			&r.Password,
 			validation.Required,
 		),
 	)
