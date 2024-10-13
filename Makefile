@@ -1,18 +1,18 @@
 .PHONY: start
 start:
-	docker compose -f ./compose.local.yaml up -d
+	docker compose -f ./docker-compose.local.yaml up -d
 
 .PHONY: stop
 stop:
-	docker compose -f ./compose.local.yaml down
+	docker compose -f ./docker-compose.local.yaml down
 
 .PHONY: restart
 restart:
-	docker compose -f ./compose.local.yaml restart
+	docker compose -f ./docker-compose.local.yaml restart
 
 .PHONY: restart-web
 restart-web:
-	docker compose -f ./compose.local.yaml restart web
+	docker compose -f ./docker-compose.local.yaml restart web
 
 .PHONY: db-migrate
 db-migrate:

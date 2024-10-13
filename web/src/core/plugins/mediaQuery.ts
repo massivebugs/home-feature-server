@@ -1,70 +1,54 @@
 import { type App, reactive } from 'vue'
 
 export type MediaQueryBreakpoints = {
-  xl: number
-  lg: number
-  m: number
   sm: number
+  md: number
+  lg: number
+  xl: number
 }
 
 export type MediaQuery = {
   isXL: boolean
   isLG: boolean
-  isM: boolean
+  isMD: boolean
   isSM: boolean
 }
 
-export default {
+export const mediaQueryPlugin = {
   install: (app: App, options: { breakpoints: MediaQueryBreakpoints }) => {
     const result = reactive<MediaQuery>({
-      isXL: false,
-      isLG: false,
-      isM: false,
       isSM: false,
+      isMD: false,
+      isLG: false,
+      isXL: false,
     })
 
-    const update = () => {
-      result.isSM = window.matchMedia(`(max-width: ${options.breakpoints.m - 1}px)`).matches
-      result.isM = window.matchMedia(`(min-width: ${options.breakpoints.lg}px )`).matches
-      result.isSM = window.matchMedia(`(min-width: ${options.breakpoints.m}px)`).matches
-    }
-    // window.addEventListener('resize', () => {
-    //   const width = window.innerWidth
+    const isSM = window.matchMedia(`(max-width: ${options.breakpoints.md - 1}px)`)
+    const isMD = window.matchMedia(
+      `(min-width: ${options.breakpoints.md}) and (max-width: ${options.breakpoints.lg - 1}px )`,
+    )
+    const isLG = window.matchMedia(
+      `(min-width: ${options.breakpoints.lg}) and (max-width: ${options.breakpoints.xl - 1}px)`,
+    )
+    const isXL = window.matchMedia(`(min-width: ${options.breakpoints.xl}px)`)
 
-    //   if (width < options.breakpoints.m) {
-    //     result.deviceSize = DeviceSize.s
-    //   } else if (width < options.breakpoints.l) {
-    //     result.deviceSize = DeviceSize.m
-    //   } else if (width < options.breakpoints.xl) {
-    //     result.deviceSize = DeviceSize.l
-    //   } else {
-    //     result.deviceSize = DeviceSize.xl
-    //   }
-    // })
+    isSM.addEventListener('change', (e) => {
+      result.isSM = e.matches
+    })
+
+    isMD.addEventListener('change', (e) => {
+      result.isMD = e.matches
+    })
+
+    isLG.addEventListener('change', (e) => {
+      result.isLG = e.matches
+    })
+
+    isXL.addEventListener('change', (e) => {
+      result.isXL = e.matches
+    })
 
     app.config.globalProperties.$mediaQuery = result
-    app.provide('$mediaQuery', result)
+    app.provide('mediaQuery', result)
   },
 }
-
-// const mediaQueryPlugin = {
-//   install(app: any) {
-//     const state = reactive<MediaQueryState>({
-//       isMobile: window.matchMedia('(max-width: 600px)').matches,
-//       isTablet: window.matchMedia('(min-width: 601px) and (max-width: 1024px)').matches,
-//       isDesktop: window.matchMedia('(min-width: 1025px)').matches,
-//     });
-
-//     const updateState = () => {
-//       state.isMobile = window.matchMedia('(max-width: 600px)').matches;
-//       state.isTablet = window.matchMedia('(min-width: 601px) and (max-width: 1024px)').matches;
-//       state.isDesktop = window.matchMedia('(min-width: 1025px)').matches;
-//     };
-
-//     window.addEventListener('resize', updateState);
-
-//     app.config.globalProperties.$mediaQuery = readonly(state);
-//   },
-// };
-
-// export default mediaQueryPlugin;

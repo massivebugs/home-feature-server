@@ -31,25 +31,25 @@ func TestLedger_GetProfitLoss(t *testing.T) {
 			fields: fields{
 				accounts: []*Account{
 					{
-						Category: AccountCategoryRevenues,
-						IncomingTransactions: []*Transaction{
-							{Amount: money.New(100, money.JPY)},
-							{Amount: money.New(100, money.CAD)},
+						category: AccountCategoryRevenues,
+						incomingTransactions: []*Transaction{
+							{amount: money.New(100, money.JPY)},
+							{amount: money.New(100, money.CAD)},
 						},
-						OutgoingTransactions: []*Transaction{
-							{Amount: money.New(500, money.JPY)},
-							{Amount: money.New(500, money.CAD)},
+						outgoingTransactions: []*Transaction{
+							{amount: money.New(500, money.JPY)},
+							{amount: money.New(500, money.CAD)},
 						},
 					},
 					{
-						Category: AccountCategoryExpenses,
-						IncomingTransactions: []*Transaction{
-							{Amount: money.New(500, money.JPY)},
-							{Amount: money.New(500, money.CAD)},
+						category: AccountCategoryExpenses,
+						incomingTransactions: []*Transaction{
+							{amount: money.New(500, money.JPY)},
+							{amount: money.New(500, money.CAD)},
 						},
-						OutgoingTransactions: []*Transaction{
-							{Amount: money.New(100, money.JPY)},
-							{Amount: money.New(100, money.CAD)},
+						outgoingTransactions: []*Transaction{
+							{amount: money.New(100, money.JPY)},
+							{amount: money.New(100, money.CAD)},
 						},
 					},
 				},
@@ -82,7 +82,7 @@ func TestLedger_GetProfitLoss(t *testing.T) {
 			l := &Ledger{
 				accounts: tt.fields.accounts,
 			}
-			gotRevenues, gotExpenses, gotSums := l.GetProfitLoss(tt.args.from, tt.args.to)
+			gotRevenues, gotExpenses, gotSums := l.getProfitLoss(tt.args.from, tt.args.to)
 			if !reflect.DeepEqual(gotRevenues, tt.wantRevenues) {
 				t.Errorf("Ledger.GetProfitLoss() gotRevenues = %v, want %v", gotRevenues, tt.wantRevenues)
 			}

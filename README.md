@@ -10,7 +10,7 @@ This is a work in progress, and development is not a very straightforward proces
 
 ### 1. Install dependencies
 
-- Go `1.22.4` (used for VSCode plugin and generating/running tests locally)
+- Go `1.23.0` (used for VSCode plugin and generating/running tests locally)
 - Docker (https://docs.docker.com/engine/install/ubuntu/)
 
 ### 2. Clone the repository

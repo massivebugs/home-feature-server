@@ -15,7 +15,7 @@ Validates password based on the following conditions:
   - includes a letter
   - does not have unsupported characters
 */
-func IsValidPassword(minLength int, maxLength int) func(v interface{}) error {
+func isValidPassword(minLength int, maxLength int) func(v interface{}) error {
 	return func(v interface{}) error {
 		s, ok := v.(string)
 		if !ok {

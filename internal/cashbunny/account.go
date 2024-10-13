@@ -5,7 +5,7 @@ import (
 
 	"github.com/Rhymond/go-money"
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/massivebugs/home-feature-server/db/service/cashbunny_repository"
+	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
 type AccountCategory string
@@ -22,41 +22,46 @@ const (
 )
 
 type Account struct {
-	ID          uint32
-	Category    AccountCategory
-	Name        string
-	Description string
-	Balance     *money.Money
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	id          uint32
+	category    AccountCategory
+	name        string
+	description string
+	currency    string
+	createdAt   time.Time
+	updatedAt   time.Time
 
-	IncomingTransactions []*Transaction
-	OutgoingTransactions []*Transaction
+	incomingTransactions []*Transaction
+	outgoingTransactions []*Transaction
+	amount               *money.Money
 }
 
-func NewAccount(account *cashbunny_repository.CashbunnyAccount) *Account {
+func NewAccountFromQueries(account *queries.CashbunnyAccount, amount *float64) *Account {
 	a := &Account{
-		ID:          account.ID,
-		Category:    AccountCategory(account.Category),
-		Name:        account.Name,
-		Description: account.Description,
-		Balance:     money.NewFromFloat(account.Balance, account.Currency),
-		CreatedAt:   account.CreatedAt,
-		UpdatedAt:   account.UpdatedAt,
+		id:          account.ID,
+		category:    AccountCategory(account.Category),
+		name:        account.Name,
+		description: account.Description,
+		currency:    account.Currency,
+		createdAt:   account.CreatedAt,
+		updatedAt:   account.UpdatedAt,
+	}
+
+	if amount != nil {
+		a.amount = money.NewFromFloat(*amount, a.currency)
 	}
 
 	return a
 }
 
-func (a *Account) Validate() error {
+func (a *Account) validate() error {
 	return validation.ValidateStruct(
 		a,
 		validation.Field(
-			&a.ID,
+			&a.id,
 			validation.Required,
 		),
 		validation.Field(
-			&a.Category,
+			&a.category,
 			validation.Required,
 			validation.In(
 				AccountCategoryAssets,
@@ -66,19 +71,18 @@ func (a *Account) Validate() error {
 			),
 		),
 		validation.Field(
-			&a.Name,
+			&a.name,
 			validation.Required,
 		),
 		validation.Field(
-			&a.Balance,
+			&a.currency,
 			validation.Required,
-			validation.By(IsMoneyNotNegative(a.Balance)),
 		),
 	)
 }
 
-func (a *Account) GetType() AccountType {
-	switch a.Category {
+func (a *Account) getType() AccountType {
+	switch a.category {
 	case AccountCategoryAssets, AccountCategoryExpenses:
 		return AccountTypeDebit
 	case AccountCategoryLiabilities, AccountCategoryRevenues:
@@ -87,48 +91,48 @@ func (a *Account) GetType() AccountType {
 	return ""
 }
 
-func (a *Account) SumTransactions(from *time.Time, to *time.Time) CurrencySums {
+func (a *Account) sumTransactions(from *time.Time, to *time.Time) CurrencySums {
 	cs := NewCurrencySums(nil)
 
-	for _, tr := range a.IncomingTransactions {
-		if from != nil && tr.TransactedAt.Before(*from) {
+	for _, tr := range a.incomingTransactions {
+		if from != nil && tr.transactedAt.Before(*from) {
 			continue
 		}
 
-		if to != nil && tr.TransactedAt.After(*to) {
+		if to != nil && tr.transactedAt.After(*to) {
 			continue
 		}
 
-		if a.GetType() == AccountTypeCredit {
-			cs.Subtract(tr.Amount)
+		if a.getType() == AccountTypeCredit {
+			cs.subtract(tr.amount)
 		} else {
-			cs.Add(tr.Amount)
+			cs.add(tr.amount)
 		}
 	}
 
-	for _, tr := range a.OutgoingTransactions {
-		if from != nil && tr.TransactedAt.Before(*from) {
+	for _, tr := range a.outgoingTransactions {
+		if from != nil && tr.transactedAt.Before(*from) {
 			continue
 		}
 
-		if to != nil && tr.TransactedAt.After(*to) {
+		if to != nil && tr.transactedAt.After(*to) {
 			continue
 		}
 
-		if a.GetType() == AccountTypeCredit {
-			cs.Add(tr.Amount)
+		if a.getType() == AccountTypeCredit {
+			cs.add(tr.amount)
 		} else {
-			cs.Subtract(tr.Amount)
+			cs.subtract(tr.amount)
 		}
 	}
 
 	return cs
 }
 
-func (a *Account) AddIncomingTransaction(tr *Transaction) {
-	a.IncomingTransactions = append(a.IncomingTransactions, tr)
+func (a *Account) addIncomingTransaction(tr *Transaction) {
+	a.incomingTransactions = append(a.incomingTransactions, tr)
 }
 
-func (a *Account) AddOutgoingTransaction(tr *Transaction) {
-	a.OutgoingTransactions = append(a.OutgoingTransactions, tr)
+func (a *Account) addOutgoingTransaction(tr *Transaction) {
+	a.outgoingTransactions = append(a.outgoingTransactions, tr)
 }

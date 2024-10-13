@@ -8,7 +8,6 @@
       :option="file"
       @click="onFileClick(file)"
       @dblclick="onFileDblClick(file)"
-      @touchend="onFileDblClick(file)"
     />
   </div>
 </template>
