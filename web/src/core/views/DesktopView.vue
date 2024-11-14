@@ -117,7 +117,8 @@ const onSuccessConfirmLogOutDialog = async () => {
   showLogOutConfirmDialog.value = false
 
   // Remove API token and reload login page
-  localStorage.removeItem('token')
+  // TODO: Call server endpoint to remove cookie for us
+
   await router.push({ name: 'login' })
   router.go(0)
 }

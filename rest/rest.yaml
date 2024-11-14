@@ -1,0 +1,427 @@
+openapi: "3.0.0"
+
+info:
+  version: 1.0.0
+  title: Home Feature Server REST API
+servers:
+  - url: "https://localhost:1323"
+    description: For oapi-codegen
+paths:
+  /api/v1/ping:
+    get:
+      operationId: Ping
+      description: A convenience endpoint to check for connection
+      summary: A convenience endpoint to check for connection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Pong! 
+                    example: Pong!
+                required:
+                  - message
+  /api/v1/repeat:
+    post:
+      operationId: Repeat
+      description: Returns the sent message, for testing purposes
+      summary: Returns the sent message, for testing purposes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Some message you want to be sent back.
+                  example: Hey oh!
+              required:
+                - message
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: The message you sent.
+                example: Hey oh!
+  # /api/v1/auth:
+  #   post:
+  #     operationId: CreateAuthUser
+  #     description: Creates a new user using username and password
+  #     summary: Creates a new user using username and password
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               username:
+  #                 type: string
+                  # description: must be between 3 to 50 alphanumerical characters
+                  # example: testuser
+                  # x-oapi-codegen-extra-tags:
+                  #   validate: "alphanum,min=3,max=50"
+  #               password:
+  #                 type: string
+                  # description: must be between 8 to 72 characters, and contain a letter, number and a special character
+                  # example: test_password_123
+                  # x-oapi-codegen-extra-tags:
+                  #   validate: "min=8,max=72"
+  #             required:
+  #               - username
+  #               - password
+  #     responses:
+  #       200:
+  #         description: OK
+  /api/v1/auth/token:
+    post:
+      operationId: CreateJWTToken
+      description: Returns a new JWT Token for a user
+      summary: Returns a new JWT Token for a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: must be between 3 to 50 alphanumerical characters
+                  example: testuser
+                  x-oapi-codegen-extra-tags:
+                    validate: "alphanum,max=50"
+                password:
+                  type: string
+                  description: must be between 8 to 72 characters, and contain a letter, number and a special character
+                  example: test_password_123
+              required:
+                - username
+                - password
+      responses:
+        200:
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                description: "Token Set-Cookie header"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+  # /api/v1/auth/refresh:
+  #   post:
+  #     operationId: CreateJWTRefreshToken
+  #     description: Returns a new JWT Refresh Token for a user
+  #     summary: Returns a new JWT Refresh Token for a user
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: OK
+  #         headers:
+  #           Set-Cookie:
+  #             schema:
+  #               type: string
+  #               description: "eg. key1=value1"
+  #   put:
+  #     operationId: RefreshJWTToken
+  #     description: Refreshes the current JWT Token
+  #     summary: Returns a new JWT Token for a user
+  #     security:
+  #       - bearerAuth: []
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               username:
+  #                 type: string
+  #                 description: must be between 3 to 100 alphanumerical characters
+  #                 example: testuser
+  #               password:
+  #                 type: string
+  #                 description: must be between 8 to 72 characters, and contain a letter, number and a special character
+  #                 example: test_password_123
+  #             required:
+  #               - username
+  #               - password
+  #     responses:
+  #       200:
+  #         description: OK
+  # /api/v1/secure/auth/refresh:
+  /api/v1/secure/user:
+    get:
+      operationId: GetAuthUser 
+      description: Returns the authenticated user info
+      summary: Returns the authenticated user info
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        format: uint32
+                      name:
+                        type: string
+                      logged_in_at:
+                        type: string
+                      created_at:
+                        type: string
+                    required:
+                      - id
+                      - name
+                      - logged_in_at
+                      - created_at
+                required:
+                  - user
+  # /api/v1/secure/system_preferences:
+  #   get:  
+  #     operationId: GetUserSystemPreference 
+  #     description: Returns user preferences
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 language:
+  #                   type: string
+  #                   example: "ja-JP"
+  #               required:
+  #                 - language
+  #   post:  
+  #     operationId: CreateDefaultUserSystemPreference
+  #     description: Create default user preferences
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 error:
+  #                   $ref: '#/components/schemas/error'
+  #                 data:
+  #                   type: string
+  #                   example: ""
+  #   put:  
+  #     operationId: UpdateUserSystemPreference
+  #     description: Update user preferences
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: OK
+  # /secure/cashbunny/accounts:
+  #   get:
+  #     tags: 
+  #       - v1
+  #     operationId: cashbunny/listAccounts
+  #     description: Retrieves all accounts
+  #     summary: Retrieves all accounts
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 error:
+  #                   $ref: '#/components/schemas/error'
+  #                 data:
+  #                   example: ""
+  #   post:
+  #     tags: 
+  #       - v1
+  #     operationId: cashbunny/createAccount
+  #     description: Creates an account
+  #     summary: Creates an account
+  #     security:
+  #       - bearerAuth: []
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               category:
+  #                 type: string
+  #                 example: savings
+  #               name:
+  #                 type: string
+  #                 example: Test account
+  #               description:
+  #                 type: string
+  #                 example: For savings
+  #               balance:
+  #                 type: number
+  #                 example: 476000
+  #                 description: unsigned floating number
+  #               currency:
+  #                 type: string
+  #                 example: JPY
+  #               type:
+  #                 type: string
+  #                 example: credit
+  #               order_index:
+  #                 type: number
+  #                 example: 1
+  #                 description: unsigned
+  #             required:
+  #               - name
+  #               - balance
+  #               - currency
+  #               - type
+  #               - order_index
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 error:
+  #                   $ref: '#/components/schemas/error'
+  # /secure/cashbunny/transactions:
+  #   get:
+  #     tags: 
+  #       - v1
+  #     operationId: cashbunny/listTransactions
+  #     description: Retrieves all transactions
+  #     summary: Retrieves all transactions
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 error:
+  #                   $ref: '#/components/schemas/error'
+  #                 data:
+  #                   example: ""
+  #   post:
+  #     tags: 
+  #       - v1
+  #     operationId: cashbunny/createTransaction
+  #     description: Creates an transaction
+  #     summary: Creates an transaction
+  #     security:
+  #       - bearerAuth: []
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               description:
+  #                 type: string
+  #                 example: Paid for groceries at Foo store
+  #               amount:
+  #                 type: number
+  #                 example: 5140
+  #                 description: unsigned floating number
+  #               currency:
+  #                 type: string
+  #                 example: JPY
+  #               source_account_id:
+  #                 type: number
+  #                 example: 1
+  #                 description: Money from
+  #               destination_account_id:
+  #                 type: number
+  #                 example: 2
+  #                 description: Money to
+  #               transacted_at:
+  #                 type: string
+  #                 example: "2006-01-02 15:04:05"
+  #                 description: Datetime of transaction
+  #             required:
+  #               - description
+  #               - amount
+  #               - currency
+  #               - source_account_id
+  #               - destination_account_id
+  #               - transacted_at
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 error:
+  #                   $ref: '#/components/schemas/error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    error:
+      required:
+        - error
+        - validation_messages
+      type: object
+      description: Error code and underlying errors
+      properties:
+        error:
+          type: string
+          example: "there were some problems with the data you provided"
+          description: "A useful message describing the error"
+        validation_messages:
+          type: object
+          additionalProperties:
+            type: string
+          example: {"some_field": "the length must be between 1 and 20"}

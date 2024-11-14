@@ -1,7 +1,8 @@
 package rest
 
 import (
-	"github.com/labstack/echo/v4"
+	"context"
+
 	"github.com/massivebugs/home-feature-server/internal/ping"
 )
 
@@ -10,14 +11,17 @@ type PingHandler struct {
 	ping *ping.Ping
 }
 
-func NewPingHandler() *PingHandler {
+func NewPingHandler(cfg *Config) *PingHandler {
 	return &PingHandler{
+		Handler: &Handler{
+			cfg: cfg,
+		},
 		ping: ping.NewPing(),
 	}
 }
 
-func (h *PingHandler) Ping(c echo.Context) *APIResponse {
-	result := h.ping.Run(c.Request().Context())
+func (h *PingHandler) Ping(ctx context.Context, req PingRequestObject) (PingResponseObject, error) {
+	result := h.ping.Run(ctx)
 
-	return h.CreateResponse(nil, result)
+	return Ping200JSONResponse{Message: result}, nil
 }

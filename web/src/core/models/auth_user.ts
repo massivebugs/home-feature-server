@@ -1,4 +1,4 @@
-import type { AuthUserDto } from '@/modules/cashbunny/models/dto'
+import type { AuthUserDto } from './dto'
 
 export class AuthUser {
   id: number

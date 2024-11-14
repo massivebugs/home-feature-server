@@ -16,8 +16,11 @@ type CashbunnyHandler struct {
 	cashbunny *cashbunny.Cashbunny
 }
 
-func NewCashbunnyHandler(db *db.Handle, querier queries.Querier) *CashbunnyHandler {
+func NewCashbunnyHandler(cfg *Config, db *db.Handle, querier queries.Querier) *CashbunnyHandler {
 	return &CashbunnyHandler{
+		Handler: &Handler{
+			cfg: cfg,
+		},
 		cashbunny: cashbunny.NewCashbunny(
 			db,
 			repository.NewAccountRepository(querier),
@@ -31,7 +34,7 @@ func NewCashbunnyHandler(db *db.Handle, querier queries.Querier) *CashbunnyHandl
 	}
 }
 
-func (h *CashbunnyHandler) GetOverview(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) GetOverview(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	qFrom, _ := strconv.Atoi(c.QueryParam("from"))
@@ -55,149 +58,149 @@ func (h *CashbunnyHandler) GetOverview(c echo.Context) *APIResponse {
 
 	result, err := h.cashbunny.GetOverview(c.Request().Context(), claims.UserID, from, to)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *CashbunnyHandler) GetPlan(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) GetPlan(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	result, err := h.cashbunny.GetPlan(c.Request().Context(), claims.UserID)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *CashbunnyHandler) GetPlannerParameters(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) GetPlannerParameters(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	result, err := h.cashbunny.GetPlannerParameters(c.Request().Context(), claims.UserID)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *CashbunnyHandler) SavePlannerParameters(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) SavePlannerParameters(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	req := new(cashbunny.SavePlannerParametersRequest)
 	err := h.Validate(c, req)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
 	result, err := h.cashbunny.SavePlannerParameters(c.Request().Context(), claims.UserID, req)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *CashbunnyHandler) GetCurrencies(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) GetCurrencies(c echo.Context) error {
 	result := h.cashbunny.GetAllCurrencies(c.Request().Context())
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *CashbunnyHandler) GetUserPreferences(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) GetUserPreferences(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	result, err := h.cashbunny.GetUserPreferences(c.Request().Context(), claims.UserID)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *CashbunnyHandler) CreateDefaultUserPreferences(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) CreateDefaultUserPreferences(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	result, err := h.cashbunny.CreateDefaultUserPreferences(c.Request().Context(), claims.UserID)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *CashbunnyHandler) CreateAccount(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) CreateAccount(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	req := new(cashbunny.CreateAccountRequest)
 
 	err := h.Validate(c, req)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
 	err = h.cashbunny.CreateAccount(c.Request().Context(), claims.UserID, req)
 
-	return h.CreateResponse(err, nil)
+	return h.CreateResponse(c, err, nil)
 }
 
-func (h *CashbunnyHandler) ListAccounts(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) ListAccounts(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	result, err := h.cashbunny.ListAccounts(c.Request().Context(), claims.UserID, time.Now())
 
-	return h.CreateResponse(err, result)
+	return h.CreateResponse(c, err, result)
 }
 
-func (h *CashbunnyHandler) DeleteAccount(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) DeleteAccount(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	accountID, err := strconv.ParseInt(c.Param("id"), 10, 32)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
 	err = h.cashbunny.DeleteAccount(c.Request().Context(), claims.UserID, uint32(accountID))
 
-	return h.CreateResponse(err, nil)
+	return h.CreateResponse(c, err, nil)
 
 }
 
-func (h *CashbunnyHandler) CreateTransaction(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) CreateTransaction(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	req := new(cashbunny.CreateTransactionRequest)
 
 	err := h.Validate(c, req)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
 	err = h.cashbunny.CreateTransaction(c.Request().Context(), claims.UserID, req)
 
-	return h.CreateResponse(err, nil)
+	return h.CreateResponse(c, err, nil)
 }
 
-func (h *CashbunnyHandler) ListTransactions(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) ListTransactions(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	result, err := h.cashbunny.ListTransactions(c.Request().Context(), claims.UserID)
 
-	return h.CreateResponse(err, result)
+	return h.CreateResponse(c, err, result)
 }
 
-func (h *CashbunnyHandler) DeleteTransaction(c echo.Context) *APIResponse {
+func (h *CashbunnyHandler) DeleteTransaction(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	transactionId, err := strconv.ParseInt(c.Param("id"), 10, 32)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
 	err = h.cashbunny.DeleteTransaction(c.Request().Context(), claims.UserID, uint32(transactionId))
 
-	return h.CreateResponse(err, nil)
+	return h.CreateResponse(c, err, nil)
 
 }

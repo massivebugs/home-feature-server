@@ -8,7 +8,7 @@ import PortfolioView from './modules/portfolio/views/PortfolioView.vue'
 
 // Returns all of the programs to be registered to the system,
 // and options for window display
-export const getPrograms = (): Program[] => [
+export const programList: Program[] = [
   new Program(CASHBUNNY_PROGRAM_ID, '/images/cashbunny_icon_round.svg', CashbunnyView, {}),
   new Program(PORTFOLIO_PROGRAM_ID, '/images/portfolio_icon_normal.png', PortfolioView, {}),
   new Program(

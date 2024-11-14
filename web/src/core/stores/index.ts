@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, shallowRef, triggerRef } from 'vue'
 import {
   type APIResponse,
-  type AuthTokenResponse,
-  type AuthUserResponse,
+  type AuthTokenDto,
+  type AuthUserDto,
   type CreateAuthTokenDto,
   type UserSystemPreferenceDto,
 } from '@/core/models/dto'
@@ -20,19 +20,19 @@ export const useCoreStore = defineStore('core', () => {
   const topLevelProcessId = ref<string | null>(null)
   const processesByInsertOrder = shallowRef<Map<string, Process>>(new Map())
 
-  const getAuthUser = () => api.get<AuthUserResponse>(APIEndpoints.v1.secure.user.default)
+  const getAuthUser = () => api.get<AuthUserDto>(APIEndpoints.v1.secure.user.default)
 
   const getAuthToken = (data: CreateAuthTokenDto) =>
-    api.post<AuthTokenResponse>(APIEndpoints.v1.authToken, data)
+    api.post<AuthTokenDto>(APIEndpoints.v1.authToken, data)
 
   const getUserSystemPreferences = () =>
-    api.get<APIResponse<UserSystemPreferenceDto>>(APIEndpoints.v1.secure.user.systemPreferences)
+    api.get<APIResponse<UserSystemPreferenceDto>>(APIEndpoints.v1.secure.systemPreferences.default)
 
   const createUserSystemPreferences = () =>
-    api.post<APIResponse<UserSystemPreferenceDto>>(APIEndpoints.v1.secure.user.systemPreferences)
+    api.post<APIResponse<UserSystemPreferenceDto>>(APIEndpoints.v1.secure.systemPreferences.default)
 
   const updateUserSystemPreferences = () =>
-    api.put<APIResponse<null>>(APIEndpoints.v1.secure.user.systemPreferences, preferences.value)
+    api.put<APIResponse<null>>(APIEndpoints.v1.secure.systemPreferences.default, preferences.value)
 
   const addProcess = (process: Process) => {
     processes.value.set(process.id, process)

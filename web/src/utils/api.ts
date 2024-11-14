@@ -45,7 +45,9 @@ export const APIEndpoints = {
     secure: {
       user: {
         default: 'v1/secure/user',
-        systemPreferences: 'v1/secure/user/system_preferences',
+      },
+      systemPreferences: {
+        default: 'v1/secure/system_preferences',
       },
       cashbunny: {
         overview: 'v1/secure/cashbunny/overview',

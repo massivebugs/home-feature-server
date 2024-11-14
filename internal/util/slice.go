@@ -20,3 +20,13 @@ func SliceFind[T any](ss []T, test func(T) bool) *T {
 
 	return nil
 }
+
+func SliceExists[T comparable](s []T, v T) bool {
+	for _, e := range s {
+		if e == v {
+			return true
+		}
+	}
+
+	return false
+}

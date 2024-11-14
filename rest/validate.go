@@ -1,16 +1,52 @@
 package rest
 
 import (
-	"errors"
+	"reflect"
+	"strings"
 
-	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-playground/validator/v10"
 )
 
-type RequestValidator struct{}
+type validationError struct {
+	error
+	Messages map[string]string
+}
 
-func (*RequestValidator) Validate(i interface{}) error {
-	if v, ok := i.(validation.Validatable); ok {
-		return v.Validate()
+type requestValidator struct {
+	validator *validator.Validate
+}
+
+func NewRequestValidator() *requestValidator {
+	v := validator.New(validator.WithRequiredStructEnabled())
+
+	// Copied straight from go-playground/validator documentation
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		// skip if tag key says it should be ignored
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
+
+	return &requestValidator{
+		validator: v,
 	}
-	return errors.New("request cannot be validated")
+}
+
+func (rv *requestValidator) Validate(req interface{}) error {
+	if err := rv.validator.Struct(req); err != nil {
+		ves := err.(validator.ValidationErrors)
+		messages := map[string]string{}
+		for _, fe := range ves {
+			messages[fe.Field()] = fe.Tag()
+		}
+
+		return &validationError{
+			error:    err,
+			Messages: messages,
+		}
+	}
+
+	return nil
 }

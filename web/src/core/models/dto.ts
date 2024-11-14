@@ -7,12 +7,16 @@ export type APIResponse<T> = {
   data: T
 }
 
+export type APIError = {
+  error: string
+  validation_messages: { [key: string]: string }
+}
+
 export type CreateAuthTokenDto = {
   username: string
   password: string
 }
 export type AuthTokenDto = string
-export type AuthTokenResponse = APIResponse<AuthTokenDto>
 
 export type AuthUserDto = {
   id: number
@@ -20,7 +24,6 @@ export type AuthUserDto = {
   logged_in_at: string // time
   created_at: string // time
 }
-export type AuthUserResponse = APIResponse<AuthUserDto>
 
 export type UserSystemPreferenceDto = {
   language: string | null

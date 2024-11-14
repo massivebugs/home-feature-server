@@ -1,25 +1,27 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
+	"github.com/massivebugs/home-feature-server/internal/app"
 	"github.com/massivebugs/home-feature-server/internal/auth"
 	"github.com/massivebugs/home-feature-server/internal/repository"
 )
 
 type AuthHandler struct {
 	*Handler
-	cfg  *Config
 	auth *auth.Auth
 }
 
 func NewAuthHandler(cfg *Config, db *db.Handle, querier queries.Querier) *AuthHandler {
 	return &AuthHandler{
-		cfg: cfg,
+		Handler: &Handler{
+			cfg: cfg,
+		},
 		auth: auth.NewAuth(
 			db,
 			repository.NewUserRepository(querier),
@@ -29,30 +31,19 @@ func NewAuthHandler(cfg *Config, db *db.Handle, querier queries.Querier) *AuthHa
 	}
 }
 
-func (h *AuthHandler) CreateUser(c echo.Context) *APIResponse {
-	req := new(auth.CreateAuthUserRequest)
+// func (h *AuthHandler) CreateAuthUser(ctx context.Context, req CreateAuthUserRequestObject) (CreateAuthUserResponseObject, error) {
+// 	err := h.auth.CreateAuthUser(ctx, req.Body.Username, req.Body.Password)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	err := h.Validate(c, req)
-	if err != nil {
-		return h.CreateErrorResponse(err)
-	}
+// 	return CreateAuthUser200Response{}, nil
+// }
 
-	err = h.auth.CreateAuthUser(c.Request().Context(), req)
-
-	return h.CreateResponse(err, nil)
-}
-
-func (h *AuthHandler) CreateJWTToken(c echo.Context) *APIResponse {
-	req := new(auth.UserAuthRequest)
-
-	err := h.Validate(c, req)
-	if err != nil {
-		return h.CreateErrorResponse(err)
-	}
-
+func (h *AuthHandler) CreateJWTToken(ctx context.Context, req CreateJWTTokenRequestObject) (CreateJWTTokenResponseObject, error) {
 	now := time.Now()
 	result, err := h.auth.CreateJWTToken(
-		c.Request().Context(),
+		ctx,
 		now,
 		h.cfg.AuthJWTSigningMethod,
 		h.cfg.AuthJWTSecret,
@@ -60,13 +51,17 @@ func (h *AuthHandler) CreateJWTToken(c echo.Context) *APIResponse {
 		h.cfg.RefreshJWTSigningMethod,
 		h.cfg.RefreshJWTSecret,
 		h.cfg.RefreshJWTExpireSeconds,
-		req,
+		req.Body.Username,
+		req.Body.Password,
 	)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		if appErr, ok := err.(*app.AppError); ok {
+			return CreateJWTToken401JSONResponse(NewErrorFromAppError(appErr)), nil
+		}
+		return nil, err
 	}
 
-	c.SetCookie(&http.Cookie{
+	tokenCookie := http.Cookie{
 		Name:     h.cfg.AuthJWTCookieName,
 		Value:    result.Token,
 		Path:     "/",
@@ -75,71 +70,133 @@ func (h *AuthHandler) CreateJWTToken(c echo.Context) *APIResponse {
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   h.cfg.AuthJWTExpireSeconds,
 		Expires:  now.Add(time.Second * time.Duration(h.cfg.AuthJWTExpireSeconds)),
-	})
-
-	c.SetCookie(&http.Cookie{
-		Name:     h.cfg.RefreshJWTCookieName,
-		Value:    result.RefreshToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   h.cfg.RefreshJWTExpireSeconds,
-		Expires:  now.Add(time.Second * time.Duration(h.cfg.RefreshJWTExpireSeconds)),
-	})
-
-	return h.CreateResponse(nil, result)
-}
-
-func (h *AuthHandler) RefreshJWTToken(c echo.Context) *APIResponse {
-	claims := h.GetTokenClaims(c)
-
-	now := time.Now()
-	result, err := h.auth.RefreshJWTToken(
-		c.Request().Context(),
-		now,
-		h.cfg.AuthJWTSigningMethod,
-		h.cfg.AuthJWTSecret,
-		h.cfg.AuthJWTExpireSeconds,
-		h.cfg.RefreshJWTSigningMethod,
-		h.cfg.RefreshJWTSecret,
-		h.cfg.RefreshJWTExpireSeconds,
-		claims.UserID,
-		claims.TokenID,
-	)
-	if err != nil {
-		return h.CreateErrorResponse(err)
 	}
 
-	c.SetCookie(&http.Cookie{
-		Name:     h.cfg.AuthJWTCookieName,
-		Value:    result.Token,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   h.cfg.AuthJWTExpireSeconds,
-		Expires:  now.Add(time.Second * time.Duration(h.cfg.AuthJWTExpireSeconds)),
-	})
+	// refreshTokenCookie := http.Cookie{
+	// 	Name:     h.cfg.RefreshJWTCookieName,
+	// 	Value:    result.RefreshToken,
+	// 	Path:     "/",
+	// 	HttpOnly: true,
+	// 	Secure:   true,
+	// 	SameSite: http.SameSiteLaxMode,
+	// 	MaxAge:   h.cfg.RefreshJWTExpireSeconds,
+	// 	Expires:  now.Add(time.Second * time.Duration(h.cfg.RefreshJWTExpireSeconds)),
+	// }
 
-	c.SetCookie(&http.Cookie{
-		Name:     h.cfg.AuthJWTCookieName + "_refresh",
-		Value:    result.RefreshToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   h.cfg.RefreshJWTExpireSeconds,
-		Expires:  now.Add(time.Second * time.Duration(h.cfg.RefreshJWTExpireSeconds)),
-	})
-
-	return h.CreateResponse(nil, result)
+	return CreateJWTToken200Response{
+		Headers: CreateJWTToken200ResponseHeaders{
+			SetCookie: tokenCookie.String(),
+		},
+	}, nil
+	// return h.CreateResponse(c, nil, result)
 }
 
-func (h *AuthHandler) GetAuthUser(c echo.Context) *APIResponse {
-	claims := h.GetTokenClaims(c)
+// func (h *AuthHandler) CreateJWTRefreshToken(ctx context.Context, req CreateJWTRefreshTokenRequestObject) (CreateJWTRefreshTokenResponseObject, error) {
+// 	now := time.Now()
+// 	result, err := h.auth.CreateJWTToken(
+// 		ctx,
+// 		now,
+// 		h.cfg.AuthJWTSigningMethod,
+// 		h.cfg.AuthJWTSecret,
+// 		h.cfg.AuthJWTExpireSeconds,
+// 		h.cfg.RefreshJWTSigningMethod,
+// 		h.cfg.RefreshJWTSecret,
+// 		h.cfg.RefreshJWTExpireSeconds,
+// 		req.Body.Username,
+// 		req.Body.Password,
+// 	)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	result, err := h.auth.GetAuthUser(c.Request().Context(), claims)
+// 	tokenCookie := http.Cookie{
+// 		Name:     h.cfg.AuthJWTCookieName,
+// 		Value:    result.Token,
+// 		Path:     "/",
+// 		HttpOnly: true,
+// 		Secure:   true,
+// 		SameSite: http.SameSiteLaxMode,
+// 		MaxAge:   h.cfg.AuthJWTExpireSeconds,
+// 		Expires:  now.Add(time.Second * time.Duration(h.cfg.AuthJWTExpireSeconds)),
+// 	}
 
-	return h.CreateResponse(err, result)
+// 	refreshTokenCookie := http.Cookie{
+// 		Name:     h.cfg.RefreshJWTCookieName,
+// 		Value:    result.RefreshToken,
+// 		Path:     "/",
+// 		HttpOnly: true,
+// 		Secure:   true,
+// 		SameSite: http.SameSiteLaxMode,
+// 		MaxAge:   h.cfg.RefreshJWTExpireSeconds,
+// 		Expires:  now.Add(time.Second * time.Duration(h.cfg.RefreshJWTExpireSeconds)),
+// 	}
+
+// 	return CreateJWTToken200Response{
+// 		Headers: CreateJWTToken200ResponseHeaders{
+// 			SetCookie: tokenCookie.String(),
+// 		},
+// 	}, nil
+// 	// return h.CreateResponse(c, nil, result)
+// }
+
+// func (h *AuthHandler) RefreshJWTToken(c echo.Context) error {
+// 	claims := h.GetTokenClaims(c)
+
+// 	now := time.Now()
+// 	result, err := h.auth.RefreshJWTToken(
+// 		c.Request().Context(),
+// 		now,
+// 		h.cfg.AuthJWTSigningMethod,
+// 		h.cfg.AuthJWTSecret,
+// 		h.cfg.AuthJWTExpireSeconds,
+// 		h.cfg.RefreshJWTSigningMethod,
+// 		h.cfg.RefreshJWTSecret,
+// 		h.cfg.RefreshJWTExpireSeconds,
+// 		claims.UserID,
+// 		claims.TokenID,
+// 	)
+// 	if err != nil {
+// 		return h.CreateErrorResponse(c, err)
+// 	}
+
+// 	c.SetCookie(&http.Cookie{
+// 		Name:     h.cfg.AuthJWTCookieName,
+// 		Value:    result.Token,
+// 		Path:     "/",
+// 		HttpOnly: true,
+// 		Secure:   true,
+// 		SameSite: http.SameSiteLaxMode,
+// 		MaxAge:   h.cfg.AuthJWTExpireSeconds,
+// 		Expires:  now.Add(time.Second * time.Duration(h.cfg.AuthJWTExpireSeconds)),
+// 	})
+
+// 	c.SetCookie(&http.Cookie{
+// 		Name:     h.cfg.AuthJWTCookieName + "_refresh",
+// 		Value:    result.RefreshToken,
+// 		Path:     "/",
+// 		HttpOnly: true,
+// 		Secure:   true,
+// 		SameSite: http.SameSiteLaxMode,
+// 		MaxAge:   h.cfg.RefreshJWTExpireSeconds,
+// 		Expires:  now.Add(time.Second * time.Duration(h.cfg.RefreshJWTExpireSeconds)),
+// 	})
+
+// 	return h.CreateResponse(c, nil, result)
+// }
+
+func (h *AuthHandler) GetAuthUser(ctx context.Context, req GetAuthUserRequestObject) (GetAuthUserResponseObject, error) {
+	claims := h.GetClaims(ctx)
+
+	u, err := h.auth.GetAuthUser(ctx, claims.UserID, time.Now())
+	if err != nil {
+		return nil, err
+	}
+
+	res := GetAuthUser200JSONResponse{}
+	res.User.Id = u.Id
+	res.User.Name = u.Name
+	res.User.CreatedAt = u.CreatedAt.String()
+	res.User.LoggedInAt = u.CreatedAt.String()
+
+	return res, nil
 }

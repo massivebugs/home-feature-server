@@ -36,4 +36,8 @@ db-seed:
 
 .PHONY: sqlc-generate
 sqlc-generate:
-	docker run --rm -v ./:/app -w /app sqlc/sqlc:1.26.0 -f /app/config/sqlc.yaml generate
+	go generate db/sqlc/generate.go
+
+.PHONY: openapi-generate
+openapi-generate:
+	go generate rest/generate.go

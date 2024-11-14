@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/joho/godotenv"
@@ -18,13 +17,13 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	fmt.Println("Checking config...")
+	log.Println("Checking config...")
 	cfg := rest.NewConfig()
 	if err := cfg.Load(); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Creating database connection...")
+	log.Println("Creating database connection...")
 	db, err := db.OpenMySQLDatabase(cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBDatabase)
 	if err != nil {
 		log.Fatal(err)

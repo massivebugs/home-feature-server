@@ -10,13 +10,14 @@ import (
 
 type SystemPreferencesHandler struct {
 	*Handler
-	cfg *Config
-	sp  *system_preference.SystemPreference
+	sp *system_preference.SystemPreference
 }
 
 func NewSystemPreferencesHandler(cfg *Config, db *db.Handle, querier queries.Querier) *SystemPreferencesHandler {
 	return &SystemPreferencesHandler{
-		cfg: cfg,
+		Handler: &Handler{
+			cfg: cfg,
+		},
 		sp: system_preference.NewSystemPreference(
 			db,
 			repository.NewUserSystemPreferenceRepository(querier),
@@ -24,42 +25,42 @@ func NewSystemPreferencesHandler(cfg *Config, db *db.Handle, querier queries.Que
 	}
 }
 
-func (h *SystemPreferencesHandler) GetUserSystemPreferences(c echo.Context) *APIResponse {
+func (h *SystemPreferencesHandler) GetUserSystemPreference(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	result, err := h.sp.GetUserSystemPreference(c.Request().Context(), claims.UserID)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *SystemPreferencesHandler) CreateDefaultUserSystemPreferences(c echo.Context) *APIResponse {
+func (h *SystemPreferencesHandler) CreateDefaultUserSystemPreference(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	result, err := h.sp.CreateDefaultUserSystemPreference(c.Request().Context(), claims.UserID)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, result)
+	return h.CreateResponse(c, nil, result)
 }
 
-func (h *SystemPreferencesHandler) UpdateDefaultUserSystemPreferences(c echo.Context) *APIResponse {
+func (h *SystemPreferencesHandler) UpdateUserSystemPreference(c echo.Context) error {
 	claims := h.GetTokenClaims(c)
 
 	req := new(system_preference.UserSystemPreferenceDTO)
 
 	err := h.Validate(c, req)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
 	err = h.sp.UpdateDefaultUserSystemPreference(c.Request().Context(), claims.UserID, req)
 	if err != nil {
-		return h.CreateErrorResponse(err)
+		return h.CreateErrorResponse(c, err)
 	}
 
-	return h.CreateResponse(nil, nil)
+	return h.CreateResponse(c, nil, nil)
 }

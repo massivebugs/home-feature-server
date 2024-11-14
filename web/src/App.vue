@@ -4,14 +4,13 @@
 
 <script setup lang="ts">
 import { useCoreStore } from './core/stores'
-import { getPrograms } from './programs'
+import { programList } from './programList'
 
-const store = useCoreStore()
+const coreStore = useCoreStore()
 
 // Register all programs to system
-const programs = getPrograms()
-programs.forEach((program) => {
-  store.addProgram(program)
+programList.forEach((program) => {
+  coreStore.addProgram(program)
 })
 </script>
 

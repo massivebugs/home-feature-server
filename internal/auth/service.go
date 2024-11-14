@@ -33,10 +33,10 @@ func NewAuth(
 	}
 }
 
-func (s *Auth) CreateAuthUser(ctx context.Context, req *CreateAuthUserRequest) error {
+func (s *Auth) CreateAuthUser(ctx context.Context, username string, password string) error {
 	return s.db.WithTx(ctx, func(tx db.DB) error {
 		// Check if user already exists
-		exists, err := s.userRepo.GetUsernameExists(ctx, s.db, req.Username)
+		exists, err := s.userRepo.GetUsernameExists(ctx, s.db, username)
 		if err != nil {
 			return err
 		}
@@ -45,13 +45,13 @@ func (s *Auth) CreateAuthUser(ctx context.Context, req *CreateAuthUserRequest) e
 		}
 
 		// Create new user
-		userID, err := s.userRepo.CreateUser(ctx, tx, req.Username)
+		userID, err := s.userRepo.CreateUser(ctx, tx, username)
 		if err != nil {
 			return err
 		}
 
 		// Hash password
-		hashedPassword, err := GeneratePasswordHash(req.Password)
+		hashedPassword, err := GeneratePasswordHash(password)
 		if err != nil {
 			return err
 		}
@@ -74,33 +74,34 @@ func (s *Auth) CreateJWTToken(
 	refreshJwtSigningMethod *jwt.SigningMethodHMAC,
 	refreshJwtSecret string,
 	refreshJwtExpireSeconds int,
-	req *UserAuthRequest,
+	username string,
+	password string,
 ) (jwtTokenResponse, error) {
 	// Retrieve user
 	// TODO
-	u, err := s.userRepo.GetUserByName(ctx, s.db, req.Username)
+	u, err := s.userRepo.GetUserByName(ctx, s.db, username)
 	if err != nil {
-		return jwtTokenResponse{}, app.NewAppError(app.CodeNotFound, errors.New("username or password does not match"))
+		return jwtTokenResponse{}, app.NewAppError(app.CodeUnauthorized, errors.New("username or password does not match"))
 	}
 
 	// Retrieve user password
 	// TODO
-	hash, err := s.passRepo.GetUserPasswordByUserID(ctx, s.db, u.id)
+	hash, err := s.passRepo.GetUserPasswordByUserID(ctx, s.db, u.Id)
 	if err != nil {
-		return jwtTokenResponse{}, app.NewAppError(app.CodeNotFound, errors.New("username or password does not match"))
+		return jwtTokenResponse{}, app.NewAppError(app.CodeUnauthorized, errors.New("username or password does not match"))
 	}
 
 	// Check if hash matches
-	err = CheckPasswordHash(hash, req.Password)
+	err = CheckPasswordHash(hash, password)
 	if err != nil {
-		return jwtTokenResponse{}, app.NewAppError(app.CodeNotFound, errors.New("username or password does not match"))
+		return jwtTokenResponse{}, app.NewAppError(app.CodeUnauthorized, errors.New("username or password does not match"))
 	}
 
 	tokenID := util.GenerateRandomString(50)
 
 	// Set custom claims
-	tokenBuilder := NewJWTBuilder(now, jwtExpireSeconds, JWTCustomClaims{UserID: u.id})
-	refreshTokenBuilder := NewJWTBuilder(now, refreshJwtExpireSeconds, JWTCustomClaims{UserID: u.id, TokenID: tokenID})
+	tokenBuilder := NewJWTBuilder(now, jwtExpireSeconds, JWTCustomClaims{UserID: u.Id})
+	refreshTokenBuilder := NewJWTBuilder(now, refreshJwtExpireSeconds, JWTCustomClaims{UserID: u.Id, TokenID: tokenID})
 
 	// Generate encoded token and send it as response.
 	tokenStr, err := tokenBuilder.CreateAndSignToken(jwtSigningMethod, jwtSecret)
@@ -116,7 +117,7 @@ func (s *Auth) CreateJWTToken(
 		ctx,
 		s.db,
 		CreateUserRefreshTokenParams{
-			UserID: u.id,
+			UserID: u.Id,
 			Value:  tokenID,
 			ExpiresAt: sql.NullTime{
 				Time:  refreshTokenBuilder.claims.ExpiresAt.Time,
@@ -193,13 +194,13 @@ func (s *Auth) RefreshJWTToken(
 	return newJWTTokenResponse(tokenStr, refreshTokenStr), nil
 }
 
-func (s *Auth) GetAuthUser(ctx context.Context, jwtClaims *JWTClaims) (authUserResponse, error) {
-	u, err := s.userRepo.GetUser(ctx, s.db, jwtClaims.UserID)
+func (s *Auth) GetAuthUser(ctx context.Context, userID uint32, loginTime time.Time) (*AuthUser, error) {
+	u, err := s.userRepo.GetUser(ctx, s.db, userID)
 	if err != nil {
-		return authUserResponse{}, err
+		return nil, err
 	}
 
-	u.SetLoginTime(jwtClaims)
+	u.LoggedInAt = loginTime
 
-	return newAuthUserResponse(u), nil
+	return u, nil
 }

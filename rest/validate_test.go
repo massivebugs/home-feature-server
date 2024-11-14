@@ -57,7 +57,7 @@ func TestRequestValidator_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &RequestValidator{}
+			r := &requestValidator{}
 			if err := r.Validate(tt.args.i); (err != nil) != tt.wantErr {
 				t.Errorf("RequestValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}

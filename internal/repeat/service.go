@@ -10,6 +10,6 @@ func NewRepeat() *Repeat {
 	return &Repeat{}
 }
 
-func (*Repeat) Run(ctx context.Context, req *RepeatRequest) string {
-	return req.Message
+func (*Repeat) Run(ctx context.Context, message string) string {
+	return message
 }

@@ -1,3 +1,6 @@
+// A Program represents each application listed on the desktop interface.
+// It contains a reference to it's Vue component, which is then dynamically rendered
+// during runtime.
 export class Program {
   id: string
   icon: string

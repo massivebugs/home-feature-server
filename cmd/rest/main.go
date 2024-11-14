@@ -1,62 +1,96 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/massivebugs/home-feature-server/db"
+	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/massivebugs/home-feature-server/rest"
 )
 
-type apiMiddlewares struct {
-	CSRF       echo.MiddlewareFunc
-	CORS       echo.MiddlewareFunc
-	JWT        echo.MiddlewareFunc
-	JWTRefresh echo.MiddlewareFunc
+type Server struct {
+	*rest.PingHandler
+	*rest.RepeatHandler
+	*rest.AuthHandler
+	// *rest.SystemPreferencesHandler
 }
 
+var _ rest.StrictServerInterface = (*Server)(nil)
+
 func main() {
-	// TODO: Only in local?
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	fmt.Println("Checking config...")
+	log.Println("Checking config...")
 	cfg := rest.NewConfig()
 	if err := cfg.Load(); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Creating database connection...")
+	log.Println("Creating database connection...")
 	db, err := db.OpenMySQLDatabase(cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBDatabase)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	e := echo.New()
-	e.Validator = &rest.RequestValidator{}
+	e.Validator = rest.NewRequestValidator()
 
-	fmt.Println("Attaching middlewares...")
+	// log.Println("Fetching swagger specification...")
+	// swagger, err := rest.GetSwagger()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	apiMiddlewares := apiMiddlewares{
-		CSRF:       rest.NewCSRFMiddleware(cfg),
-		CORS:       rest.NewCORSMiddleware(cfg),
-		JWT:        rest.NewJWTMiddleware(cfg),
-		JWTRefresh: rest.NewJWTRefreshMiddleware(cfg),
-	}
-
-	// Globally applied middleware
-	// Route based middlewares can be applied at RegisterRoutes()
+	log.Println("Attaching middlewares...")
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(apiMiddlewares.CORS)
+	e.Use(rest.NewCSRFMiddleware(cfg))
+	e.Use(rest.NewCORSMiddleware(cfg))
+	e.Use(rest.NewJWTMiddleware(cfg))
+	e.Use(rest.NewJWTRefreshMiddleware(cfg))
+	e.HTTPErrorHandler = rest.HTTPErrorHandler
 
-	fmt.Println("Registering routes...")
-	registerRoutes(e, cfg, apiMiddlewares, db)
+	// TODO: Move JWT validation from JWTMiddleware to OapiRequestValidator
+	// e.Use(echomiddleware.OapiRequestValidatorWithOptions(swagger, &echomiddleware.Options{
+	// 	Options: openapi3filter.Options{
+	// 		AuthenticationFunc: func(ctx context.Context, ai *openapi3filter.AuthenticationInput) error {
+	// 			// Return nil here because we'll be using authentication with Echo
+	// 			return nil
+	// 		},
+	// 	},
+	// }))
+
+	log.Println("Registering server handlers...")
+	querier := queries.New() //	query helpers generated from sqlc
+	s := Server{
+		PingHandler:   rest.NewPingHandler(cfg),
+		RepeatHandler: rest.NewRepeatHandler(cfg),
+		AuthHandler:   rest.NewAuthHandler(cfg, db, querier),
+		// SystemPreferencesHandler: rest.NewSystemPreferencesHandler(cfg, db, querier),
+		// CashbunnyHandler:             rest.NewCashbunnyHandler(cfg, db, querier),
+	}
+
+	rest.RegisterHandlers(
+		e,
+		rest.NewStrictHandler(
+			s,
+			[]rest.StrictMiddlewareFunc{
+				func(f rest.StrictHandlerFunc, operationID string) rest.StrictHandlerFunc {
+					return func(c echo.Context, req interface{}) (interface{}, error) {
+						if err := c.Validate(req); err != nil {
+							return nil, err
+						}
+
+						return f(c, req)
+					}
+				},
+			}))
 
 	e.Logger.Fatal(e.StartTLS(":"+cfg.APIPort, cfg.TLSCertificate, cfg.TLSKey))
 }

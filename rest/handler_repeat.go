@@ -1,7 +1,8 @@
 package rest
 
 import (
-	"github.com/labstack/echo/v4"
+	"context"
+
 	"github.com/massivebugs/home-feature-server/internal/repeat"
 )
 
@@ -10,21 +11,24 @@ type RepeatHandler struct {
 	repeat *repeat.Repeat
 }
 
-func NewRepeatHandler() *RepeatHandler {
+func NewRepeatHandler(cfg *Config) *RepeatHandler {
 	return &RepeatHandler{
+		Handler: &Handler{
+			cfg: cfg,
+		},
 		repeat: repeat.NewRepeat(),
 	}
 }
 
-func (h *RepeatHandler) Repeat(c echo.Context) *APIResponse {
-	req := new(repeat.RepeatRequest)
+func (h *RepeatHandler) Repeat(ctx context.Context, req RepeatRequestObject) (RepeatResponseObject, error) {
+	// req := new(repeat.RepeatRequest)
 
-	err := h.Validate(c, req)
-	if err != nil {
-		return h.CreateErrorResponse(err)
-	}
+	// err := h.Validate(c, req)
+	// if err != nil {
+	// 	return h.CreateErrorResponse(c, err)
+	// }
 
-	result := h.repeat.Run(c.Request().Context(), req)
+	result := h.repeat.Run(ctx, req.Body.Message)
 
-	return h.CreateResponse(nil, result)
+	return Repeat200JSONResponse(result), nil
 }
