@@ -22,16 +22,28 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Returns a new JWT Token for a user
+
+	// (POST /api/v1/auth)
+	CreateUser(ctx echo.Context) error
+
 	// (POST /api/v1/auth/token)
 	CreateJWTToken(ctx echo.Context) error
-	// A convenience endpoint to check for connection
+
+	// (PUT /api/v1/auth/token)
+	RefreshJWTToken(ctx echo.Context) error
+
 	// (GET /api/v1/ping)
 	Ping(ctx echo.Context) error
-	// Returns the sent message, for testing purposes
+
 	// (POST /api/v1/repeat)
 	Repeat(ctx echo.Context) error
-	// Returns the authenticated user info
+
+	// (POST /api/v1/secure/auth/token)
+	CreateJWTRefreshToken(ctx echo.Context) error
+
+	// (GET /api/v1/secure/system_preferences)
+	GetUserSystemPreference(ctx echo.Context) error
+
 	// (GET /api/v1/secure/user)
 	GetAuthUser(ctx echo.Context) error
 }
@@ -41,12 +53,32 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
+// CreateUser converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateUser(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.CreateUser(ctx)
+	return err
+}
+
 // CreateJWTToken converts echo context to params.
 func (w *ServerInterfaceWrapper) CreateJWTToken(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.CreateJWTToken(ctx)
+	return err
+}
+
+// RefreshJWTToken converts echo context to params.
+func (w *ServerInterfaceWrapper) RefreshJWTToken(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.RefreshJWTToken(ctx)
 	return err
 }
 
@@ -65,6 +97,28 @@ func (w *ServerInterfaceWrapper) Repeat(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.Repeat(ctx)
+	return err
+}
+
+// CreateJWTRefreshToken converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateJWTRefreshToken(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.CreateJWTRefreshToken(ctx)
+	return err
+}
+
+// GetUserSystemPreference converts echo context to params.
+func (w *ServerInterfaceWrapper) GetUserSystemPreference(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetUserSystemPreference(ctx)
 	return err
 }
 
@@ -107,11 +161,40 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.POST(baseURL+"/api/v1/auth", wrapper.CreateUser)
 	router.POST(baseURL+"/api/v1/auth/token", wrapper.CreateJWTToken)
+	router.PUT(baseURL+"/api/v1/auth/token", wrapper.RefreshJWTToken)
 	router.GET(baseURL+"/api/v1/ping", wrapper.Ping)
 	router.POST(baseURL+"/api/v1/repeat", wrapper.Repeat)
+	router.POST(baseURL+"/api/v1/secure/auth/token", wrapper.CreateJWTRefreshToken)
+	router.GET(baseURL+"/api/v1/secure/system_preferences", wrapper.GetUserSystemPreference)
 	router.GET(baseURL+"/api/v1/secure/user", wrapper.GetAuthUser)
 
+}
+
+type CreateUserRequestObject struct {
+	Body *CreateUserJSONRequestBody
+}
+
+type CreateUserResponseObject interface {
+	VisitCreateUserResponse(w http.ResponseWriter) error
+}
+
+type CreateUser202Response struct {
+}
+
+func (response CreateUser202Response) VisitCreateUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(202)
+	return nil
+}
+
+type CreateUser400JSONResponse Error
+
+func (response CreateUser400JSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type CreateJWTTokenRequestObject struct {
@@ -154,6 +237,36 @@ func (response CreateJWTToken401JSONResponse) VisitCreateJWTTokenResponse(w http
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateJWTToken403JSONResponse Error
+
+func (response CreateJWTToken403JSONResponse) VisitCreateJWTTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type RefreshJWTTokenRequestObject struct {
+}
+
+type RefreshJWTTokenResponseObject interface {
+	VisitRefreshJWTTokenResponse(w http.ResponseWriter) error
+}
+
+type RefreshJWTToken200ResponseHeaders struct {
+	SetCookie string
+}
+
+type RefreshJWTToken200Response struct {
+	Headers RefreshJWTToken200ResponseHeaders
+}
+
+func (response RefreshJWTToken200Response) VisitRefreshJWTTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Set-Cookie", fmt.Sprint(response.Headers.SetCookie))
+	w.WriteHeader(200)
+	return nil
+}
+
 type PingRequestObject struct {
 }
 
@@ -190,6 +303,60 @@ func (response Repeat200JSONResponse) VisitRepeatResponse(w http.ResponseWriter)
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateJWTRefreshTokenRequestObject struct {
+}
+
+type CreateJWTRefreshTokenResponseObject interface {
+	VisitCreateJWTRefreshTokenResponse(w http.ResponseWriter) error
+}
+
+type CreateJWTRefreshToken200ResponseHeaders struct {
+	SetCookie string
+}
+
+type CreateJWTRefreshToken200Response struct {
+	Headers CreateJWTRefreshToken200ResponseHeaders
+}
+
+func (response CreateJWTRefreshToken200Response) VisitCreateJWTRefreshTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Set-Cookie", fmt.Sprint(response.Headers.SetCookie))
+	w.WriteHeader(200)
+	return nil
+}
+
+type CreateJWTRefreshToken403JSONResponse Error
+
+func (response CreateJWTRefreshToken403JSONResponse) VisitCreateJWTRefreshTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetUserSystemPreferenceRequestObject struct {
+}
+
+type GetUserSystemPreferenceResponseObject interface {
+	VisitGetUserSystemPreferenceResponse(w http.ResponseWriter) error
+}
+
+type GetUserSystemPreference200JSONResponse UserSystemPreference
+
+func (response GetUserSystemPreference200JSONResponse) VisitGetUserSystemPreferenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetUserSystemPreference404Response struct {
+}
+
+func (response GetUserSystemPreference404Response) VisitGetUserSystemPreferenceResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type GetAuthUserRequestObject struct {
 }
 
@@ -215,16 +382,28 @@ func (response GetAuthUser200JSONResponse) VisitGetAuthUserResponse(w http.Respo
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
-	// Returns a new JWT Token for a user
+
+	// (POST /api/v1/auth)
+	CreateUser(ctx context.Context, request CreateUserRequestObject) (CreateUserResponseObject, error)
+
 	// (POST /api/v1/auth/token)
 	CreateJWTToken(ctx context.Context, request CreateJWTTokenRequestObject) (CreateJWTTokenResponseObject, error)
-	// A convenience endpoint to check for connection
+
+	// (PUT /api/v1/auth/token)
+	RefreshJWTToken(ctx context.Context, request RefreshJWTTokenRequestObject) (RefreshJWTTokenResponseObject, error)
+
 	// (GET /api/v1/ping)
 	Ping(ctx context.Context, request PingRequestObject) (PingResponseObject, error)
-	// Returns the sent message, for testing purposes
+
 	// (POST /api/v1/repeat)
 	Repeat(ctx context.Context, request RepeatRequestObject) (RepeatResponseObject, error)
-	// Returns the authenticated user info
+
+	// (POST /api/v1/secure/auth/token)
+	CreateJWTRefreshToken(ctx context.Context, request CreateJWTRefreshTokenRequestObject) (CreateJWTRefreshTokenResponseObject, error)
+
+	// (GET /api/v1/secure/system_preferences)
+	GetUserSystemPreference(ctx context.Context, request GetUserSystemPreferenceRequestObject) (GetUserSystemPreferenceResponseObject, error)
+
 	// (GET /api/v1/secure/user)
 	GetAuthUser(ctx context.Context, request GetAuthUserRequestObject) (GetAuthUserResponseObject, error)
 }
@@ -239,6 +418,35 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
+}
+
+// CreateUser operation middleware
+func (sh *strictHandler) CreateUser(ctx echo.Context) error {
+	var request CreateUserRequestObject
+
+	var body CreateUserJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateUser(ctx.Request().Context(), request.(CreateUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(CreateUserResponseObject); ok {
+		return validResponse.VisitCreateUserResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
 }
 
 // CreateJWTToken operation middleware
@@ -264,6 +472,29 @@ func (sh *strictHandler) CreateJWTToken(ctx echo.Context) error {
 		return err
 	} else if validResponse, ok := response.(CreateJWTTokenResponseObject); ok {
 		return validResponse.VisitCreateJWTTokenResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// RefreshJWTToken operation middleware
+func (sh *strictHandler) RefreshJWTToken(ctx echo.Context) error {
+	var request RefreshJWTTokenRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.RefreshJWTToken(ctx.Request().Context(), request.(RefreshJWTTokenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RefreshJWTToken")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(RefreshJWTTokenResponseObject); ok {
+		return validResponse.VisitRefreshJWTTokenResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
@@ -322,6 +553,52 @@ func (sh *strictHandler) Repeat(ctx echo.Context) error {
 	return nil
 }
 
+// CreateJWTRefreshToken operation middleware
+func (sh *strictHandler) CreateJWTRefreshToken(ctx echo.Context) error {
+	var request CreateJWTRefreshTokenRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateJWTRefreshToken(ctx.Request().Context(), request.(CreateJWTRefreshTokenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateJWTRefreshToken")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(CreateJWTRefreshTokenResponseObject); ok {
+		return validResponse.VisitCreateJWTRefreshTokenResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetUserSystemPreference operation middleware
+func (sh *strictHandler) GetUserSystemPreference(ctx echo.Context) error {
+	var request GetUserSystemPreferenceRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetUserSystemPreference(ctx.Request().Context(), request.(GetUserSystemPreferenceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetUserSystemPreference")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetUserSystemPreferenceResponseObject); ok {
+		return validResponse.VisitGetUserSystemPreferenceResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // GetAuthUser operation middleware
 func (sh *strictHandler) GetAuthUser(ctx echo.Context) error {
 	var request GetAuthUserRequestObject
@@ -348,24 +625,29 @@ func (sh *strictHandler) GetAuthUser(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7RW32/bNhD+Vzhuj0rlHys2CNhDW7Rrs4cFSYo8BIFxFs8SG4nkyFMcL/D/Phxp1Zbt",
-	"NMnWvRQp5bv77rvvfjzI0rbOGjQUZPEgQ1ljC/FP9N56/kNhKL12pK2RhXzPz6K0CgUYJTqj0DcrbSoR",
-	"DYLMpPPWoSeN3/LzRnQBF10jWgwBKhTp85w9UY3Jm8wk3kPrGpSFpBo9iiX/E2yLwnk7b7ANYqmpjjYK",
-	"CMTKdvzpTitUMpO0cmwcyGtTyXUm76DRChjFbBM6wgSlND9CczaAf2D/FdCDZBizhcZGJXiiQVNRLdou",
-	"kJijmCMtEY0YR6omIzbf+LPzL1iSXK8z6fGvTntUsriWfdbHQN4cMw5Ydl7T6oILlxDPETz6Nx3V2/99",
-	"sL4FkoU8vbqUWSoze0pftzTVRE6u2bE2Cxvz1xTZ/8iUf0CgzqO4QH+HXpy/v7gUb84+MWD0IRV2/Gr0",
-	"KmZqHRpwWhZyGp8y6YDqCDEHp/O7cQ4d1TnZWzT86mygQ6GcI3XeBAHC4FKcXl2KSzYQC+sFsIgYPlcs",
-	"0vWJS/HOIxCeXl3GX8pEMQZ6a9WKA5TWEJoYC5xrdBlN8y/Bmm0TREQDKTgIYWm9OsS4X/BfBVnxy0SU",
-	"NXgoCX3IogQ4MGgjQDRIhD4Tpmvn6ONHEMFhqaHZmg31j4FmPYbZeDI9pm7mw0CLT2OcMsbXIwGNq8F0",
-	"LXpd7sYOB8E3XA9jZvL+xILTJzwSKjQneE8eTgiqyNlGyGzQB8pauP/t9SjJbFf8X7FnW6qPiH5gRb7D",
-	"+BCcNSHVaTIaHab/5x8ykzWC4syKB3mBdPLO2luNw5IPrZLUtr8VycMh8xHWzynws+X1k8eFLOSP+XYI",
-	"55sJnKdJEN0OIb0FJc6TnmWMOf7/Y3423KnW679RpbHTtS341fPakw36jnfMVvEgK6RjO6G05g6NRlOi",
-	"QKOc1YZYp2WN5W30WVpjsIwG+21/lvR4TAv/suM3s/cQ6Zk11Q+DBulf9nUxlHjv8LisDxQ7pPqF9OzS",
-	"7tEh0NNDlpdYQEP9Vs6iU25+3suu884ysfvMnyf332vQPkr7BS+h/mDgRb+ERMB8A3sO5e2gLB+xaex/",
-	"rcuzxs2zc92bMPUwI07jeRk8LZgXVnVXMPGuwDz272Ptuuue5wMa4qxRxbYX8YLYV8rvSHyZfE6r5Du2",
-	"ao90+FrGS0DNkvYPtqWOu3zRH0edNjSdbKnWhrDiAZbJxlYVqpk2j7nql+63dab5JN3suIHLbBfqzVNn",
-	"Ykz2JTNkcyXK4np4H17frG8eU8xjJV0nj3wBhuhwGPKD9WL3IJCZ7HyzuS1DkeeNLaGpbaBiPJ1M5fpm",
-	"/U8AAAD//7tFnYqGDAAA",
+	"H4sIAAAAAAAC/8RYbW/bNhD+K1duH5X4rcUGAwXWFu3aDMOCJkE/BIFxls4SG4nkSMqJG/i/D0dJtlXJ",
+	"cdqk65fAoXRvzz33Qt2JWBdGK1LeiemdcHFGBYafZK22/CMhF1tpvNRKTMVbPoZYJwSoEihVQjZfSZVC",
+	"EHAiEsZqQ9ZLuk/PKygdLcocCnIOU4Lq8Zw1+YwqbSISdIuFyUlMhc/IEtzwH6cLAmP1PKfCwY30WZBJ",
+	"0COsdMmPljKhRETCrwwLO2+lSsU6EkvMZYLsxaw2HdzEJJF8iPlpy/2O/MahO8FuzBaS8qRyD3JSqc+g",
+	"KJ2HOcGc/A2RglGAajxk8Vqfnn+m2Iv1OhKW/i2lpURML0UTdZ+TVx3hSJSO7NnKeSpOLS3Ikoqpi/Xf",
+	"OqEcElpIxfCyELggBWYj5sCVcQboIEeVlphSBF4WBF+0IiAfH3dS27wY0rzJ02c8OjntIt8bu6O4tNKv",
+	"zph3ldI5oSX7qvTZ9r932hboxVScfDoXUcVS1lQ93drKvDdizYqlWuiQPumDU++ZMe8IfWkJzsguycLH",
+	"t2fn8Or0A+NN1lVYjY6HxyFR2pBCI8VUTMJRJAz6LLg4QCMHy9EAayeNdr6L+htL6MkBgqKbCvTSNfgr",
+	"LCgCKlDmgRwGnbvRlhnLCIfUf0g2Wi5cCJOpQs6/1smK7cVaeVLBNBqTyziIDT47tt8Uc3CwXZFstetv",
+	"w1qEwL7KuXYFkvPs/B/10XGsi06iI3F7pNHII+4RKakjuvUWjzymwXjNbBaoDHC2NtHvdaoppd/Ba/ht",
+	"DHGGFmNP1kUBP4YCpQKEnLwnG4EqiznZ8BDBGYol5luxTlyzxofZaDx59oioNopCZE2uD0c24cheDAFz",
+	"k6EqC7Iy3vXY9abiEY42hqJCqpeTqMDbly+GVfW0WlJNg00kO+nqtqS2tLclhQNntHIV+8bDcReMf/7i",
+	"kns+HH4TrX+1tBBT8ctgO8QG9QQbVJ00+NM29RoT+FjVET9eR61yHnh9TWp/UX8kX1rVFPXJp3M4ZwFY",
+	"aAsIdUb6Kvjk03l488mqeLdm7qFy3wg8TMq9JIyqaVvgrSzKgvm6eQaxLpX/cSzdw8+n4+Wwl5eRyAgT",
+	"rr/pnTgjf/RG62tJ7dS0pSpKbN+FSkPPTFz/FNazzdGPt3mhuKK0lV8oqYxO/gejPGelg0Q6nOdsOAyY",
+	"sreWF5ZcRi4sj3FpLSm/relOIdfvtyr55xNoZ4sS08v2/nR5tb7a7XCGhaZ3IiXft5HHWi1JSd4GgVRi",
+	"tFSep1KcUXwdWlyslaI4CHyNzmlV132QfGeHqzffrqenWqXPWo2mOenunLutolHY3x66E6k1HSwZQn94",
+	"MjCXHBOpthYF4LgT8u5nSms0o9MlV1D/VNNhL3ZnvAg3dy6+K91gleR57fYc4+sWtu8pz/VjwX1Q731w",
+	"rF9VS9aOiMN4WASHsx5Ki75zNagbxjesCLXEj+4vlB7DNa1GL5eYlzTaO5h+Tr/+hoZWp6e6zM52LrN7",
+	"u1yTpf5LcCczf5K/6LtjP5LA90HVe6ffw1VO0vNukBe9wUGGDpTmBY8UxIFzCazIfxfmgciHUOZmyLVD",
+	"yjMYlFS4h9t5D9RscHPVfbI50njaPq3jn1U9vbMjy7BYL5oPD6VUfjLeFopUnlKy/Gau05SSmVT7VDWr",
+	"9v39U/Ldv15kWyqjXVevDn1BCsE+eMAdTHt4wy5Dd7n8OsvvtIXdLZ5viTavv8O46WCQ6xjzTDs/HU3G",
+	"E7G+Wv8XAAD//zFtagFxFAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

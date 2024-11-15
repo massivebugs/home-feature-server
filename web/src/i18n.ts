@@ -27,7 +27,17 @@ export const i18nOptions: I18nOptions = {
       },
       login: {
         title: 'Log into @:app.name',
-        login: 'Login',
+        submit: 'Login',
+      },
+      createAccount: {
+        title: 'Create an account',
+        message: "Don't have an account?",
+        linkTitle: 'Create one here',
+        disclaimer:
+          "Submit the following form to create an account.\nYour account won't be available until administrator approval.",
+        submit: 'Submit',
+        pendingApproval:
+          'Your account creation request has been\nsuccessfully submitted.\nPlease wait until the administrator enables your account.\nNo emails will be sent when approved (under development).\nPlease check regularly by logging in to view your approval status.',
       },
       desktop: {
         logOutDialogTitle: 'Log out',
@@ -272,7 +282,17 @@ export const i18nOptions: I18nOptions = {
       },
       login: {
         title: '@:app.name にログインする',
-        login: 'ログイン',
+        submit: 'ログイン',
+      },
+      createAccount: {
+        title: 'アカウントを作成する',
+        message: 'アカウントをお持ちでない方は',
+        linkTitle: 'こちらから作成してください。',
+        disclaimer:
+          '以下のフォームに入力してアカウントを作成してください。\n管理者の承認が完了するまで、アカウントは利用できません。',
+        submit: '送信',
+        pendingApproval:
+          'アカウント作成リクエストが正常に送信されました。\n管理者がアカウントを有効にするまでお待ちください。\n承認時のメール通知は現在開発中のため送信されません。\n承認状況を確認するには、定期的にログインしてください。',
       },
       desktop: {
         logOutDialogTitle: 'ログアウト',

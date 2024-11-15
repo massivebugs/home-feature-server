@@ -21,12 +21,12 @@ func NewUserRepository(querier queries.Querier) *UserRepository {
 	}
 }
 
-func (r *UserRepository) GetUsernameExists(ctx context.Context, db db.DB, name string) (bool, error) {
-	return r.querier.GetUsernameExists(ctx, db, name)
+func (r *UserRepository) GetUsernameOrEmailExists(ctx context.Context, db db.DB, arg auth.GetUsernameOrEmailExistsParams) (bool, error) {
+	return r.querier.GetUsernameOrEmailExists(ctx, db, queries.GetUsernameOrEmailExistsParams(arg))
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, db db.DB, name string) (uint32, error) {
-	result, err := r.querier.CreateUser(ctx, db, name)
+func (r *UserRepository) CreateUser(ctx context.Context, db db.DB, arg auth.CreateUserParams) (uint32, error) {
+	result, err := r.querier.CreateUser(ctx, db, queries.CreateUserParams(arg))
 	if err != nil {
 		return 0, err
 	}
@@ -43,22 +43,22 @@ func (r *UserRepository) DeleteUser(ctx context.Context, db db.DB, id uint32) er
 	return errors.New("not implemented yet")
 }
 
-func (r *UserRepository) GetUser(ctx context.Context, db db.DB, id uint32) (*auth.AuthUser, error) {
+func (r *UserRepository) GetUser(ctx context.Context, db db.DB, id uint32) (*auth.User, error) {
 	data, err := r.querier.GetUser(ctx, db, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return auth.NewAuthUserFromQueries(data), nil
+	return auth.NewUserFromQueries(data), nil
 }
 
-func (r *UserRepository) GetUserByName(ctx context.Context, db db.DB, name string) (*auth.AuthUser, error) {
+func (r *UserRepository) GetUserByName(ctx context.Context, db db.DB, name string) (*auth.User, error) {
 	data, err := r.querier.GetUserByName(ctx, db, name)
 	if err != nil {
 		return nil, err
 	}
 
-	return auth.NewAuthUserFromQueries(data), nil
+	return auth.NewUserFromQueries(data), nil
 }
 
 func (r *UserRepository) UpdateUser(ctx context.Context, db db.DB, arg auth.UpdateUserParams) error {

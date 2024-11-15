@@ -5,6 +5,7 @@ import {
   type AuthTokenDto,
   type AuthUserDto,
   type CreateAuthTokenDto,
+  type CreateUserDto,
   type UserSystemPreferenceDto,
 } from '@/core/models/dto'
 import { APIEndpoints, api } from '@/utils/api'
@@ -20,10 +21,14 @@ export const useCoreStore = defineStore('core', () => {
   const topLevelProcessId = ref<string | null>(null)
   const processesByInsertOrder = shallowRef<Map<string, Process>>(new Map())
 
+  const createUser = (data: CreateUserDto) => api.post(APIEndpoints.v1.auth.default, data)
+
   const getAuthUser = () => api.get<AuthUserDto>(APIEndpoints.v1.secure.user.default)
 
-  const getAuthToken = (data: CreateAuthTokenDto) =>
-    api.post<AuthTokenDto>(APIEndpoints.v1.authToken, data)
+  const createAuthToken = (data: CreateAuthTokenDto) =>
+    api.post<AuthTokenDto>(APIEndpoints.v1.auth.token, data)
+
+  const createRefreshToken = () => api.post<AuthTokenDto>(APIEndpoints.v1.secure.auth.token)
 
   const getUserSystemPreferences = () =>
     api.get<APIResponse<UserSystemPreferenceDto>>(APIEndpoints.v1.secure.systemPreferences.default)
@@ -80,8 +85,10 @@ export const useCoreStore = defineStore('core', () => {
     programs,
     topLevelProcessId,
     processesByInsertOrder,
+    createUser,
     getAuthUser,
-    getAuthToken,
+    createAuthToken,
+    createRefreshToken,
     getUserSystemPreferences,
     createUserSystemPreferences,
     updateUserSystemPreferences,

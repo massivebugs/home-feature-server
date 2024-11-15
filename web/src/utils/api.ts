@@ -18,13 +18,19 @@ api.interceptors.response.use(
     if (err.response?.status === 401 && location.pathname !== '/login') {
       try {
         // If a token has expired, try refreshing it first
-        const refreshRes = await api.post(APIEndpoints.v1.authRefresh, null, {
+        const refreshRes = await api.put(APIEndpoints.v1.auth.token, null, {
           validateStatus: null,
         })
 
         if (refreshRes.status === 401) {
           throw new Error('Refresh token is either invalid or expired')
         }
+
+        // Retrieve a new refresh token
+        // TODO: Error handling when creating refresh token fails
+        await api.post(APIEndpoints.v1.secure.auth.token, null, {
+          validateStatus: null,
+        })
 
         // Retry original request
         return api.request(err.config as AxiosRequestConfig)
@@ -39,10 +45,14 @@ api.interceptors.response.use(
 
 export const APIEndpoints = {
   v1: {
-    auth: 'v1/auth',
-    authToken: 'v1/auth/token',
-    authRefresh: 'v1/auth/refresh',
+    auth: {
+      default: 'v1/auth',
+      token: 'v1/auth/token',
+    },
     secure: {
+      auth: {
+        token: 'v1/secure/auth/token',
+      },
       user: {
         default: 'v1/secure/user',
       },

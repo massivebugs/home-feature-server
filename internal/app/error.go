@@ -21,7 +21,8 @@ type AppError struct {
 
 func NewAppError(code AppErrorCode, err error) *AppError {
 	return &AppError{
-		code: code,
+		code:  code,
+		error: err,
 	}
 }
 

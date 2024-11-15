@@ -12,10 +12,17 @@ export type APIError = {
   validation_messages: { [key: string]: string }
 }
 
+export type CreateUserDto = {
+  email: string
+  username: string
+  password: string
+}
+
 export type CreateAuthTokenDto = {
   username: string
   password: string
 }
+
 export type AuthTokenDto = string
 
 export type AuthUserDto = {

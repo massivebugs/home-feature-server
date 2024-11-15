@@ -100,11 +100,13 @@ type CashbunnyUserPreference struct {
 }
 
 type User struct {
-	ID        uint32
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt sql.NullTime
+	ID         uint32
+	Name       string
+	Email      string
+	DisabledAt sql.NullTime
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	DeletedAt  sql.NullTime
 }
 
 type UserPassword struct {

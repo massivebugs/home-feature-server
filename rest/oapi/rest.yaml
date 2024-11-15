@@ -11,7 +11,6 @@ paths:
     get:
       operationId: Ping
       description: A convenience endpoint to check for connection
-      summary: A convenience endpoint to check for connection
       responses:
         200:
           description: OK
@@ -30,7 +29,6 @@ paths:
     post:
       operationId: Repeat
       description: Returns the sent message, for testing purposes
-      summary: Returns the sent message, for testing purposes
       requestBody:
         required: true
         content:
@@ -53,41 +51,52 @@ paths:
                 type: string
                 description: The message you sent
                 example: Hello!
-  # /api/v1/auth:
-  #   post:
-  #     operationId: CreateAuthUser
-  #     description: Creates a new user using username and password
-  #     summary: Creates a new user using username and password
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               username:
-  #                 type: string
-                  # description: must be between 3 to 50 alphanumerical characters
-                  # example: testuser
-                  # x-oapi-codegen-extra-tags:
-                  #   validate: "alphanum,min=3,max=50"
-  #               password:
-  #                 type: string
-                  # description: must be between 8 to 72 characters, and contain a letter, number and a special character
-                  # example: test_password_123
-                  # x-oapi-codegen-extra-tags:
-                  #   validate: "min=8,max=72"
-  #             required:
-  #               - username
-  #               - password
-  #     responses:
-  #       200:
-  #         description: OK
+  /api/v1/auth:
+    post:
+      operationId: CreateUser
+      description: Creates a new user using username, email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: must be a valid email
+                  example: testuser@example.com
+                  x-oapi-codegen-extra-tags:
+                    validate: "email"
+                username:
+                  type: string
+                  description: must be between 3 to 50 alphanumerical characters
+                  example: testuser
+                  x-oapi-codegen-extra-tags:
+                    validate: "alphanum,min=3,max=50"
+                password:
+                  type: string
+                  description: must be between 8 to 72 characters, and contain a letter, number and a special character
+                  example: test_password_123!
+                  x-oapi-codegen-extra-tags:
+                    validate: "_password"
+              required:
+                - email
+                - username
+                - password
+      responses:
+        202:
+          description: OK
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /api/v1/auth/token:
     post:
       operationId: CreateJWTToken
       description: Returns a new JWT Token for a user
-      summary: Returns a new JWT Token for a user
       requestBody:
         required: true
         content:
@@ -97,13 +106,12 @@ paths:
               properties:
                 username:
                   type: string
-                  description: must be between 3 to 50 alphanumerical characters
+                  description: must be alphanumerical characters, with maximum 50 character count
                   example: testuser
                   x-oapi-codegen-extra-tags:
                     validate: "alphanum,max=50"
                 password:
                   type: string
-                  description: must be between 8 to 72 characters, and contain a letter, number and a special character
                   example: test_password_123
               required:
                 - username
@@ -128,56 +136,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-
-
-  # /api/v1/auth/refresh:
-  #   post:
-  #     operationId: CreateJWTRefreshToken
-  #     description: Returns a new JWT Refresh Token for a user
-  #     summary: Returns a new JWT Refresh Token for a user
-  #     security:
-  #       - bearerAuth: []
-  #     responses:
-  #       200:
-  #         description: OK
-  #         headers:
-  #           Set-Cookie:
-  #             schema:
-  #               type: string
-  #               description: "eg. key1=value1"
-  #   put:
-  #     operationId: RefreshJWTToken
-  #     description: Refreshes the current JWT Token
-  #     summary: Returns a new JWT Token for a user
-  #     security:
-  #       - bearerAuth: []
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               username:
-  #                 type: string
-  #                 description: must be between 3 to 100 alphanumerical characters
-  #                 example: testuser
-  #               password:
-  #                 type: string
-  #                 description: must be between 8 to 72 characters, and contain a letter, number and a special character
-  #                 example: test_password_123
-  #             required:
-  #               - username
-  #               - password
-  #     responses:
-  #       200:
-  #         description: OK
-  # /api/v1/secure/auth/refresh:
+        403:
+          description: User is disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      operationId: RefreshJWTToken
+      description: Refreshes the current JWT Token
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                description: "Token Set-Cookie header"
+  /api/v1/secure/auth/token:
+    post:
+      operationId: CreateJWTRefreshToken
+      description: Returns a new JWT Refresh Token for a user
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                description: "eg. key1=value1"
+        403:
+          description: User is disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /api/v1/secure/user:
     get:
       operationId: GetAuthUser 
       description: Returns the authenticated user info
-      summary: Returns the authenticated user info
       security:
         - bearerAuth: []
       responses:
@@ -207,25 +208,21 @@ paths:
                       - created_at
                 required:
                   - user
-  # /api/v1/secure/system_preferences:
-  #   get:  
-  #     operationId: GetUserSystemPreference 
-  #     description: Returns user preferences
-  #     security:
-  #       - bearerAuth: []
-  #     responses:
-  #       200:
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               properties:
-  #                 language:
-  #                   type: string
-  #                   example: "ja-JP"
-  #               required:
-  #                 - language
+  /api/v1/secure/system_preferences:
+    get:  
+      operationId: GetUserSystemPreference 
+      description: Returns user system preference
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userSystemPreference'
+        404:
+          description: User system preference has not been created yet
   #   post:  
   #     operationId: CreateDefaultUserSystemPreference
   #     description: Create default user preferences
@@ -258,7 +255,6 @@ paths:
   #       - v1
   #     operationId: cashbunny/listAccounts
   #     description: Retrieves all accounts
-  #     summary: Retrieves all accounts
   #     security:
   #       - bearerAuth: []
   #     responses:
@@ -278,7 +274,6 @@ paths:
   #       - v1
   #     operationId: cashbunny/createAccount
   #     description: Creates an account
-  #     summary: Creates an account
   #     security:
   #       - bearerAuth: []
   #     requestBody:
@@ -333,7 +328,6 @@ paths:
   #       - v1
   #     operationId: cashbunny/listTransactions
   #     description: Retrieves all transactions
-  #     summary: Retrieves all transactions
   #     security:
   #       - bearerAuth: []
   #     responses:
@@ -353,7 +347,6 @@ paths:
   #       - v1
   #     operationId: cashbunny/createTransaction
   #     description: Creates an transaction
-  #     summary: Creates an transaction
   #     security:
   #       - bearerAuth: []
   #     requestBody:
@@ -409,6 +402,13 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    userSystemPreference:
+      type: object
+      description: Model defining user system preferences such as language, time zone etc.
+      properties:
+        language:
+          type: string
+          example: "ja-JP"
     error:
       required:
         - error

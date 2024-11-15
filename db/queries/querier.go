@@ -17,7 +17,7 @@ type Querier interface {
 	CreateTransaction(ctx context.Context, db DBTX, arg CreateTransactionParams) (sql.Result, error)
 	CreateTransactionCategory(ctx context.Context, db DBTX, arg CreateTransactionCategoryParams) (sql.Result, error)
 	CreateTransactionCategoryAllocation(ctx context.Context, db DBTX, arg CreateTransactionCategoryAllocationParams) (sql.Result, error)
-	CreateUser(ctx context.Context, db DBTX, name string) (sql.Result, error)
+	CreateUser(ctx context.Context, db DBTX, arg CreateUserParams) (sql.Result, error)
 	CreateUserCurrency(ctx context.Context, db DBTX, arg CreateUserCurrencyParams) (sql.Result, error)
 	CreateUserPassword(ctx context.Context, db DBTX, arg CreateUserPasswordParams) (sql.Result, error)
 	CreateUserPreferences(ctx context.Context, db DBTX, userID uint32) (sql.Result, error)
@@ -37,7 +37,7 @@ type Querier interface {
 	GetUserRefreshTokenExistsByValue(ctx context.Context, db DBTX, arg GetUserRefreshTokenExistsByValueParams) (bool, error)
 	GetUserSystemPreference(ctx context.Context, db DBTX, userID uint32) (*UserSystemPreference, error)
 	GetUserSystemPreferenceExists(ctx context.Context, db DBTX, userID uint32) (bool, error)
-	GetUsernameExists(ctx context.Context, db DBTX, name string) (bool, error)
+	GetUsernameOrEmailExists(ctx context.Context, db DBTX, arg GetUsernameOrEmailExistsParams) (bool, error)
 	IncrementAccountIndices(ctx context.Context, db DBTX, arg IncrementAccountIndicesParams) error
 	ListAccountsAndAmountBetweenDates(ctx context.Context, db DBTX, arg ListAccountsAndAmountBetweenDatesParams) ([]*ListAccountsAndAmountBetweenDatesRow, error)
 	ListAccountsAndAmountByCategory(ctx context.Context, db DBTX, arg ListAccountsAndAmountByCategoryParams) ([]*ListAccountsAndAmountByCategoryRow, error)

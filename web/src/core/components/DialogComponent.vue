@@ -22,6 +22,14 @@
       <slot />
       <div class="hfs-dialog__buttons">
         <ButtonComponent
+          v-if="buttons.cancel"
+          :disabled="disabled"
+          :loading-spinner="loadingSpinner"
+          @click="emit('clickCancel')"
+        >
+          {{ typeof buttons.cancel === 'string' ? buttons.cancel : t('ui.cancel') }}
+        </ButtonComponent>
+        <ButtonComponent
           v-if="buttons.success"
           type="success"
           :disabled="disabled"
@@ -29,14 +37,6 @@
           @click="emit('clickSuccess')"
         >
           {{ typeof buttons.success === 'string' ? buttons.success : t('ui.success') }}
-        </ButtonComponent>
-        <ButtonComponent
-          v-if="buttons.cancel"
-          :disabled="disabled"
-          :loading-spinner="loadingSpinner"
-          @click="emit('clickCancel')"
-        >
-          {{ typeof buttons.cancel === 'string' ? buttons.cancel : t('ui.cancel') }}
         </ButtonComponent>
       </div>
     </div>

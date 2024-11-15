@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/massivebugs/home-feature-server/internal/auth"
 	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
@@ -20,6 +21,8 @@ type requestValidator struct {
 
 func NewRequestValidator() *requestValidator {
 	v := validator.New(validator.WithRequiredStructEnabled())
+
+	v.RegisterValidation("_password", auth.IsValidPassword)
 
 	// Copied straight from go-playground/validator documentation
 	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
@@ -41,7 +44,7 @@ func (rv *requestValidator) Validate(req interface{}) error {
 		ves := err.(validator.ValidationErrors)
 		messages := map[string]string{}
 		for _, fe := range ves {
-			messages[fe.Field()] = fe.Tag()
+			messages[fe.Field()] = fe.ActualTag()
 		}
 
 		return &validationError{

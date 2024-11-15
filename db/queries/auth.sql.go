@@ -12,13 +12,18 @@ import (
 
 const createUser = `-- name: CreateUser :execresult
 INSERT INTO
-  users (name)
+  users (name, email)
 VALUES
-  (?)
+  (?, ?)
 `
 
-func (q *Queries) CreateUser(ctx context.Context, db DBTX, name string) (sql.Result, error) {
-	return db.ExecContext(ctx, createUser, name)
+type CreateUserParams struct {
+	Name  string
+	Email string
+}
+
+func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg CreateUserParams) (sql.Result, error) {
+	return db.ExecContext(ctx, createUser, arg.Name, arg.Email)
 }
 
 const createUserPassword = `-- name: CreateUserPassword :execresult
@@ -69,7 +74,7 @@ func (q *Queries) DeleteUser(ctx context.Context, db DBTX, id uint32) error {
 
 const getUser = `-- name: GetUser :one
 SELECT
-  id, name, created_at, updated_at, deleted_at
+  id, name, email, disabled_at, created_at, updated_at, deleted_at
 FROM
   users
 WHERE
@@ -84,6 +89,8 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, id uint32) (*User, error
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Email,
+		&i.DisabledAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -93,7 +100,7 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, id uint32) (*User, error
 
 const getUserByName = `-- name: GetUserByName :one
 SELECT
-  id, name, created_at, updated_at, deleted_at
+  id, name, email, disabled_at, created_at, updated_at, deleted_at
 FROM
   users
 WHERE
@@ -108,6 +115,8 @@ func (q *Queries) GetUserByName(ctx context.Context, db DBTX, name string) (*Use
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Email,
+		&i.DisabledAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -167,22 +176,26 @@ func (q *Queries) GetUserRefreshTokenExistsByValue(ctx context.Context, db DBTX,
 	return exists, err
 }
 
-const getUsernameExists = `-- name: GetUsernameExists :one
+const getUsernameOrEmailExists = `-- name: GetUsernameOrEmailExists :one
 SELECT
   EXISTS (
     SELECT
-      id, name, created_at, updated_at, deleted_at
+      id, name, email, disabled_at, created_at, updated_at, deleted_at
     FROM
       users
     WHERE
-      name = ?
-    LIMIT
-      1
+      name = ? 
+      OR email = ?
   )
 `
 
-func (q *Queries) GetUsernameExists(ctx context.Context, db DBTX, name string) (bool, error) {
-	row := db.QueryRowContext(ctx, getUsernameExists, name)
+type GetUsernameOrEmailExistsParams struct {
+	Name  string
+	Email string
+}
+
+func (q *Queries) GetUsernameOrEmailExists(ctx context.Context, db DBTX, arg GetUsernameOrEmailExistsParams) (bool, error) {
+	row := db.QueryRowContext(ctx, getUsernameOrEmailExists, arg.Name, arg.Email)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -191,18 +204,20 @@ func (q *Queries) GetUsernameExists(ctx context.Context, db DBTX, name string) (
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
-  name = ?
+  name = ?,
+  email = ?
 WHERE
   id = ?
 `
 
 type UpdateUserParams struct {
-	Name string
-	ID   uint32
+	Name  string
+	Email string
+	ID    uint32
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg UpdateUserParams) error {
-	_, err := db.ExecContext(ctx, updateUser, arg.Name, arg.ID)
+	_, err := db.ExecContext(ctx, updateUser, arg.Name, arg.Email, arg.ID)
 	return err
 }
 

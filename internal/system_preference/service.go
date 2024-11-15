@@ -24,22 +24,22 @@ func NewSystemPreference(
 	}
 }
 
-func (s *SystemPreference) GetUserSystemPreference(ctx context.Context, userID uint32) (userSystemPreferenceResponse, error) {
+func (s *SystemPreference) GetUserSystemPreference(ctx context.Context, userID uint32) (*UserSystemPreference, error) {
 	exists, err := s.uspRepo.GetUserSystemPreferenceExists(ctx, s.db, userID)
 	if err != nil {
-		return userSystemPreferenceResponse{}, err
+		return nil, err
 	}
 
 	if !exists {
-		return userSystemPreferenceResponse{}, app.NewAppError(app.CodeNotFound, errors.New("user system preferences hasn't been created yet"))
+		return nil, app.NewAppError(app.CodeNotFound, errors.New("user system preferences hasn't been created yet"))
 	}
 
 	usp, err := s.uspRepo.GetUserSystemPreference(ctx, s.db, userID)
 	if err != nil {
-		return userSystemPreferenceResponse{}, err
+		return nil, err
 	}
 
-	return newUserSystemPreferenceResponse(usp), nil
+	return usp, nil
 }
 
 func (s *SystemPreference) CreateDefaultUserSystemPreference(ctx context.Context, userID uint32) (userSystemPreferenceResponse, error) {

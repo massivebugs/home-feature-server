@@ -1,4 +1,4 @@
--- name: GetUsernameExists :one
+-- name: GetUsernameOrEmailExists :one
 SELECT
   EXISTS (
     SELECT
@@ -6,9 +6,8 @@ SELECT
     FROM
       users
     WHERE
-      name = ?
-    LIMIT
-      1
+      name = ? 
+      OR email = ?
   );
 
 -- name: GetUser :one
@@ -33,14 +32,15 @@ LIMIT
 
 -- name: CreateUser :execresult
 INSERT INTO
-  users (name)
+  users (name, email)
 VALUES
-  (?);
+  (?, ?);
 
 -- name: UpdateUser :exec
 UPDATE users
 SET
-  name = ?
+  name = ?,
+  email = ?
 WHERE
   id = ?;
 

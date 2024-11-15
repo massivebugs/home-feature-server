@@ -10,7 +10,10 @@ import (
 
 func (s *Seeder) createAuthDataForPublicUser(ctx context.Context, tx db.DB) (uint32, error) {
 	// Create new user
-	createUserResult, err := s.querier.CreateUser(ctx, tx, "public")
+	createUserResult, err := s.querier.CreateUser(ctx, tx, queries.CreateUserParams{
+		Name:  "public",
+		Email: "public@example.com",
+	})
 	if err != nil {
 		return 0, err
 	}

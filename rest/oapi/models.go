@@ -14,12 +14,28 @@ type Error struct {
 	ValidationMessages map[string]string `json:"validation_messages"`
 }
 
-// CreateJWTTokenJSONBody defines parameters for CreateJWTToken.
-type CreateJWTTokenJSONBody struct {
+// UserSystemPreference Model defining user system preferences such as language, time zone etc.
+type UserSystemPreference struct {
+	Language *string `json:"language,omitempty"`
+}
+
+// CreateUserJSONBody defines parameters for CreateUser.
+type CreateUserJSONBody struct {
+	// Email must be a valid email
+	Email string `json:"email" validate:"email"`
+
 	// Password must be between 8 to 72 characters, and contain a letter, number and a special character
-	Password string `json:"password"`
+	Password string `json:"password" validate:"_password"`
 
 	// Username must be between 3 to 50 alphanumerical characters
+	Username string `json:"username" validate:"alphanum,min=3,max=50"`
+}
+
+// CreateJWTTokenJSONBody defines parameters for CreateJWTToken.
+type CreateJWTTokenJSONBody struct {
+	Password string `json:"password"`
+
+	// Username must be alphanumerical characters, with maximum 50 character count
 	Username string `json:"username" validate:"alphanum,max=50"`
 }
 
@@ -28,6 +44,9 @@ type RepeatJSONBody struct {
 	// Message Some message you want to be sent back
 	Message string `json:"message"`
 }
+
+// CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
+type CreateUserJSONRequestBody CreateUserJSONBody
 
 // CreateJWTTokenJSONRequestBody defines body for CreateJWTToken for application/json ContentType.
 type CreateJWTTokenJSONRequestBody CreateJWTTokenJSONBody

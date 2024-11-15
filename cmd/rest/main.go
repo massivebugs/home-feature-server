@@ -16,7 +16,7 @@ type Server struct {
 	*rest.PingHandler
 	*rest.RepeatHandler
 	*rest.AuthHandler
-	// *rest.SystemPreferencesHandler
+	*rest.SystemPreferencesHandler
 }
 
 var _ oapi.StrictServerInterface = (*Server)(nil)
@@ -70,10 +70,10 @@ func main() {
 	log.Println("Registering server handlers...")
 	querier := queries.New() //	query helpers generated from sqlc
 	s := Server{
-		PingHandler:   rest.NewPingHandler(cfg),
-		RepeatHandler: rest.NewRepeatHandler(cfg),
-		AuthHandler:   rest.NewAuthHandler(cfg, db, querier),
-		// SystemPreferencesHandler: rest.NewSystemPreferencesHandler(cfg, db, querier),
+		PingHandler:              rest.NewPingHandler(cfg),
+		RepeatHandler:            rest.NewRepeatHandler(cfg),
+		AuthHandler:              rest.NewAuthHandler(cfg, db, querier),
+		SystemPreferencesHandler: rest.NewSystemPreferencesHandler(cfg, db, querier),
 		// CashbunnyHandler:             rest.NewCashbunnyHandler(cfg, db, querier),
 	}
 
