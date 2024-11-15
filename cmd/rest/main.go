@@ -40,7 +40,6 @@ func main() {
 	}
 
 	e := echo.New()
-	e.Validator = rest.NewRequestValidator()
 
 	// log.Println("Fetching swagger specification...")
 	// swagger, err := rest.GetSwagger()
@@ -55,7 +54,8 @@ func main() {
 	e.Use(rest.NewCORSMiddleware(cfg))
 	e.Use(rest.NewJWTMiddleware(cfg))
 	e.Use(rest.NewJWTRefreshMiddleware(cfg))
-	e.HTTPErrorHandler = rest.HTTPErrorHandler
+	e.HTTPErrorHandler = rest.NewHTTPErrorHandler(cfg)
+	e.Validator = rest.NewRequestValidator()
 
 	// TODO: Move JWT validation from JWTMiddleware to OapiRequestValidator
 	// e.Use(echomiddleware.OapiRequestValidatorWithOptions(swagger, &echomiddleware.Options{
@@ -82,15 +82,7 @@ func main() {
 		oapi.NewStrictHandler(
 			s,
 			[]oapi.StrictMiddlewareFunc{
-				func(f oapi.StrictHandlerFunc, operationID string) oapi.StrictHandlerFunc {
-					return func(c echo.Context, req interface{}) (interface{}, error) {
-						if err := c.Validate(req); err != nil {
-							return nil, err
-						}
-
-						return f(c, req)
-					}
-				},
+				rest.RequestValidatorStrictHandlerFunc,
 			}))
 
 	e.Logger.Fatal(e.StartTLS(":"+cfg.APIPort, cfg.TLSCertificate, cfg.TLSKey))

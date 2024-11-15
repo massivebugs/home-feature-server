@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
+	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type validationError struct {
@@ -49,4 +51,14 @@ func (rv *requestValidator) Validate(req interface{}) error {
 	}
 
 	return nil
+}
+
+func RequestValidatorStrictHandlerFunc(f oapi.StrictHandlerFunc, operationID string) oapi.StrictHandlerFunc {
+	return func(c echo.Context, req interface{}) (interface{}, error) {
+		if err := c.Validate(req); err != nil {
+			return nil, err
+		}
+
+		return f(c, req)
+	}
 }

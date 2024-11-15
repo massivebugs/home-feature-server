@@ -57,7 +57,7 @@ func (h *AuthHandler) CreateJWTToken(ctx context.Context, req oapi.CreateJWTToke
 	)
 	if err != nil {
 		if appErr, ok := err.(*app.AppError); ok {
-			return oapi.CreateJWTToken401JSONResponse(NewErrorFromAppError(appErr)), nil
+			return oapi.CreateJWTToken401JSONResponse{Error: appErr.Error()}, nil
 		}
 		return nil, err
 	}
