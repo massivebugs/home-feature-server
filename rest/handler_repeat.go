@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/massivebugs/home-feature-server/internal/repeat"
+	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type RepeatHandler struct {
@@ -20,7 +21,7 @@ func NewRepeatHandler(cfg *Config) *RepeatHandler {
 	}
 }
 
-func (h *RepeatHandler) Repeat(ctx context.Context, req RepeatRequestObject) (RepeatResponseObject, error) {
+func (h *RepeatHandler) Repeat(ctx context.Context, req oapi.RepeatRequestObject) (oapi.RepeatResponseObject, error) {
 	// req := new(repeat.RepeatRequest)
 
 	// err := h.Validate(c, req)
@@ -30,5 +31,5 @@ func (h *RepeatHandler) Repeat(ctx context.Context, req RepeatRequestObject) (Re
 
 	result := h.repeat.Run(ctx, req.Body.Message)
 
-	return Repeat200JSONResponse(result), nil
+	return oapi.Repeat200JSONResponse(result), nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/massivebugs/home-feature-server/internal/app"
 	"github.com/massivebugs/home-feature-server/internal/auth"
 	"github.com/massivebugs/home-feature-server/internal/repository"
+	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type AuthHandler struct {
@@ -40,7 +41,7 @@ func NewAuthHandler(cfg *Config, db *db.Handle, querier queries.Querier) *AuthHa
 // 	return CreateAuthUser200Response{}, nil
 // }
 
-func (h *AuthHandler) CreateJWTToken(ctx context.Context, req CreateJWTTokenRequestObject) (CreateJWTTokenResponseObject, error) {
+func (h *AuthHandler) CreateJWTToken(ctx context.Context, req oapi.CreateJWTTokenRequestObject) (oapi.CreateJWTTokenResponseObject, error) {
 	now := time.Now()
 	result, err := h.auth.CreateJWTToken(
 		ctx,
@@ -56,7 +57,7 @@ func (h *AuthHandler) CreateJWTToken(ctx context.Context, req CreateJWTTokenRequ
 	)
 	if err != nil {
 		if appErr, ok := err.(*app.AppError); ok {
-			return CreateJWTToken401JSONResponse(NewErrorFromAppError(appErr)), nil
+			return oapi.CreateJWTToken401JSONResponse(NewErrorFromAppError(appErr)), nil
 		}
 		return nil, err
 	}
@@ -83,8 +84,8 @@ func (h *AuthHandler) CreateJWTToken(ctx context.Context, req CreateJWTTokenRequ
 	// 	Expires:  now.Add(time.Second * time.Duration(h.cfg.RefreshJWTExpireSeconds)),
 	// }
 
-	return CreateJWTToken200Response{
-		Headers: CreateJWTToken200ResponseHeaders{
+	return oapi.CreateJWTToken200Response{
+		Headers: oapi.CreateJWTToken200ResponseHeaders{
 			SetCookie: tokenCookie.String(),
 		},
 	}, nil
@@ -184,7 +185,7 @@ func (h *AuthHandler) CreateJWTToken(ctx context.Context, req CreateJWTTokenRequ
 // 	return h.CreateResponse(c, nil, result)
 // }
 
-func (h *AuthHandler) GetAuthUser(ctx context.Context, req GetAuthUserRequestObject) (GetAuthUserResponseObject, error) {
+func (h *AuthHandler) GetAuthUser(ctx context.Context, req oapi.GetAuthUserRequestObject) (oapi.GetAuthUserResponseObject, error) {
 	claims := h.GetClaims(ctx)
 
 	u, err := h.auth.GetAuthUser(ctx, claims.UserID, time.Now())
@@ -192,7 +193,7 @@ func (h *AuthHandler) GetAuthUser(ctx context.Context, req GetAuthUserRequestObj
 		return nil, err
 	}
 
-	res := GetAuthUser200JSONResponse{}
+	res := oapi.GetAuthUser200JSONResponse{}
 	res.User.Id = u.Id
 	res.User.Name = u.Name
 	res.User.CreatedAt = u.CreatedAt.String()

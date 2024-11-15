@@ -34,10 +34,10 @@ db-seed:
 	docker build -f ci/docker/Dockerfile.local.seed -t seed .
 	docker run --rm -t --network=home-feature-server_default -v ./db:/app/db seed:latest ./main
 
-.PHONY: sqlc-generate
-sqlc-generate:
+.PHONY: sqlc
+sqlc:
 	go generate db/sqlc/generate.go
 
-.PHONY: openapi-generate
-openapi-generate:
-	go generate rest/generate.go
+.PHONY: oapi-codegen 
+oapi-codegen:
+	go generate rest/oapi/generate.go

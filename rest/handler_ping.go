@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/massivebugs/home-feature-server/internal/ping"
+	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type PingHandler struct {
@@ -20,8 +21,8 @@ func NewPingHandler(cfg *Config) *PingHandler {
 	}
 }
 
-func (h *PingHandler) Ping(ctx context.Context, req PingRequestObject) (PingResponseObject, error) {
+func (h *PingHandler) Ping(ctx context.Context, req oapi.PingRequestObject) (oapi.PingResponseObject, error) {
 	result := h.ping.Run(ctx)
 
-	return Ping200JSONResponse{Message: result}, nil
+	return oapi.Ping200JSONResponse{Message: result}, nil
 }

@@ -3,14 +3,15 @@ package rest
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/massivebugs/home-feature-server/internal/app"
+	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 const (
 	validationErrMessage = "there were some problems with the data you provided"
 )
 
-func NewErrorFromAppError(appErr *app.AppError) Error {
-	return Error{
+func NewErrorFromAppError(appErr *app.AppError) oapi.Error {
+	return oapi.Error{
 		Error: appErr.Error(),
 	}
 }
@@ -27,7 +28,7 @@ func HTTPErrorHandler(err error, c echo.Context) {
 	}
 
 	if valErr, ok := err.(*validationError); ok {
-		c.JSON(400, Error{
+		c.JSON(400, oapi.Error{
 			Error:              validationErrMessage,
 			ValidationMessages: valErr.Messages,
 		})
@@ -45,13 +46,13 @@ func HTTPErrorHandler(err error, c echo.Context) {
 			msg = httpErr.Error()
 		}
 
-		c.JSON(httpErr.Code, Error{
+		c.JSON(httpErr.Code, oapi.Error{
 			Error: msg,
 		})
 		return
 	}
 
-	c.JSON(500, Error{
+	c.JSON(500, oapi.Error{
 		Error: err.Error(),
 	})
 }

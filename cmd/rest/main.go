@@ -9,6 +9,7 @@ import (
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/massivebugs/home-feature-server/rest"
+	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type Server struct {
@@ -18,7 +19,7 @@ type Server struct {
 	// *rest.SystemPreferencesHandler
 }
 
-var _ rest.StrictServerInterface = (*Server)(nil)
+var _ oapi.StrictServerInterface = (*Server)(nil)
 
 func main() {
 	err := godotenv.Load(".env")
@@ -76,12 +77,12 @@ func main() {
 		// CashbunnyHandler:             rest.NewCashbunnyHandler(cfg, db, querier),
 	}
 
-	rest.RegisterHandlers(
+	oapi.RegisterHandlers(
 		e,
-		rest.NewStrictHandler(
+		oapi.NewStrictHandler(
 			s,
-			[]rest.StrictMiddlewareFunc{
-				func(f rest.StrictHandlerFunc, operationID string) rest.StrictHandlerFunc {
+			[]oapi.StrictMiddlewareFunc{
+				func(f oapi.StrictHandlerFunc, operationID string) oapi.StrictHandlerFunc {
 					return func(c echo.Context, req interface{}) (interface{}, error) {
 						if err := c.Validate(req); err != nil {
 							return nil, err
