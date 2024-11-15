@@ -2,11 +2,13 @@ package rest
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/massivebugs/home-feature-server/internal/auth"
 )
 
@@ -15,6 +17,28 @@ type CustomCtxKey string
 const (
 	CtxClaimsKey CustomCtxKey = "claims"
 )
+
+func NewCORSMiddleware(cfg *Config) echo.MiddlewareFunc {
+	return middleware.CORSWithConfig(
+		middleware.CORSConfig{
+			AllowOrigins:     cfg.AllowedOrigins,
+			AllowCredentials: true,
+			AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		},
+	)
+}
+
+func NewCSRFMiddleware(cfg *Config) echo.MiddlewareFunc {
+	return middleware.CSRFWithConfig(
+		middleware.CSRFConfig{
+			TokenLookup:    "header:X-CSRF-Token,cookie:_csrf",
+			CookiePath:     "/",
+			CookieSecure:   true,
+			CookieHTTPOnly: true,
+			CookieSameSite: http.SameSiteStrictMode,
+		},
+	)
+}
 
 func NewJWTMiddleware(cfg *Config) echo.MiddlewareFunc {
 	return echojwt.WithConfig(

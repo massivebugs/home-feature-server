@@ -12,7 +12,6 @@ const (
 	CodeForbidden           AppErrorCode = "forbidden"
 	CodeNotFound            AppErrorCode = "not_found"
 	CodeInternalServerError AppErrorCode = "internal_server_error"
-	CodeValidationFailed    AppErrorCode = "validation_failed"
 )
 
 type AppError struct {
@@ -32,7 +31,7 @@ func (e *AppError) GetHTTPStatusCode() int {
 	}
 
 	switch e.code {
-	case CodeBadRequest, CodeValidationFailed:
+	case CodeBadRequest:
 		return http.StatusBadRequest
 	case CodeUnauthorized:
 		return http.StatusUnauthorized
