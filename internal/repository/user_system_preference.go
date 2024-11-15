@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
@@ -21,10 +22,17 @@ func NewUserSystemPreferenceRepository(querier queries.Querier) *UserSystemPrefe
 }
 
 func (r *UserSystemPreferenceRepository) CreateUserSystemPreference(ctx context.Context, db db.DB, arg system_preference.CreateUserSystemPreferenceParams) (uint32, error) {
-	result, err := r.querier.CreateUserSystemPreference(ctx, db, queries.CreateUserSystemPreferenceParams{
+	params := queries.CreateUserSystemPreferenceParams{
 		UserID:   arg.UserID,
-		Language: arg.Language,
-	})
+		Language: sql.NullString{},
+	}
+
+	if arg.Language != nil {
+		params.Language.String = *arg.Language
+		params.Language.Valid = true
+	}
+
+	result, err := r.querier.CreateUserSystemPreference(ctx, db, params)
 	if err != nil {
 		return 0, err
 	}
@@ -51,8 +59,15 @@ func (r *UserSystemPreferenceRepository) GetUserSystemPreference(ctx context.Con
 }
 
 func (r *UserSystemPreferenceRepository) UpdateUserSystemPreference(ctx context.Context, db db.DB, arg system_preference.UpdateUserSystemPreferenceParams) error {
-	return r.querier.UpdateUserSystemPreference(ctx, db, queries.UpdateUserSystemPreferenceParams{
+	params := queries.UpdateUserSystemPreferenceParams{
 		UserID:   arg.UserID,
-		Language: arg.Language,
-	})
+		Language: sql.NullString{},
+	}
+
+	if arg.Language != nil {
+		params.Language.String = *arg.Language
+		params.Language.Valid = true
+	}
+
+	return r.querier.UpdateUserSystemPreference(ctx, db, params)
 }

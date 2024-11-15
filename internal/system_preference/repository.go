@@ -2,7 +2,6 @@ package system_preference
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/massivebugs/home-feature-server/db"
 )
@@ -10,12 +9,12 @@ import (
 // ### User System Preference ###
 type CreateUserSystemPreferenceParams struct {
 	UserID   uint32
-	Language sql.NullString
+	Language *string
 }
 
 type UpdateUserSystemPreferenceParams struct {
-	Language sql.NullString
 	UserID   uint32
+	Language *string
 }
 
 type ISystemPreferenceRepository interface {

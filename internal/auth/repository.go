@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"database/sql"
+	"time"
 
 	"github.com/massivebugs/home-feature-server/db"
 )
@@ -57,7 +57,7 @@ type IUserPasswordRepository interface {
 type CreateUserRefreshTokenParams struct {
 	UserID    uint32
 	Value     string
-	ExpiresAt sql.NullTime
+	ExpiresAt time.Time
 }
 
 type DeleteUserRefreshTokenParams struct {

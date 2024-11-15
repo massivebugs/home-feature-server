@@ -35,8 +35,8 @@ import CreateAccountDialogComponent, {
 } from '../components/CreateAccountDialogComponent.vue'
 import LoginDialogComponent, { type LoginSubmitEvent } from '../components/LoginDialogComponent.vue'
 import { SpinnerTypes } from '../components/SpinnerIconComponent.vue'
-import { AuthUser } from '../models/auth_user'
 import type { APIError, CreateAuthTokenDto, CreateUserDto } from '../models/dto'
+import { User } from '../models/user'
 import { useCoreStore } from '../stores'
 import type { ValidationErrors } from '../utils/types'
 
@@ -69,6 +69,7 @@ const onSubmitLogin = async (payload: LoginSubmitEvent) => {
     await coreStore.createAuthToken(payload)
 
     // TODO: Error handling when creating refresh token fails
+    // Maybe invalidate token
     await coreStore.createRefreshToken()
     checkAuth()
   } catch (error) {
@@ -121,8 +122,8 @@ const onCancelCreateAccount = () => {
 // and redirects to desktop if so. Otherwise, displays login dialog.
 const checkAuth = async () => {
   try {
-    const res = await coreStore.getAuthUser()
-    coreStore.authUser = new AuthUser(res.data)
+    const res = await coreStore.getUser()
+    coreStore.user = new User(res.data.user)
     router.push({ name: 'desktop' })
   } catch (_) {
     showLoginDialog.value = true

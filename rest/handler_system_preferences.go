@@ -36,35 +36,38 @@ func (h *SystemPreferencesHandler) GetUserSystemPreference(ctx context.Context, 
 	}
 
 	return oapi.GetUserSystemPreference200JSONResponse{
-		Language: result.Language,
+		UserSystemPreference: oapi.UserSystemPreference{
+			Language: result.Language,
+		},
 	}, nil
 }
 
-// func (h *SystemPreferencesHandler) CreateDefaultUserSystemPreference(c echo.Context) error {
-// 	claims := h.GetTokenClaims(c)
+func (h *SystemPreferencesHandler) CreateDefaultUserSystemPreference(ctx context.Context, request oapi.CreateDefaultUserSystemPreferenceRequestObject) (oapi.CreateDefaultUserSystemPreferenceResponseObject, error) {
+	claims := h.GetClaims(ctx)
 
-// 	result, err := h.sp.CreateDefaultUserSystemPreference(c.Request().Context(), claims.UserID)
-// 	if err != nil {
-// 		return h.CreateErrorResponse(c, err)
-// 	}
+	result, err := h.sp.CreateDefaultUserSystemPreference(ctx, claims.UserID)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return h.CreateResponse(c, nil, result)
-// }
+	return oapi.CreateDefaultUserSystemPreference200JSONResponse{
+		UserSystemPreference: oapi.UserSystemPreference{
+			Language: result.Language,
+		},
+	}, nil
+}
 
-// func (h *SystemPreferencesHandler) UpdateUserSystemPreference(c echo.Context) error {
-// 	claims := h.GetTokenClaims(c)
+func (h *SystemPreferencesHandler) UpdateUserSystemPreference(ctx context.Context, request oapi.UpdateUserSystemPreferenceRequestObject) (oapi.UpdateUserSystemPreferenceResponseObject, error) {
+	claims := h.GetClaims(ctx)
 
-// 	req := new(system_preference.UserSystemPreferenceDTO)
+	usp, err := h.sp.UpdateDefaultUserSystemPreference(ctx, claims.UserID, request.Body.Language)
+	if err != nil {
+		return nil, err
+	}
 
-// 	err := h.Validate(c, req)
-// 	if err != nil {
-// 		return h.CreateErrorResponse(c, err)
-// 	}
-
-// 	err = h.sp.UpdateDefaultUserSystemPreference(c.Request().Context(), claims.UserID, req)
-// 	if err != nil {
-// 		return h.CreateErrorResponse(c, err)
-// 	}
-
-// 	return h.CreateResponse(c, nil, nil)
-// }
+	return oapi.UpdateUserSystemPreference200JSONResponse{
+		UserSystemPreference: oapi.UserSystemPreference{
+			Language: usp.Language,
+		},
+	}, nil
+}

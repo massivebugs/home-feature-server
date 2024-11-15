@@ -14,9 +14,17 @@ type Error struct {
 	ValidationMessages map[string]string `json:"validation_messages"`
 }
 
+// User defines model for user.
+type User struct {
+	CreatedAt  string `json:"created_at"`
+	Id         uint32 `json:"id"`
+	LoggedInAt string `json:"logged_in_at"`
+	Name       string `json:"name"`
+}
+
 // UserSystemPreference Model defining user system preferences such as language, time zone etc.
 type UserSystemPreference struct {
-	Language *string `json:"language,omitempty"`
+	Language *string `json:"language"`
 }
 
 // CreateUserJSONBody defines parameters for CreateUser.
@@ -53,3 +61,6 @@ type CreateJWTTokenJSONRequestBody CreateJWTTokenJSONBody
 
 // RepeatJSONRequestBody defines body for Repeat for application/json ContentType.
 type RepeatJSONRequestBody RepeatJSONBody
+
+// UpdateUserSystemPreferenceJSONRequestBody defines body for UpdateUserSystemPreference for application/json ContentType.
+type UpdateUserSystemPreferenceJSONRequestBody = UserSystemPreference

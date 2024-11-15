@@ -25,13 +25,21 @@ export type CreateAuthTokenDto = {
 
 export type AuthTokenDto = string
 
-export type AuthUserDto = {
+export type UserDto = {
   id: number
   name: string
   logged_in_at: string // time
   created_at: string // time
 }
 
+export type GetUserDto = {
+  user: UserDto
+}
+
 export type UserSystemPreferenceDto = {
   language: string | null
+}
+
+export type GetUserSystemPreferenceDto = {
+  user_system_preference: UserSystemPreferenceDto
 }

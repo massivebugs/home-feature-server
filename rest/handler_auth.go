@@ -31,8 +31,8 @@ func NewAuthHandler(cfg *Config, db *db.Handle, querier queries.Querier) *AuthHa
 	}
 }
 
-func (h *AuthHandler) CreateUser(ctx context.Context, req oapi.CreateUserRequestObject) (oapi.CreateUserResponseObject, error) {
-	err := h.auth.CreateUser(ctx, req.Body.Username, req.Body.Email, req.Body.Password)
+func (h *AuthHandler) CreateUser(ctx context.Context, request oapi.CreateUserRequestObject) (oapi.CreateUserResponseObject, error) {
+	err := h.auth.CreateUser(ctx, request.Body.Username, request.Body.Email, request.Body.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -40,17 +40,16 @@ func (h *AuthHandler) CreateUser(ctx context.Context, req oapi.CreateUserRequest
 	return oapi.CreateUser202Response{}, nil
 }
 
-func (h *AuthHandler) CreateJWTToken(ctx context.Context, req oapi.CreateJWTTokenRequestObject) (oapi.CreateJWTTokenResponseObject, error) {
+func (h *AuthHandler) CreateJWTToken(ctx context.Context, request oapi.CreateJWTTokenRequestObject) (oapi.CreateJWTTokenResponseObject, error) {
 	now := time.Now()
 	result, err := h.auth.CreateJWTToken(
 		ctx,
 		now,
 		h.cfg.AuthJWTSigningMethod,
 		h.cfg.AuthJWTSecret,
-		20,
-		// h.cfg.AuthJWTExpireSeconds,
-		req.Body.Username,
-		req.Body.Password,
+		h.cfg.AuthJWTExpireSeconds,
+		request.Body.Username,
+		request.Body.Password,
 	)
 	if err != nil {
 		return nil, err
@@ -74,7 +73,7 @@ func (h *AuthHandler) CreateJWTToken(ctx context.Context, req oapi.CreateJWTToke
 	}, nil
 }
 
-func (h *AuthHandler) CreateJWTRefreshToken(ctx context.Context, req oapi.CreateJWTRefreshTokenRequestObject) (oapi.CreateJWTRefreshTokenResponseObject, error) {
+func (h *AuthHandler) CreateJWTRefreshToken(ctx context.Context, request oapi.CreateJWTRefreshTokenRequestObject) (oapi.CreateJWTRefreshTokenResponseObject, error) {
 	claims := h.GetClaims(ctx)
 	now := time.Now()
 
@@ -146,7 +145,7 @@ func (h *AuthHandler) RefreshJWTToken(ctx context.Context, request oapi.RefreshJ
 	}, nil
 }
 
-func (h *AuthHandler) GetAuthUser(ctx context.Context, req oapi.GetAuthUserRequestObject) (oapi.GetAuthUserResponseObject, error) {
+func (h *AuthHandler) GetUser(ctx context.Context, request oapi.GetUserRequestObject) (oapi.GetUserResponseObject, error) {
 	claims := h.GetClaims(ctx)
 
 	u, err := h.auth.GetAuthUser(ctx, claims.UserID, time.Now())
@@ -154,7 +153,7 @@ func (h *AuthHandler) GetAuthUser(ctx context.Context, req oapi.GetAuthUserReque
 		return nil, err
 	}
 
-	res := oapi.GetAuthUser200JSONResponse{}
+	res := oapi.GetUser200JSONResponse{}
 	res.User.Id = u.Id
 	res.User.Name = u.Name
 	res.User.CreatedAt = u.CreatedAt.String()

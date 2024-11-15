@@ -41,11 +41,11 @@
 </template>
 
 <script setup lang="ts">
+import { AxiosError, HttpStatusCode } from 'axios'
 import { uniqueId } from 'lodash'
 import { onMounted, onUnmounted, provide, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { isAPIError } from '@/utils/api'
 import ConfirmDialogComponent from '../components/ConfirmDialogComponent.vue'
 import ContextMenuComponent, {
   type ContextMenuOptions,
@@ -56,7 +56,6 @@ import TaskbarComponent, {
   type TaskbarSelectProcessEvent,
 } from '../components/TaskbarComponent.vue'
 import type { AbsolutePosition } from '../models/absolutePosition'
-import type { APIResponse } from '../models/dto'
 import { Process } from '../models/process'
 import { RelativePosition } from '../models/relativePosition'
 import { useCoreStore } from '../stores'
@@ -137,22 +136,20 @@ onMounted(async () => {
 
   // Load user data
   try {
-    const res = await store.getUserSystemPreferences()
-    store.preferences = res.data.data
+    const res = await store.getUserSystemPreference()
+    store.systemPreference = res.data.user_system_preference
 
-    locale.value = store.preferences.language ?? navigator.language
-  } catch (e) {
-    if (isAPIError(e)) {
-      const res = e.response?.data as APIResponse<null>
-      // TODO: Group API error codes
-      if (res.error?.code === 'not_found') {
-        const res = await store.createUserSystemPreferences()
-        store.preferences = res.data.data
-      } else {
-        throw e
+    locale.value = store.systemPreference.language ?? navigator.language
+  } catch (error) {
+    if (error instanceof AxiosError && error.status === HttpStatusCode.NotFound) {
+      try {
+        const res = await store.createUserSystemPreference()
+        store.systemPreference = res.data.user_system_preference
+      } catch (error) {
+        // TODO: Error handling
       }
     } else {
-      throw e
+      // TODO: Error handling
     }
   }
 

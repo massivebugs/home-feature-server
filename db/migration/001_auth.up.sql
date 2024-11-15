@@ -29,7 +29,7 @@ CREATE TABLE
     `id` INT (10) unsigned NOT NULL AUTO_INCREMENT,
     `user_id` INT (10) unsigned NOT NULL,
     `value` CHAR(50) NOT NULL,
-    `expires_at` timestamp NULL DEFAULT NULL,
+    `expires_at` timestamp NOT NULL,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),

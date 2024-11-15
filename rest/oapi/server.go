@@ -44,8 +44,14 @@ type ServerInterface interface {
 	// (GET /api/v1/secure/system_preferences)
 	GetUserSystemPreference(ctx echo.Context) error
 
+	// (POST /api/v1/secure/system_preferences)
+	CreateDefaultUserSystemPreference(ctx echo.Context) error
+
+	// (PUT /api/v1/secure/system_preferences)
+	UpdateUserSystemPreference(ctx echo.Context) error
+
 	// (GET /api/v1/secure/user)
-	GetAuthUser(ctx echo.Context) error
+	GetUser(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -122,14 +128,36 @@ func (w *ServerInterfaceWrapper) GetUserSystemPreference(ctx echo.Context) error
 	return err
 }
 
-// GetAuthUser converts echo context to params.
-func (w *ServerInterfaceWrapper) GetAuthUser(ctx echo.Context) error {
+// CreateDefaultUserSystemPreference converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateDefaultUserSystemPreference(ctx echo.Context) error {
 	var err error
 
 	ctx.Set(BearerAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetAuthUser(ctx)
+	err = w.Handler.CreateDefaultUserSystemPreference(ctx)
+	return err
+}
+
+// UpdateUserSystemPreference converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdateUserSystemPreference(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdateUserSystemPreference(ctx)
+	return err
+}
+
+// GetUser converts echo context to params.
+func (w *ServerInterfaceWrapper) GetUser(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetUser(ctx)
 	return err
 }
 
@@ -168,7 +196,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/v1/repeat", wrapper.Repeat)
 	router.POST(baseURL+"/api/v1/secure/auth/token", wrapper.CreateJWTRefreshToken)
 	router.GET(baseURL+"/api/v1/secure/system_preferences", wrapper.GetUserSystemPreference)
-	router.GET(baseURL+"/api/v1/secure/user", wrapper.GetAuthUser)
+	router.POST(baseURL+"/api/v1/secure/system_preferences", wrapper.CreateDefaultUserSystemPreference)
+	router.PUT(baseURL+"/api/v1/secure/system_preferences", wrapper.UpdateUserSystemPreference)
+	router.GET(baseURL+"/api/v1/secure/user", wrapper.GetUser)
 
 }
 
@@ -340,7 +370,10 @@ type GetUserSystemPreferenceResponseObject interface {
 	VisitGetUserSystemPreferenceResponse(w http.ResponseWriter) error
 }
 
-type GetUserSystemPreference200JSONResponse UserSystemPreference
+type GetUserSystemPreference200JSONResponse struct {
+	// UserSystemPreference Model defining user system preferences such as language, time zone etc.
+	UserSystemPreference UserSystemPreference `json:"user_system_preference"`
+}
 
 func (response GetUserSystemPreference200JSONResponse) VisitGetUserSystemPreferenceResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -357,23 +390,57 @@ func (response GetUserSystemPreference404Response) VisitGetUserSystemPreferenceR
 	return nil
 }
 
-type GetAuthUserRequestObject struct {
+type CreateDefaultUserSystemPreferenceRequestObject struct {
 }
 
-type GetAuthUserResponseObject interface {
-	VisitGetAuthUserResponse(w http.ResponseWriter) error
+type CreateDefaultUserSystemPreferenceResponseObject interface {
+	VisitCreateDefaultUserSystemPreferenceResponse(w http.ResponseWriter) error
 }
 
-type GetAuthUser200JSONResponse struct {
-	User struct {
-		CreatedAt  string `json:"created_at"`
-		Id         uint32 `json:"id"`
-		LoggedInAt string `json:"logged_in_at"`
-		Name       string `json:"name"`
-	} `json:"user"`
+type CreateDefaultUserSystemPreference200JSONResponse struct {
+	// UserSystemPreference Model defining user system preferences such as language, time zone etc.
+	UserSystemPreference UserSystemPreference `json:"user_system_preference"`
 }
 
-func (response GetAuthUser200JSONResponse) VisitGetAuthUserResponse(w http.ResponseWriter) error {
+func (response CreateDefaultUserSystemPreference200JSONResponse) VisitCreateDefaultUserSystemPreferenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateUserSystemPreferenceRequestObject struct {
+	Body *UpdateUserSystemPreferenceJSONRequestBody
+}
+
+type UpdateUserSystemPreferenceResponseObject interface {
+	VisitUpdateUserSystemPreferenceResponse(w http.ResponseWriter) error
+}
+
+type UpdateUserSystemPreference200JSONResponse struct {
+	// UserSystemPreference Model defining user system preferences such as language, time zone etc.
+	UserSystemPreference UserSystemPreference `json:"user_system_preference"`
+}
+
+func (response UpdateUserSystemPreference200JSONResponse) VisitUpdateUserSystemPreferenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetUserRequestObject struct {
+}
+
+type GetUserResponseObject interface {
+	VisitGetUserResponse(w http.ResponseWriter) error
+}
+
+type GetUser200JSONResponse struct {
+	User User `json:"user"`
+}
+
+func (response GetUser200JSONResponse) VisitGetUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -404,8 +471,14 @@ type StrictServerInterface interface {
 	// (GET /api/v1/secure/system_preferences)
 	GetUserSystemPreference(ctx context.Context, request GetUserSystemPreferenceRequestObject) (GetUserSystemPreferenceResponseObject, error)
 
+	// (POST /api/v1/secure/system_preferences)
+	CreateDefaultUserSystemPreference(ctx context.Context, request CreateDefaultUserSystemPreferenceRequestObject) (CreateDefaultUserSystemPreferenceResponseObject, error)
+
+	// (PUT /api/v1/secure/system_preferences)
+	UpdateUserSystemPreference(ctx context.Context, request UpdateUserSystemPreferenceRequestObject) (UpdateUserSystemPreferenceResponseObject, error)
+
 	// (GET /api/v1/secure/user)
-	GetAuthUser(ctx context.Context, request GetAuthUserRequestObject) (GetAuthUserResponseObject, error)
+	GetUser(ctx context.Context, request GetUserRequestObject) (GetUserResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -599,23 +672,75 @@ func (sh *strictHandler) GetUserSystemPreference(ctx echo.Context) error {
 	return nil
 }
 
-// GetAuthUser operation middleware
-func (sh *strictHandler) GetAuthUser(ctx echo.Context) error {
-	var request GetAuthUserRequestObject
+// CreateDefaultUserSystemPreference operation middleware
+func (sh *strictHandler) CreateDefaultUserSystemPreference(ctx echo.Context) error {
+	var request CreateDefaultUserSystemPreferenceRequestObject
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetAuthUser(ctx.Request().Context(), request.(GetAuthUserRequestObject))
+		return sh.ssi.CreateDefaultUserSystemPreference(ctx.Request().Context(), request.(CreateDefaultUserSystemPreferenceRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetAuthUser")
+		handler = middleware(handler, "CreateDefaultUserSystemPreference")
 	}
 
 	response, err := handler(ctx, request)
 
 	if err != nil {
 		return err
-	} else if validResponse, ok := response.(GetAuthUserResponseObject); ok {
-		return validResponse.VisitGetAuthUserResponse(ctx.Response())
+	} else if validResponse, ok := response.(CreateDefaultUserSystemPreferenceResponseObject); ok {
+		return validResponse.VisitCreateDefaultUserSystemPreferenceResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// UpdateUserSystemPreference operation middleware
+func (sh *strictHandler) UpdateUserSystemPreference(ctx echo.Context) error {
+	var request UpdateUserSystemPreferenceRequestObject
+
+	var body UpdateUserSystemPreferenceJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateUserSystemPreference(ctx.Request().Context(), request.(UpdateUserSystemPreferenceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateUserSystemPreference")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(UpdateUserSystemPreferenceResponseObject); ok {
+		return validResponse.VisitUpdateUserSystemPreferenceResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetUser operation middleware
+func (sh *strictHandler) GetUser(ctx echo.Context) error {
+	var request GetUserRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetUser(ctx.Request().Context(), request.(GetUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetUserResponseObject); ok {
+		return validResponse.VisitGetUserResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
@@ -625,29 +750,30 @@ func (sh *strictHandler) GetAuthUser(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8RYbW/bNhD+K1duH5X4rcUGAwXWFu3aDMOCJkE/BIFxls4SG4nkSMqJG/i/D0dJtlXJ",
-	"cdqk65fAoXRvzz33Qt2JWBdGK1LeiemdcHFGBYafZK22/CMhF1tpvNRKTMVbPoZYJwSoEihVQjZfSZVC",
-	"EHAiEsZqQ9ZLuk/PKygdLcocCnIOU4Lq8Zw1+YwqbSISdIuFyUlMhc/IEtzwH6cLAmP1PKfCwY30WZBJ",
-	"0COsdMmPljKhRETCrwwLO2+lSsU6EkvMZYLsxaw2HdzEJJF8iPlpy/2O/MahO8FuzBaS8qRyD3JSqc+g",
-	"KJ2HOcGc/A2RglGAajxk8Vqfnn+m2Iv1OhKW/i2lpURML0UTdZ+TVx3hSJSO7NnKeSpOLS3Ikoqpi/Xf",
-	"OqEcElpIxfCyELggBWYj5sCVcQboIEeVlphSBF4WBF+0IiAfH3dS27wY0rzJ02c8OjntIt8bu6O4tNKv",
-	"zph3ldI5oSX7qvTZ9r932hboxVScfDoXUcVS1lQ93drKvDdizYqlWuiQPumDU++ZMe8IfWkJzsguycLH",
-	"t2fn8Or0A+NN1lVYjY6HxyFR2pBCI8VUTMJRJAz6LLg4QCMHy9EAayeNdr6L+htL6MkBgqKbCvTSNfgr",
-	"LCgCKlDmgRwGnbvRlhnLCIfUf0g2Wi5cCJOpQs6/1smK7cVaeVLBNBqTyziIDT47tt8Uc3CwXZFstetv",
-	"w1qEwL7KuXYFkvPs/B/10XGsi06iI3F7pNHII+4RKakjuvUWjzymwXjNbBaoDHC2NtHvdaoppd/Ba/ht",
-	"DHGGFmNP1kUBP4YCpQKEnLwnG4EqiznZ8BDBGYol5luxTlyzxofZaDx59oioNopCZE2uD0c24cheDAFz",
-	"k6EqC7Iy3vXY9abiEY42hqJCqpeTqMDbly+GVfW0WlJNg00kO+nqtqS2tLclhQNntHIV+8bDcReMf/7i",
-	"kns+HH4TrX+1tBBT8ctgO8QG9QQbVJ00+NM29RoT+FjVET9eR61yHnh9TWp/UX8kX1rVFPXJp3M4ZwFY",
-	"aAsIdUb6Kvjk03l488mqeLdm7qFy3wg8TMq9JIyqaVvgrSzKgvm6eQaxLpX/cSzdw8+n4+Wwl5eRyAgT",
-	"rr/pnTgjf/RG62tJ7dS0pSpKbN+FSkPPTFz/FNazzdGPt3mhuKK0lV8oqYxO/gejPGelg0Q6nOdsOAyY",
-	"sreWF5ZcRi4sj3FpLSm/relOIdfvtyr55xNoZ4sS08v2/nR5tb7a7XCGhaZ3IiXft5HHWi1JSd4GgVRi",
-	"tFSep1KcUXwdWlyslaI4CHyNzmlV132QfGeHqzffrqenWqXPWo2mOenunLutolHY3x66E6k1HSwZQn94",
-	"MjCXHBOpthYF4LgT8u5nSms0o9MlV1D/VNNhL3ZnvAg3dy6+K91gleR57fYc4+sWtu8pz/VjwX1Q731w",
-	"rF9VS9aOiMN4WASHsx5Ki75zNagbxjesCLXEj+4vlB7DNa1GL5eYlzTaO5h+Tr/+hoZWp6e6zM52LrN7",
-	"u1yTpf5LcCczf5K/6LtjP5LA90HVe6ffw1VO0vNukBe9wUGGDpTmBY8UxIFzCazIfxfmgciHUOZmyLVD",
-	"yjMYlFS4h9t5D9RscHPVfbI50njaPq3jn1U9vbMjy7BYL5oPD6VUfjLeFopUnlKy/Gau05SSmVT7VDWr",
-	"9v39U/Ldv15kWyqjXVevDn1BCsE+eMAdTHt4wy5Dd7n8OsvvtIXdLZ5viTavv8O46WCQ6xjzTDs/HU3G",
-	"E7G+Wv8XAAD//zFtagFxFAAA",
+	"H4sIAAAAAAAC/+RYW2/bxhL+K5M955HWNcE5EBCgSZo0cVHUiG3kwTCEFTkiNyZ32b3IVgz992J2SUk0",
+	"KVlxlARoXwyZ3Ll9881lec9iVZRKorSGTe6ZiTMsuP+JWitNPxI0sRalFUqyCXtLjyFWCQKXCTiZoM6X",
+	"QqbgBQyLWKlVidoK3KfnFTiDc5dDgcbwFCG8npEmm2HQxiKGd7woc2QTZjPUCLf0x6gCodRqlmNh4FbY",
+	"zMsk3HJYKkevFiLBhEXMLksSNlYLmbJVxBY8FwknL6aVae8mTxJBD3l+1nC/Jb926J6RG9O5wDwJ7kGO",
+	"MrUZFM5YmCHM0N4iShh6qEYDEq/0qdlnjC1brSKm8S8nNCZscsXqqLucvG4JR8wZ9Ng2IY81covJlNvO",
+	"CERCj+dKF3SAOSHteLSBSkiLKWo6mas0xWQq5C5VkhfY8eJBVIIS4Y8+UBltu7orvvOlsVicaZyjRhlj",
+	"m0t/qARzSHAuJNGHhMB4KSjXYgaMizPgBnIuU8dTjMCKAuGLkgho416LuvVBT+M1Dz/zk9MzCsjlOZ/R",
+	"I6sdRh0YtHNtMHZa2OU51VkwMkOuUb9yNtv8967OzemnCxaFqiRN4e0mVZm1JVuRYiHnyidCWO/ke6qQ",
+	"d8it0wjnqBeo4ePb8wt4dfaB+IXaBOyGvUHPE1OVKHkp2ISNe4PemMDgNvMu9nkp+othn1dOlsrYdhbe",
+	"+FQa4CDxNiTBmToflP0IsOAi98VQcmNulSZiEOKe6h+StZZL48MkEqGxr1Wy9LxW0qL0pnlZ5iL2Yv3P",
+	"huzXzatdDt5q29+6Sjn4agvONTsOGkvO/1I96sWqaLWUiN2dKF6KE+qJKcoTvLOan1ieeuNVJZNAMEDZ",
+	"Wke/06m6dfwfrIL/jSDOuOaxRW0ijx9BwYUEDjlaizoC6YoZav+SgykxFjzfiLXimtY+TIej8bNviGqt",
+	"yEdW5/rxyMYU2YsB8LzMuHQFahFve2w6U/ENjtaGokLIl+Oo4HcvXwxC9TRacEWDdSRb6Wq3qKY0NQL/",
+	"wJRKmsC+0WDUBuPP36nkng8GX0Xr/2qcswn7T38ztPvVxO6HyeH9aZp6zRP4GOqIXq+iRjn3rbpBubuo",
+	"P6J1WtZFffrpAi5IAOZKA4cqI10VfPrpwp88WhVv18weKneN/MdJuZOEUdguCn4nClcQX9fvIFZO2u/H",
+	"0h38PB4vB528jFiGPKH6m9yzc7Qnb5S6EdhMTVMqUGJzFoKGdiq8Wz+e9WRz+P1tXkqqKKXFF0yC0fEP",
+	"MEpzVhhIhKFlJAlnStdZy3ONJkPjl+XYaY3Sbmq6VcjV+UYl/3wCbW1RbHLV3J+urlfX2x2uJKHJPUvR",
+	"dt1AYiUXKAVth4AyKZWQlqZSnGF841tcrKTE2As8ROcs1HUXJE/scNWm3/b0TMn0WaPR1E/27921wu72",
+	"0J5IjemgscSw9e+fDMQlQ0SqrEUeOOqEtPuVTpeK0GmTy6s/1nTYid05LcL1HZPuhrc8JHlWuT3j8U0D",
+	"2/eY5+pbwT2o9x4c64NqyZoRURiHRfB41n1p4RNXg6phfMWKUEl87/6CaQ9ucDl8ueC5w+HOwfRz+vVX",
+	"NLQqPeFyO9263O7scnWWui/Frcz8hvay68591EZHvkxbMTwGaee3gK7tqEP1oR2QSPC8DeJlJ3iQcQNS",
+	"0QKJEqovGbBEe0BOo72XaEhwzl1uQ9b2pCsc/zWc/jcn7hDAu3aiy5L27kdxDsd2Avy0CfYEzI4+Wf4x",
+	"+W03yfrb6N62SNsLDTuUlkDCJFDBf07b0RuPX1KHANwJ6BHh8yf0wo/Vq4dovVMatq+vLGJO59UHSDPp",
+	"93MV8zxTxk6G49GYra5XfwcAAP//oLwQUVoYAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

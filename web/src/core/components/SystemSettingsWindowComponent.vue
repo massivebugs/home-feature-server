@@ -29,7 +29,7 @@
             <SelectInputComponent
               class="system-settings__input"
               :options="localeOptions"
-              v-model="store.preferences.language"
+              v-model="store.systemPreference.language"
             />
           </SystemSettingsItemComponent>
         </form>
@@ -104,8 +104,8 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
 
 const onChangePreferences = async () => {
   // TODO: API Update preferences
-  locale.value = store.preferences.language ?? navigator.language
-  await store.updateUserSystemPreferences()
+  locale.value = store.systemPreference.language ?? navigator.language
+  await store.updateUserSystemPreference()
 }
 </script>
 

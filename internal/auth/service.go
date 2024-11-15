@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"time"
 
@@ -138,12 +137,9 @@ func (s *Auth) CreateJWTRefreshToken(
 		ctx,
 		s.db,
 		CreateUserRefreshTokenParams{
-			UserID: u.Id,
-			Value:  tokenID,
-			ExpiresAt: sql.NullTime{
-				Time:  refreshTokenBuilder.claims.ExpiresAt.Time,
-				Valid: true,
-			},
+			UserID:    u.Id,
+			Value:     tokenID,
+			ExpiresAt: refreshTokenBuilder.claims.ExpiresAt.Time,
 		})
 	if err != nil {
 		return "", err

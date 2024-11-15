@@ -8,6 +8,7 @@ package queries
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :execresult
@@ -52,7 +53,7 @@ VALUES
 type CreateUserRefreshTokenParams struct {
 	UserID    uint32
 	Value     string
-	ExpiresAt sql.NullTime
+	ExpiresAt time.Time
 }
 
 func (q *Queries) CreateUserRefreshToken(ctx context.Context, db DBTX, arg CreateUserRefreshTokenParams) (sql.Result, error) {

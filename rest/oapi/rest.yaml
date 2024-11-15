@@ -1,4 +1,4 @@
-openapi: "3.0.0"
+openapi: "3.0.3"
 
 info:
   version: 1.0.0
@@ -23,8 +23,7 @@ paths:
                     type: string
                     description: Pong! 
                     example: Pong!
-                required:
-                  - message
+                required: [message]
   /api/v1/repeat:
     post:
       operationId: Repeat
@@ -40,8 +39,7 @@ paths:
                   type: string
                   description: Some message you want to be sent back
                   example: Hello!
-              required:
-                - message
+              required: [message]
       responses:
         200:
           description: OK
@@ -80,10 +78,7 @@ paths:
                   example: test_password_123!
                   x-oapi-codegen-extra-tags:
                     validate: "_password"
-              required:
-                - email
-                - username
-                - password
+              required: [email, username, password]
       responses:
         202:
           description: OK
@@ -113,9 +108,7 @@ paths:
                 password:
                   type: string
                   example: test_password_123
-              required:
-                - username
-                - password
+              required: [username, password]
       responses:
         200:
           description: OK
@@ -177,7 +170,7 @@ paths:
                 $ref: '#/components/schemas/error'
   /api/v1/secure/user:
     get:
-      operationId: GetAuthUser 
+      operationId: GetUser
       description: Returns the authenticated user info
       security:
         - bearerAuth: []
@@ -190,24 +183,8 @@ paths:
                 type: object
                 properties:
                   user:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        format: uint32
-                      name:
-                        type: string
-                      logged_in_at:
-                        type: string
-                      created_at:
-                        type: string
-                    required:
-                      - id
-                      - name
-                      - logged_in_at
-                      - created_at
-                required:
-                  - user
+                    $ref: '#/components/schemas/user'
+                required: [user]
   /api/v1/secure/system_preferences:
     get:  
       operationId: GetUserSystemPreference 
@@ -220,35 +197,51 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/userSystemPreference'
+                type: object
+                required: [user_system_preference]
+                properties:
+                  user_system_preference:
+                    $ref: '#/components/schemas/userSystemPreference'
         404:
           description: User system preference has not been created yet
-  #   post:  
-  #     operationId: CreateDefaultUserSystemPreference
-  #     description: Create default user preferences
-  #     security:
-  #       - bearerAuth: []
-  #     responses:
-  #       200:
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               properties:
-  #                 error:
-  #                   $ref: '#/components/schemas/error'
-  #                 data:
-  #                   type: string
-  #                   example: ""
-  #   put:  
-  #     operationId: UpdateUserSystemPreference
-  #     description: Update user preferences
-  #     security:
-  #       - bearerAuth: []
-  #     responses:
-  #       200:
-  #         description: OK
+    post:  
+      operationId: CreateDefaultUserSystemPreference
+      description: Create default user preference
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_system_preference]
+                properties:
+                  user_system_preference:
+                    $ref: '#/components/schemas/userSystemPreference'
+    put:  
+      operationId: UpdateUserSystemPreference
+      description: Update user preference
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/userSystemPreference'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_system_preference]
+                properties:
+                  user_system_preference:
+                    $ref: '#/components/schemas/userSystemPreference'
   # /secure/cashbunny/accounts:
   #   get:
   #     tags: 
@@ -402,17 +395,8 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    userSystemPreference:
-      type: object
-      description: Model defining user system preferences such as language, time zone etc.
-      properties:
-        language:
-          type: string
-          example: "ja-JP"
     error:
-      required:
-        - error
-        - validation_messages
+      required: [error, validation_messages]
       type: object
       description: Error code and underlying errors
       properties:
@@ -425,3 +409,24 @@ components:
           additionalProperties:
             type: string
           example: {"some_field": "the length must be between 1 and 20"}
+    user:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+        name:
+          type: string
+        logged_in_at:
+          type: string
+        created_at:
+          type: string
+      required: [id, name, logged_in_at, created_at]
+    userSystemPreference:
+      type: object
+      description: Model defining user system preferences such as language, time zone etc.
+      properties:
+        language:
+          type: string
+          example: "ja-JP"
+          nullable: true

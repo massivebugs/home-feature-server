@@ -2,7 +2,6 @@ package system_preference
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/massivebugs/home-feature-server/db"
@@ -31,7 +30,7 @@ func (s *SystemPreference) GetUserSystemPreference(ctx context.Context, userID u
 	}
 
 	if !exists {
-		return nil, app.NewAppError(app.CodeNotFound, errors.New("user system preferences hasn't been created yet"))
+		return nil, app.NewAppError(app.CodeNotFound, errors.New("user system preference hasn't been created yet"))
 	}
 
 	usp, err := s.uspRepo.GetUserSystemPreference(ctx, s.db, userID)
@@ -42,31 +41,37 @@ func (s *SystemPreference) GetUserSystemPreference(ctx context.Context, userID u
 	return usp, nil
 }
 
-func (s *SystemPreference) CreateDefaultUserSystemPreference(ctx context.Context, userID uint32) (userSystemPreferenceResponse, error) {
+func (s *SystemPreference) CreateDefaultUserSystemPreference(ctx context.Context, userID uint32) (*UserSystemPreference, error) {
 	_, err := s.uspRepo.CreateUserSystemPreference(ctx, s.db, CreateUserSystemPreferenceParams{
-		UserID:   userID,
-		Language: sql.NullString{Valid: false},
+		UserID: userID,
 	})
 	if err != nil {
-		return userSystemPreferenceResponse{}, err
+		return nil, err
 	}
 
 	usp, err := s.uspRepo.GetUserSystemPreference(ctx, s.db, userID)
 	if err != nil {
-		return userSystemPreferenceResponse{}, err
+		return nil, err
 	}
 
-	return newUserSystemPreferenceResponse(usp), nil
+	return usp, nil
 }
 
-func (s *SystemPreference) UpdateDefaultUserSystemPreference(ctx context.Context, userID uint32, req *UserSystemPreferenceDTO) error {
+func (s *SystemPreference) UpdateDefaultUserSystemPreference(ctx context.Context, userID uint32, language *string) (*UserSystemPreference, error) {
 	params := UpdateUserSystemPreferenceParams{
-		UserID: userID,
+		UserID:   userID,
+		Language: language,
 	}
 
-	if req.Language != nil {
-		params.Language = sql.NullString{Valid: true, String: *req.Language}
+	err := s.uspRepo.UpdateUserSystemPreference(ctx, s.db, params)
+	if err != nil {
+		return nil, err
 	}
 
-	return s.uspRepo.UpdateUserSystemPreference(ctx, s.db, params)
+	usp, err := s.uspRepo.GetUserSystemPreference(ctx, s.db, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return usp, nil
 }
