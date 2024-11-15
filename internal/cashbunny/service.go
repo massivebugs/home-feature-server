@@ -21,7 +21,7 @@ type Cashbunny struct {
 	trcRepo   ITransactionCategoryRepository
 	rruleRepo IRecurrenceRuleRepository
 	ucrRepo   ICurrencyRepository
-	upRepo    IUserPreferencesRepository
+	upRepo    IUserPreferenceRepository
 }
 
 func NewCashbunny(
@@ -32,7 +32,7 @@ func NewCashbunny(
 	trcRepo ITransactionCategoryRepository,
 	rruleRepo IRecurrenceRuleRepository,
 	ucrRepo ICurrencyRepository,
-	upRepo IUserPreferencesRepository,
+	upRepo IUserPreferenceRepository,
 ) *Cashbunny {
 	return &Cashbunny{
 		db:        db,

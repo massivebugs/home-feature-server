@@ -1,4 +1,4 @@
-package repository
+package auth
 
 import (
 	"context"
@@ -6,14 +6,29 @@ import (
 
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
-	"github.com/massivebugs/home-feature-server/internal/auth"
 )
+
+type CreateUserPasswordParams struct {
+	UserID       uint32
+	PasswordHash string
+}
+
+type UpdateUserPasswordParams struct {
+	PasswordHash string
+	ID           uint32
+}
+
+type IUserPasswordRepository interface {
+	CreateUserPassword(ctx context.Context, db db.DB, arg CreateUserPasswordParams) error
+	GetUserPasswordByUserID(ctx context.Context, db db.DB, userID uint32) (string, error)
+	UpdateUserPassword(ctx context.Context, db db.DB, arg UpdateUserPasswordParams) error
+}
 
 type UserPasswordRepository struct {
 	querier queries.Querier
 }
 
-var _ auth.IUserPasswordRepository = (*UserPasswordRepository)(nil)
+var _ IUserPasswordRepository = (*UserPasswordRepository)(nil)
 
 func NewUserPasswordRepository(querier queries.Querier) *UserPasswordRepository {
 	return &UserPasswordRepository{
@@ -21,7 +36,7 @@ func NewUserPasswordRepository(querier queries.Querier) *UserPasswordRepository 
 	}
 }
 
-func (r *UserPasswordRepository) CreateUserPassword(ctx context.Context, db db.DB, arg auth.CreateUserPasswordParams) error {
+func (r *UserPasswordRepository) CreateUserPassword(ctx context.Context, db db.DB, arg CreateUserPasswordParams) error {
 	_, err := r.querier.CreateUserPassword(ctx, db, queries.CreateUserPasswordParams{
 		UserID:       arg.UserID,
 		PasswordHash: arg.PasswordHash,
@@ -39,6 +54,6 @@ func (r *UserPasswordRepository) GetUserPasswordByUserID(ctx context.Context, db
 	return data.PasswordHash, err
 }
 
-func (r *UserPasswordRepository) UpdateUserPassword(ctx context.Context, db db.DB, arg auth.UpdateUserPasswordParams) error {
+func (r *UserPasswordRepository) UpdateUserPassword(ctx context.Context, db db.DB, arg UpdateUserPasswordParams) error {
 	return errors.New("not implemented yet")
 }

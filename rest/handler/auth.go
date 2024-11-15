@@ -1,4 +1,4 @@
-package rest
+package handler
 
 import (
 	"context"
@@ -8,25 +8,23 @@ import (
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/massivebugs/home-feature-server/internal/auth"
-	"github.com/massivebugs/home-feature-server/internal/repository"
+	"github.com/massivebugs/home-feature-server/rest"
 	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type AuthHandler struct {
-	*Handler
+	*rest.Handler
 	auth *auth.Auth
 }
 
-func NewAuthHandler(cfg *Config, db *db.Handle, querier queries.Querier) *AuthHandler {
+func NewAuthHandler(cfg *rest.Config, db *db.Handle, querier queries.Querier) *AuthHandler {
 	return &AuthHandler{
-		Handler: &Handler{
-			cfg: cfg,
-		},
+		Handler: rest.NewHandler(cfg),
 		auth: auth.NewAuth(
 			db,
-			repository.NewUserRepository(querier),
-			repository.NewUserPasswordRepository(querier),
-			repository.NewUserRefreshTokenRepository(querier),
+			auth.NewUserRepository(querier),
+			auth.NewUserPasswordRepository(querier),
+			auth.NewUserRefreshTokenRepository(querier),
 		),
 	}
 }
@@ -45,9 +43,9 @@ func (h *AuthHandler) CreateJWTToken(ctx context.Context, request oapi.CreateJWT
 	result, err := h.auth.CreateJWTToken(
 		ctx,
 		now,
-		h.cfg.AuthJWTSigningMethod,
-		h.cfg.AuthJWTSecret,
-		h.cfg.AuthJWTExpireSeconds,
+		h.Config.AuthJWTSigningMethod,
+		h.Config.AuthJWTSecret,
+		h.Config.AuthJWTExpireSeconds,
 		request.Body.Username,
 		request.Body.Password,
 	)
@@ -56,14 +54,14 @@ func (h *AuthHandler) CreateJWTToken(ctx context.Context, request oapi.CreateJWT
 	}
 
 	cookie := http.Cookie{
-		Name:     h.cfg.AuthJWTCookieName,
+		Name:     h.Config.AuthJWTCookieName,
 		Value:    result,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   h.cfg.AuthJWTExpireSeconds,
-		Expires:  now.Add(time.Second * time.Duration(h.cfg.AuthJWTExpireSeconds)),
+		MaxAge:   h.Config.AuthJWTExpireSeconds,
+		Expires:  now.Add(time.Second * time.Duration(h.Config.AuthJWTExpireSeconds)),
 	}
 
 	return oapi.CreateJWTToken200Response{
@@ -80,9 +78,9 @@ func (h *AuthHandler) CreateJWTRefreshToken(ctx context.Context, request oapi.Cr
 	result, err := h.auth.CreateJWTRefreshToken(
 		ctx,
 		now,
-		h.cfg.RefreshJWTSigningMethod,
-		h.cfg.RefreshJWTSecret,
-		h.cfg.RefreshJWTExpireSeconds,
+		h.Config.RefreshJWTSigningMethod,
+		h.Config.RefreshJWTSecret,
+		h.Config.RefreshJWTExpireSeconds,
 		claims.UserID,
 	)
 	if err != nil {
@@ -90,14 +88,14 @@ func (h *AuthHandler) CreateJWTRefreshToken(ctx context.Context, request oapi.Cr
 	}
 
 	cookie := http.Cookie{
-		Name:     h.cfg.RefreshJWTCookieName,
+		Name:     h.Config.RefreshJWTCookieName,
 		Value:    result,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   h.cfg.RefreshJWTExpireSeconds,
-		Expires:  now.Add(time.Second * time.Duration(h.cfg.RefreshJWTExpireSeconds)),
+		MaxAge:   h.Config.RefreshJWTExpireSeconds,
+		Expires:  now.Add(time.Second * time.Duration(h.Config.RefreshJWTExpireSeconds)),
 	}
 
 	return oapi.CreateJWTRefreshToken200Response{
@@ -114,12 +112,12 @@ func (h *AuthHandler) RefreshJWTToken(ctx context.Context, request oapi.RefreshJ
 	result, err := h.auth.RefreshJWTToken(
 		ctx,
 		now,
-		h.cfg.AuthJWTSigningMethod,
-		h.cfg.AuthJWTSecret,
-		h.cfg.AuthJWTExpireSeconds,
-		h.cfg.RefreshJWTSigningMethod,
-		h.cfg.RefreshJWTSecret,
-		h.cfg.RefreshJWTExpireSeconds,
+		h.Config.AuthJWTSigningMethod,
+		h.Config.AuthJWTSecret,
+		h.Config.AuthJWTExpireSeconds,
+		h.Config.RefreshJWTSigningMethod,
+		h.Config.RefreshJWTSecret,
+		h.Config.RefreshJWTExpireSeconds,
 		claims.UserID,
 		claims.TokenID,
 	)
@@ -128,14 +126,14 @@ func (h *AuthHandler) RefreshJWTToken(ctx context.Context, request oapi.RefreshJ
 	}
 
 	cookie := http.Cookie{
-		Name:     h.cfg.AuthJWTCookieName,
+		Name:     h.Config.AuthJWTCookieName,
 		Value:    result,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   h.cfg.AuthJWTExpireSeconds,
-		Expires:  now.Add(time.Second * time.Duration(h.cfg.AuthJWTExpireSeconds)),
+		MaxAge:   h.Config.AuthJWTExpireSeconds,
+		Expires:  now.Add(time.Second * time.Duration(h.Config.AuthJWTExpireSeconds)),
 	}
 
 	return oapi.RefreshJWTToken200Response{

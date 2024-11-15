@@ -1,4 +1,4 @@
-package rest
+package handler
 
 import (
 	"strconv"
@@ -8,28 +8,26 @@ import (
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
-	"github.com/massivebugs/home-feature-server/internal/repository"
+	"github.com/massivebugs/home-feature-server/rest"
 )
 
 type CashbunnyHandler struct {
-	*Handler
+	*rest.Handler
 	cashbunny *cashbunny.Cashbunny
 }
 
-func NewCashbunnyHandler(cfg *Config, db *db.Handle, querier queries.Querier) *CashbunnyHandler {
+func NewCashbunnyHandler(cfg *rest.Config, db *db.Handle, querier queries.Querier) *CashbunnyHandler {
 	return &CashbunnyHandler{
-		Handler: &Handler{
-			cfg: cfg,
-		},
+		Handler: rest.NewHandler(cfg),
 		cashbunny: cashbunny.NewCashbunny(
 			db,
-			repository.NewAccountRepository(querier),
-			repository.NewScheduledTransactionRepository(querier),
-			repository.NewTransactionRepository(querier),
-			repository.NewTransactionCategoryRepository(querier),
-			repository.NewRecurrenceRuleRepository(querier),
-			repository.NewCurrencyRepository(querier),
-			repository.NewUserPreferencesRepository(querier),
+			cashbunny.NewAccountRepository(querier),
+			cashbunny.NewScheduledTransactionRepository(querier),
+			cashbunny.NewTransactionRepository(querier),
+			cashbunny.NewTransactionCategoryRepository(querier),
+			cashbunny.NewRecurrenceRuleRepository(querier),
+			cashbunny.NewCurrencyRepository(querier),
+			cashbunny.NewUserPreferencesRepository(querier),
 		),
 	}
 }

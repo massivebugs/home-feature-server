@@ -1,23 +1,22 @@
-package rest
+package handler
 
 import (
 	"context"
 
 	"github.com/massivebugs/home-feature-server/internal/ping"
+	"github.com/massivebugs/home-feature-server/rest"
 	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type PingHandler struct {
-	*Handler
+	*rest.Handler
 	ping *ping.Ping
 }
 
-func NewPingHandler(cfg *Config) *PingHandler {
+func NewPingHandler(cfg *rest.Config) *PingHandler {
 	return &PingHandler{
-		Handler: &Handler{
-			cfg: cfg,
-		},
-		ping: ping.NewPing(),
+		Handler: rest.NewHandler(cfg),
+		ping:    ping.NewPing(),
 	}
 }
 

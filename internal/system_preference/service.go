@@ -10,12 +10,12 @@ import (
 
 type SystemPreference struct {
 	db      *db.Handle
-	uspRepo ISystemPreferenceRepository
+	uspRepo IUserSystemPreferenceRepository
 }
 
 func NewSystemPreference(
 	db *db.Handle,
-	uspRepo ISystemPreferenceRepository,
+	uspRepo IUserSystemPreferenceRepository,
 ) *SystemPreference {
 	return &SystemPreference{
 		db:      db,

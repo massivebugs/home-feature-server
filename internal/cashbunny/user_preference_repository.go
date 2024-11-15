@@ -1,18 +1,30 @@
-package repository
+package cashbunny
 
 import (
 	"context"
 
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
-	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 )
+
+type CreateUserCurrencyParams struct {
+	UserID       uint32
+	CurrencyCode string
+}
+
+type IUserPreferenceRepository interface {
+	GetUserPreferenceExistsByUserID(ctx context.Context, db db.DB, userID uint32) (bool, error)
+	CreateUserPreferences(ctx context.Context, db db.DB, userID uint32) (uint32, error)
+	GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*UserPreferences, error)
+	CreateUserCurrency(ctx context.Context, db db.DB, params CreateUserCurrencyParams) (uint32, error)
+	ListUserCurrencies(ctx context.Context, db db.DB, userID uint32) ([]string, error)
+}
 
 type UserPreferencesRepository struct {
 	querier queries.Querier
 }
 
-var _ cashbunny.IUserPreferencesRepository = (*UserPreferencesRepository)(nil)
+var _ IUserPreferenceRepository = (*UserPreferencesRepository)(nil)
 
 func NewUserPreferencesRepository(querier queries.Querier) *UserPreferencesRepository {
 	return &UserPreferencesRepository{
@@ -42,7 +54,7 @@ func (r *UserPreferencesRepository) CreateUserPreferences(ctx context.Context, d
 	return uint32(id), nil
 }
 
-func (r *UserPreferencesRepository) GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*cashbunny.UserPreferences, error) {
+func (r *UserPreferencesRepository) GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*UserPreferences, error) {
 	ucs, err := r.ListUserCurrencies(ctx, db, userID)
 	if err != nil {
 		return nil, err
@@ -53,12 +65,12 @@ func (r *UserPreferencesRepository) GetUserPreferencesByUserID(ctx context.Conte
 		return nil, err
 	}
 
-	up := cashbunny.NewUserPreferencesFromQueries(upData, ucs)
+	up := NewUserPreferencesFromQueries(upData, ucs)
 
 	return up, nil
 }
 
-func (r *UserPreferencesRepository) CreateUserCurrency(ctx context.Context, db db.DB, params cashbunny.CreateUserCurrencyParams) (uint32, error) {
+func (r *UserPreferencesRepository) CreateUserCurrency(ctx context.Context, db db.DB, params CreateUserCurrencyParams) (uint32, error) {
 	result, err := r.querier.CreateUserCurrency(ctx, db, queries.CreateUserCurrencyParams{
 		UserID:       params.UserID,
 		CurrencyCode: params.CurrencyCode,

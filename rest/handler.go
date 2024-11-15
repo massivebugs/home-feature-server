@@ -26,7 +26,13 @@ type IAPIHandler interface {
 }
 
 type Handler struct {
-	cfg *Config
+	Config *Config
+}
+
+func NewHandler(cfg *Config) *Handler {
+	return &Handler{
+		Config: cfg,
+	}
 }
 
 // Retrieve JWT Token from request headers
@@ -59,7 +65,7 @@ func (h *Handler) CreateEchoHandlerFunc(c echo.Context, res *APIResponse) error 
 
 	// TODO: Move to middleware
 	// Hide unhandled errors on production
-	if code == http.StatusInternalServerError && h.cfg.Environment == EnvironmentProduction {
+	if code == http.StatusInternalServerError && h.Config.Environment == EnvironmentProduction {
 		// res.Error.Message = ""
 	}
 

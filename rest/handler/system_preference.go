@@ -1,33 +1,31 @@
-package rest
+package handler
 
 import (
 	"context"
 
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
-	"github.com/massivebugs/home-feature-server/internal/repository"
 	"github.com/massivebugs/home-feature-server/internal/system_preference"
+	"github.com/massivebugs/home-feature-server/rest"
 	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
-type SystemPreferencesHandler struct {
-	*Handler
+type SystemPreferenceHandler struct {
+	*rest.Handler
 	sp *system_preference.SystemPreference
 }
 
-func NewSystemPreferencesHandler(cfg *Config, db *db.Handle, querier queries.Querier) *SystemPreferencesHandler {
-	return &SystemPreferencesHandler{
-		Handler: &Handler{
-			cfg: cfg,
-		},
+func NewSystemPreferenceHandler(cfg *rest.Config, db *db.Handle, querier queries.Querier) *SystemPreferenceHandler {
+	return &SystemPreferenceHandler{
+		Handler: rest.NewHandler(cfg),
 		sp: system_preference.NewSystemPreference(
 			db,
-			repository.NewUserSystemPreferenceRepository(querier),
+			system_preference.NewUserSystemPreferenceRepository(querier),
 		),
 	}
 }
 
-func (h *SystemPreferencesHandler) GetUserSystemPreference(ctx context.Context, request oapi.GetUserSystemPreferenceRequestObject) (oapi.GetUserSystemPreferenceResponseObject, error) {
+func (h *SystemPreferenceHandler) GetUserSystemPreference(ctx context.Context, request oapi.GetUserSystemPreferenceRequestObject) (oapi.GetUserSystemPreferenceResponseObject, error) {
 	claims := h.GetClaims(ctx)
 
 	result, err := h.sp.GetUserSystemPreference(ctx, claims.UserID)
@@ -42,7 +40,7 @@ func (h *SystemPreferencesHandler) GetUserSystemPreference(ctx context.Context, 
 	}, nil
 }
 
-func (h *SystemPreferencesHandler) CreateDefaultUserSystemPreference(ctx context.Context, request oapi.CreateDefaultUserSystemPreferenceRequestObject) (oapi.CreateDefaultUserSystemPreferenceResponseObject, error) {
+func (h *SystemPreferenceHandler) CreateDefaultUserSystemPreference(ctx context.Context, request oapi.CreateDefaultUserSystemPreferenceRequestObject) (oapi.CreateDefaultUserSystemPreferenceResponseObject, error) {
 	claims := h.GetClaims(ctx)
 
 	result, err := h.sp.CreateDefaultUserSystemPreference(ctx, claims.UserID)
@@ -57,7 +55,7 @@ func (h *SystemPreferencesHandler) CreateDefaultUserSystemPreference(ctx context
 	}, nil
 }
 
-func (h *SystemPreferencesHandler) UpdateUserSystemPreference(ctx context.Context, request oapi.UpdateUserSystemPreferenceRequestObject) (oapi.UpdateUserSystemPreferenceResponseObject, error) {
+func (h *SystemPreferenceHandler) UpdateUserSystemPreference(ctx context.Context, request oapi.UpdateUserSystemPreferenceRequestObject) (oapi.UpdateUserSystemPreferenceResponseObject, error) {
 	claims := h.GetClaims(ctx)
 
 	usp, err := h.sp.UpdateDefaultUserSystemPreference(ctx, claims.UserID, request.Body.Language)

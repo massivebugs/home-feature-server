@@ -9,14 +9,15 @@ import (
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/massivebugs/home-feature-server/rest"
+	"github.com/massivebugs/home-feature-server/rest/handler"
 	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type Server struct {
-	*rest.PingHandler
-	*rest.RepeatHandler
-	*rest.AuthHandler
-	*rest.SystemPreferencesHandler
+	*handler.PingHandler
+	*handler.RepeatHandler
+	*handler.AuthHandler
+	*handler.SystemPreferenceHandler
 }
 
 var _ oapi.StrictServerInterface = (*Server)(nil)
@@ -70,10 +71,10 @@ func main() {
 	log.Println("Registering server handlers...")
 	querier := queries.New() //	query helpers generated from sqlc
 	s := Server{
-		PingHandler:              rest.NewPingHandler(cfg),
-		RepeatHandler:            rest.NewRepeatHandler(cfg),
-		AuthHandler:              rest.NewAuthHandler(cfg, db, querier),
-		SystemPreferencesHandler: rest.NewSystemPreferencesHandler(cfg, db, querier),
+		PingHandler:             handler.NewPingHandler(cfg),
+		RepeatHandler:           handler.NewRepeatHandler(cfg),
+		AuthHandler:             handler.NewAuthHandler(cfg, db, querier),
+		SystemPreferenceHandler: handler.NewSystemPreferenceHandler(cfg, db, querier),
 		// CashbunnyHandler:             rest.NewCashbunnyHandler(cfg, db, querier),
 	}
 
