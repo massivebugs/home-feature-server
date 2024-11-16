@@ -196,8 +196,8 @@ import SimplePageList, {
   type SimplePageListClickPageEvent,
 } from '@/core/components/SimplePageList.vue'
 import type { WindowSizeQuery } from '@/core/components/WindowComponent.vue'
+import type { AccountResponse } from '@/core/composables/useAPI'
 import {
-  type AccountDto,
   type PlannerAssetDto,
   type PlannerLiabilityDto,
   type PlannerParametersDto,
@@ -293,7 +293,7 @@ const plannerParameters = ref<PlannerParametersDto>({
   liabilities: [],
   transaction_categories: [],
 })
-const allAccounts = ref<AccountDto[]>([])
+const allAccounts = ref<AccountResponse[]>([])
 const isColumnLayout = computed(() => {
   return !windowSizeQuery?.md
 })

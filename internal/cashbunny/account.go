@@ -22,32 +22,32 @@ const (
 )
 
 type Account struct {
-	id          uint32
-	category    AccountCategory
-	name        string
-	description string
-	currency    string
-	createdAt   time.Time
-	updatedAt   time.Time
+	ID          uint32
+	Category    AccountCategory
+	Name        string
+	Description string
+	Currency    string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 
-	incomingTransactions []*Transaction
-	outgoingTransactions []*Transaction
-	amount               *money.Money
+	IncomingTransactions []*Transaction
+	OutgoingTransactions []*Transaction
+	Amount               *money.Money
 }
 
 func NewAccountFromQueries(account *queries.CashbunnyAccount, amount *float64) *Account {
 	a := &Account{
-		id:          account.ID,
-		category:    AccountCategory(account.Category),
-		name:        account.Name,
-		description: account.Description,
-		currency:    account.Currency,
-		createdAt:   account.CreatedAt,
-		updatedAt:   account.UpdatedAt,
+		ID:          account.ID,
+		Category:    AccountCategory(account.Category),
+		Name:        account.Name,
+		Description: account.Description,
+		Currency:    account.Currency,
+		CreatedAt:   account.CreatedAt,
+		UpdatedAt:   account.UpdatedAt,
 	}
 
 	if amount != nil {
-		a.amount = money.NewFromFloat(*amount, a.currency)
+		a.Amount = money.NewFromFloat(*amount, a.Currency)
 	}
 
 	return a
@@ -57,11 +57,11 @@ func (a *Account) validate() error {
 	return validation.ValidateStruct(
 		a,
 		validation.Field(
-			&a.id,
+			&a.ID,
 			validation.Required,
 		),
 		validation.Field(
-			&a.category,
+			&a.Category,
 			validation.Required,
 			validation.In(
 				AccountCategoryAssets,
@@ -71,18 +71,18 @@ func (a *Account) validate() error {
 			),
 		),
 		validation.Field(
-			&a.name,
+			&a.Name,
 			validation.Required,
 		),
 		validation.Field(
-			&a.currency,
+			&a.Currency,
 			validation.Required,
 		),
 	)
 }
 
-func (a *Account) getType() AccountType {
-	switch a.category {
+func (a *Account) GetType() AccountType {
+	switch a.Category {
 	case AccountCategoryAssets, AccountCategoryExpenses:
 		return AccountTypeDebit
 	case AccountCategoryLiabilities, AccountCategoryRevenues:
@@ -94,35 +94,35 @@ func (a *Account) getType() AccountType {
 func (a *Account) sumTransactions(from *time.Time, to *time.Time) CurrencySums {
 	cs := NewCurrencySums(nil)
 
-	for _, tr := range a.incomingTransactions {
-		if from != nil && tr.transactedAt.Before(*from) {
+	for _, tr := range a.IncomingTransactions {
+		if from != nil && tr.TransactedAt.Before(*from) {
 			continue
 		}
 
-		if to != nil && tr.transactedAt.After(*to) {
+		if to != nil && tr.TransactedAt.After(*to) {
 			continue
 		}
 
-		if a.getType() == AccountTypeCredit {
-			cs.subtract(tr.amount)
+		if a.GetType() == AccountTypeCredit {
+			cs.subtract(tr.Amount)
 		} else {
-			cs.add(tr.amount)
+			cs.add(tr.Amount)
 		}
 	}
 
-	for _, tr := range a.outgoingTransactions {
-		if from != nil && tr.transactedAt.Before(*from) {
+	for _, tr := range a.OutgoingTransactions {
+		if from != nil && tr.TransactedAt.Before(*from) {
 			continue
 		}
 
-		if to != nil && tr.transactedAt.After(*to) {
+		if to != nil && tr.TransactedAt.After(*to) {
 			continue
 		}
 
-		if a.getType() == AccountTypeCredit {
-			cs.add(tr.amount)
+		if a.GetType() == AccountTypeCredit {
+			cs.add(tr.Amount)
 		} else {
-			cs.subtract(tr.amount)
+			cs.subtract(tr.Amount)
 		}
 	}
 
@@ -130,9 +130,9 @@ func (a *Account) sumTransactions(from *time.Time, to *time.Time) CurrencySums {
 }
 
 func (a *Account) addIncomingTransaction(tr *Transaction) {
-	a.incomingTransactions = append(a.incomingTransactions, tr)
+	a.IncomingTransactions = append(a.IncomingTransactions, tr)
 }
 
 func (a *Account) addOutgoingTransaction(tr *Transaction) {
-	a.outgoingTransactions = append(a.outgoingTransactions, tr)
+	a.OutgoingTransactions = append(a.OutgoingTransactions, tr)
 }

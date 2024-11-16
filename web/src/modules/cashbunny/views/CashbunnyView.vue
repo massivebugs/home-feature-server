@@ -11,7 +11,7 @@
     @loaded="onLoadedData"
     @error="onErrorLoadingData"
   />
-  <CashbunnyWindowComponent v-else />
+  <CashbunnyWindowComponent v-else :api="api" />
 </template>
 
 <script setup lang="ts">

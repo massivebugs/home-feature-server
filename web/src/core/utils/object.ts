@@ -14,6 +14,10 @@ export const snakeToCamel = (str: string): string => {
 // TODO: make copy of object (this will solve the problem above)
 // Converts an object and it's nested objects keys from snake to camel
 export const nestedSnakeToCamel = (obj: any): any => {
+  if (obj === null) {
+    return obj
+  }
+
   const result = new obj.constructor()
 
   switch (obj.constructor.name) {

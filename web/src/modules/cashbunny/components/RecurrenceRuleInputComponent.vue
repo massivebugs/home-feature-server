@@ -54,8 +54,8 @@ import { useI18n } from 'vue-i18n'
 import DateInputComponent from '@/core/components/DateInputComponent.vue'
 import NumberInputComponent from '@/core/components/NumberInputComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
+import type { RecurrenceRuleResponse } from '@/core/composables/useAPI'
 import { FrequencyStrs, RecurrenceRule } from '@/modules/cashbunny/models/recurrence_rule'
-import type { RecurrenceRuleDto } from '../models/dto'
 
 defineProps<{
   name?: string
@@ -63,7 +63,7 @@ defineProps<{
 }>()
 
 const { t } = useI18n()
-const recurrenceRule = defineModel<RecurrenceRuleDto>({
+const recurrenceRule = defineModel<RecurrenceRuleResponse>({
   default: {
     freq: FrequencyStrs.MONTHLY,
     dtstart: dayjs().toISOString(),

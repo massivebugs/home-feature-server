@@ -49,13 +49,13 @@ func TestScheduledTransaction_ToTransactions(t *testing.T) {
 				Description:   "test scheduled transaction",
 				Amount:        money.NewFromFloat(100, "JPY"),
 				RecurrenceRule: &RecurrenceRule{
-					rule: rule,
+					Rule: rule,
 				},
 				SourceAccount: &Account{
-					name: "test source account",
+					Name: "test source account",
 				},
 				DestinationAccount: &Account{
-					name: "test destination account",
+					Name: "test destination account",
 				},
 			},
 			args: args{
@@ -64,86 +64,86 @@ func TestScheduledTransaction_ToTransactions(t *testing.T) {
 			},
 			want: []*Transaction{
 				{
-					srcAccountID:  1,
-					destAccountID: 1,
-					description:   "test scheduled transaction",
-					amount:        money.NewFromFloat(100, "JPY"),
-					transactedAt:  time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
-					sourceAccount: &Account{
-						name: "test source account",
+					SrcAccountID:  1,
+					DestAccountID: 1,
+					Description:   "test scheduled transaction",
+					Amount:        money.NewFromFloat(100, "JPY"),
+					TransactedAt:  time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
+					SourceAccount: &Account{
+						Name: "test source account",
 					},
-					destinationAccount: &Account{
-						name: "test destination account",
+					DestinationAccount: &Account{
+						Name: "test destination account",
 					},
-					scheduledTransaction: &ScheduledTransaction{
-						srcAccountID:  1,
-						destAccountID: 1,
-						description:   "test scheduled transaction",
-						amount:        money.NewFromFloat(100, "JPY"),
-						recurrenceRule: &RecurrenceRule{
-							rule: rule,
+					ScheduledTransaction: &ScheduledTransaction{
+						SrcAccountID:  1,
+						DestAccountID: 1,
+						Description:   "test scheduled transaction",
+						Amount:        money.NewFromFloat(100, "JPY"),
+						RecurrenceRule: &RecurrenceRule{
+							Rule: rule,
 						},
-						sourceAccount: &Account{
-							name: "test source account",
+						SourceAccount: &Account{
+							Name: "test source account",
 						},
-						destinationAccount: &Account{
-							name: "test destination account",
-						},
-					},
-				},
-				{
-					srcAccountID:  1,
-					destAccountID: 1,
-					description:   "test scheduled transaction",
-					amount:        money.NewFromFloat(100, "JPY"),
-					transactedAt:  time.Date(2024, 11, 2, 0, 0, 0, 0, time.UTC),
-					sourceAccount: &Account{
-						name: "test source account",
-					},
-					destinationAccount: &Account{
-						name: "test destination account",
-					},
-					scheduledTransaction: &ScheduledTransaction{
-						srcAccountID:  1,
-						destAccountID: 1,
-						description:   "test scheduled transaction",
-						amount:        money.NewFromFloat(100, "JPY"),
-						recurrenceRule: &RecurrenceRule{
-							rule: rule,
-						},
-						sourceAccount: &Account{
-							name: "test source account",
-						},
-						destinationAccount: &Account{
-							name: "test destination account",
+						DestinationAccount: &Account{
+							Name: "test destination account",
 						},
 					},
 				},
 				{
-					srcAccountID:  1,
-					destAccountID: 1,
-					description:   "test scheduled transaction",
-					amount:        money.NewFromFloat(100, "JPY"),
-					transactedAt:  time.Date(2024, 11, 3, 0, 0, 0, 0, time.UTC),
-					sourceAccount: &Account{
-						name: "test source account",
+					SrcAccountID:  1,
+					DestAccountID: 1,
+					Description:   "test scheduled transaction",
+					Amount:        money.NewFromFloat(100, "JPY"),
+					TransactedAt:  time.Date(2024, 11, 2, 0, 0, 0, 0, time.UTC),
+					SourceAccount: &Account{
+						Name: "test source account",
 					},
-					destinationAccount: &Account{
-						name: "test destination account",
+					DestinationAccount: &Account{
+						Name: "test destination account",
 					},
-					scheduledTransaction: &ScheduledTransaction{
-						srcAccountID:  1,
-						destAccountID: 1,
-						description:   "test scheduled transaction",
-						amount:        money.NewFromFloat(100, "JPY"),
-						recurrenceRule: &RecurrenceRule{
-							rule: rule,
+					ScheduledTransaction: &ScheduledTransaction{
+						SrcAccountID:  1,
+						DestAccountID: 1,
+						Description:   "test scheduled transaction",
+						Amount:        money.NewFromFloat(100, "JPY"),
+						RecurrenceRule: &RecurrenceRule{
+							Rule: rule,
 						},
-						sourceAccount: &Account{
-							name: "test source account",
+						SourceAccount: &Account{
+							Name: "test source account",
 						},
-						destinationAccount: &Account{
-							name: "test destination account",
+						DestinationAccount: &Account{
+							Name: "test destination account",
+						},
+					},
+				},
+				{
+					SrcAccountID:  1,
+					DestAccountID: 1,
+					Description:   "test scheduled transaction",
+					Amount:        money.NewFromFloat(100, "JPY"),
+					TransactedAt:  time.Date(2024, 11, 3, 0, 0, 0, 0, time.UTC),
+					SourceAccount: &Account{
+						Name: "test source account",
+					},
+					DestinationAccount: &Account{
+						Name: "test destination account",
+					},
+					ScheduledTransaction: &ScheduledTransaction{
+						SrcAccountID:  1,
+						DestAccountID: 1,
+						Description:   "test scheduled transaction",
+						Amount:        money.NewFromFloat(100, "JPY"),
+						RecurrenceRule: &RecurrenceRule{
+							Rule: rule,
+						},
+						SourceAccount: &Account{
+							Name: "test source account",
+						},
+						DestinationAccount: &Account{
+							Name: "test destination account",
 						},
 					},
 				},
@@ -153,13 +153,13 @@ func TestScheduledTransaction_ToTransactions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			st := &ScheduledTransaction{
-				srcAccountID:       tt.fields.SrcAccountID,
-				destAccountID:      tt.fields.DestAccountID,
-				description:        tt.fields.Description,
-				amount:             tt.fields.Amount,
-				recurrenceRule:     tt.fields.RecurrenceRule,
-				sourceAccount:      tt.fields.SourceAccount,
-				destinationAccount: tt.fields.DestinationAccount,
+				SrcAccountID:       tt.fields.SrcAccountID,
+				DestAccountID:      tt.fields.DestAccountID,
+				Description:        tt.fields.Description,
+				Amount:             tt.fields.Amount,
+				RecurrenceRule:     tt.fields.RecurrenceRule,
+				SourceAccount:      tt.fields.SourceAccount,
+				DestinationAccount: tt.fields.DestinationAccount,
 			}
 			if got := st.toTransactions(tt.args.from, tt.args.to); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ScheduledTransaction.ToTransactions() = %v, want %v", got, tt.want)

@@ -91,7 +91,7 @@ import ButtonComponent, {
   type ButtonType,
 } from '@/core/components/ButtonComponent.vue'
 import TextInputComponent from '@/core/components/TextInputComponent.vue'
-import type { AccountDto, PlannerAssetDto, PlannerLiabilityDto } from '../models/dto'
+import type { PlannerAssetDto, PlannerLiabilityDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 import { computed, ref } from 'vue'
 import CloseIconComponent from '@/core/components/CloseIconComponent.vue'
@@ -100,11 +100,12 @@ import dayjs from 'dayjs'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import RecurrenceRuleInputComponent from './RecurrenceRuleInputComponent.vue'
 import { FrequencyStrs } from '../models/recurrence_rule'
+import type { AccountResponse } from '@/core/composables/useAPI'
 
 const props = defineProps<{
   display?: PlannerWizardLiabilityFormDisplay
   assets: PlannerAssetDto[]
-  liabilityAccounts: AccountDto[]
+  liabilityAccounts: AccountResponse[]
 }>()
 
 const { t } = useI18n()

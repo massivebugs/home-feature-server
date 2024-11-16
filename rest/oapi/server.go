@@ -17,6 +17,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/runtime"
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
 
@@ -49,6 +50,9 @@ type ServerInterface interface {
 
 	// (GET /api/v1/secure/cashbunny/currencies)
 	GetCashbunnySupportedCurrencies(ctx echo.Context) error
+
+	// (GET /api/v1/secure/cashbunny/overview)
+	GetCashbunnyOverview(ctx echo.Context, params GetCashbunnyOverviewParams) error
 
 	// (GET /api/v1/secure/cashbunny/user_preferences)
 	GetCashbunnyUserPreference(ctx echo.Context) error
@@ -165,6 +169,33 @@ func (w *ServerInterfaceWrapper) GetCashbunnySupportedCurrencies(ctx echo.Contex
 	return err
 }
 
+// GetCashbunnyOverview converts echo context to params.
+func (w *ServerInterfaceWrapper) GetCashbunnyOverview(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCashbunnyOverviewParams
+	// ------------- Optional query parameter "from" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "from", ctx.QueryParams(), &params.From)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter from: %s", err))
+	}
+
+	// ------------- Optional query parameter "to" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "to", ctx.QueryParams(), &params.To)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter to: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetCashbunnyOverview(ctx, params)
+	return err
+}
+
 // GetCashbunnyUserPreference converts echo context to params.
 func (w *ServerInterfaceWrapper) GetCashbunnyUserPreference(ctx echo.Context) error {
 	var err error
@@ -268,6 +299,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.CreateJWTRefreshToken)
 	router.DELETE(baseURL+"/api/v1/secure/auth/token", wrapper.DeleteJWTToken)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/currencies", wrapper.GetCashbunnySupportedCurrencies)
+	router.GET(baseURL+"/api/v1/secure/cashbunny/overview", wrapper.GetCashbunnyOverview)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/user_preferences", wrapper.GetCashbunnyUserPreference)
 	router.POST(baseURL+"/api/v1/secure/cashbunny/user_preferences", wrapper.CreateCashbunnyDefaultUserPreference)
 	router.GET(baseURL+"/api/v1/secure/system_preferences", wrapper.GetUserSystemPreference)
@@ -492,6 +524,23 @@ func (response GetCashbunnySupportedCurrencies200JSONResponse) VisitGetCashbunny
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetCashbunnyOverviewRequestObject struct {
+	Params GetCashbunnyOverviewParams
+}
+
+type GetCashbunnyOverviewResponseObject interface {
+	VisitGetCashbunnyOverviewResponse(w http.ResponseWriter) error
+}
+
+type GetCashbunnyOverview200JSONResponse CashbunnyOverview
+
+func (response GetCashbunnyOverview200JSONResponse) VisitGetCashbunnyOverviewResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetCashbunnyUserPreferenceRequestObject struct {
 }
 
@@ -500,7 +549,7 @@ type GetCashbunnyUserPreferenceResponseObject interface {
 }
 
 type GetCashbunnyUserPreference200JSONResponse struct {
-	// UserPreference Model defining user's cashbunny preferences such as default currency etc.
+	// UserPreference Model defining user's Cashbunny preferences such as default currency etc.
 	UserPreference CashbunnyUserPreference `json:"user_preference"`
 }
 
@@ -527,7 +576,7 @@ type CreateCashbunnyDefaultUserPreferenceResponseObject interface {
 }
 
 type CreateCashbunnyDefaultUserPreference200JSONResponse struct {
-	// UserPreference Model defining user's cashbunny preferences such as default currency etc.
+	// UserPreference Model defining user's Cashbunny preferences such as default currency etc.
 	UserPreference CashbunnyUserPreference `json:"user_preference"`
 }
 
@@ -651,6 +700,9 @@ type StrictServerInterface interface {
 
 	// (GET /api/v1/secure/cashbunny/currencies)
 	GetCashbunnySupportedCurrencies(ctx context.Context, request GetCashbunnySupportedCurrenciesRequestObject) (GetCashbunnySupportedCurrenciesResponseObject, error)
+
+	// (GET /api/v1/secure/cashbunny/overview)
+	GetCashbunnyOverview(ctx context.Context, request GetCashbunnyOverviewRequestObject) (GetCashbunnyOverviewResponseObject, error)
 
 	// (GET /api/v1/secure/cashbunny/user_preferences)
 	GetCashbunnyUserPreference(ctx context.Context, request GetCashbunnyUserPreferenceRequestObject) (GetCashbunnyUserPreferenceResponseObject, error)
@@ -908,6 +960,31 @@ func (sh *strictHandler) GetCashbunnySupportedCurrencies(ctx echo.Context) error
 	return nil
 }
 
+// GetCashbunnyOverview operation middleware
+func (sh *strictHandler) GetCashbunnyOverview(ctx echo.Context, params GetCashbunnyOverviewParams) error {
+	var request GetCashbunnyOverviewRequestObject
+
+	request.Params = params
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCashbunnyOverview(ctx.Request().Context(), request.(GetCashbunnyOverviewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCashbunnyOverview")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetCashbunnyOverviewResponseObject); ok {
+		return validResponse.VisitGetCashbunnyOverviewResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // GetCashbunnyUserPreference operation middleware
 func (sh *strictHandler) GetCashbunnyUserPreference(ctx echo.Context) error {
 	var request GetCashbunnyUserPreferenceRequestObject
@@ -1055,34 +1132,46 @@ func (sh *strictHandler) GetUser(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"AQAA//8RQuGGnSAAAA==",
+	"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",
+	"AP//VwxXtzAyAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -4,6 +4,8 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from 'axios'
+import type { Dayjs } from 'dayjs'
+import type { FrequencyStr } from '@/modules/cashbunny/models/recurrence_rule'
 import { nestedSnakeToCamel } from '../utils/object'
 
 // A nested dictionary including all paths and their subpaths
@@ -142,6 +144,67 @@ export type APIErrorHandlers<T extends number[]> = {
   [key in T[number]]: (error: APIError) => void
 }
 
+export type GetOverviewResponse = {
+  netWorth: { [key: string]: string }
+  profitLossSummary: { [key: string]: { revenue: string; expense: string; profit: string } }
+  assetAccounts: AccountResponse[]
+  liabilityAccounts: AccountResponse[]
+  transactions: TransactionResponse[]
+  transactionsFromScheduled: TransactionResponse[]
+}
+
+export type AccountResponse = {
+  id: number
+  category: string
+  name: string
+  description: string
+  amount: number
+  amountDisplay: string
+  currency: string
+  type: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type TransactionResponse = {
+  id: number
+  description: string
+  amount: number
+  currency: string
+  amountDisplay: string
+  transactedAt: string
+  createdAt: string
+  updatedAt: string
+  sourceAccountId: number
+  sourceAccountName: string
+  destinationAccountId: number
+  destinationAccountName: string
+  scheduledTransaction: ScheduledTransactionResponse | null
+}
+
+export type ScheduledTransactionResponse = {
+  id: number
+  description: string
+  amount: number
+  currency: string
+  amountDisplay: string
+  createdAt: string
+  updatedAt: string
+  recurrenceRule: RecurrenceRuleResponse
+  sourceAccountId: number
+  sourceAccountName: string
+  destinationAccountId: number
+  destinationAccountName: string
+}
+
+export type RecurrenceRuleResponse = {
+  freq: FrequencyStr
+  dtstart: string
+  count: number
+  interval: number
+  until: string
+}
+
 export class API {
   ax: AxiosInstance
   constructor(ax: AxiosInstance) {
@@ -241,6 +304,19 @@ export class API {
     )
   }
 
+  getOverview(dateRange?: { from: Dayjs; to: Dayjs }) {
+    return this.wrapRequest(
+      this.ax.get<GetOverviewResponse>(APIEndpoints.v1.secure.cashbunny.overview.path, {
+        params: dateRange
+          ? {
+              from: dateRange.from.unix(),
+              to: dateRange.to.unix(),
+            }
+          : undefined,
+      }),
+    )
+  }
+
   // Enforces error handling of known error responses, and converts snake_case response to camelCase
   private async wrapRequest<T extends Object, K extends number[]>(
     promise: Promise<AxiosResponse<T, any>>,
@@ -297,7 +373,7 @@ export function useAPI(baseURL: string) {
 
           // Retrieve a new refresh token
           // TODO: Error handling when creating refresh token fails
-          await ax.post(APIEndpoints.v1.secure.auth.token.path, null, {
+          await ax.post(APIEndpoints.v1.secure.auth.refresh_token.path, null, {
             validateStatus: null,
           })
 

@@ -25,10 +25,10 @@ func (l *Ledger) mapAccountsAndTransactions() {
 	for _, a := range l.accounts {
 		for _, tr := range l.transactions {
 			if tr.IsSourceAccount(a) {
-				tr.sourceAccount = a
+				tr.SourceAccount = a
 				a.addOutgoingTransaction(tr)
 			} else if tr.IsDestinationAccount(a) {
-				tr.destinationAccount = a
+				tr.DestinationAccount = a
 				a.addIncomingTransaction(tr)
 			}
 		}
@@ -38,10 +38,10 @@ func (l *Ledger) mapAccountsAndTransactions() {
 func (l *Ledger) getTransactions(from *time.Time, to *time.Time) []*Transaction {
 	var result []*Transaction
 	for _, tr := range l.transactions {
-		if from != nil && tr.transactedAt.Before(*from) {
+		if from != nil && tr.TransactedAt.Before(*from) {
 			continue
 		}
-		if to != nil && tr.transactedAt.After(*to) {
+		if to != nil && tr.TransactedAt.After(*to) {
 			continue
 		}
 		result = append(result, tr)
@@ -55,9 +55,9 @@ func (l *Ledger) getNetWorth(to *time.Time) CurrencySums {
 	for _, a := range l.accounts {
 		sum := a.sumTransactions(nil, to)
 
-		if a.category == AccountCategoryAssets {
+		if a.Category == AccountCategoryAssets {
 			sums.addSums(sum)
-		} else if a.category == AccountCategoryLiabilities {
+		} else if a.Category == AccountCategoryLiabilities {
 			sums.subtractSums(sum)
 		}
 	}
@@ -73,9 +73,9 @@ func (l *Ledger) getProfitLoss(from *time.Time, to *time.Time) (revenues Currenc
 	for _, a := range l.accounts {
 		sum := a.sumTransactions(from, to)
 
-		if a.category == AccountCategoryRevenues {
+		if a.Category == AccountCategoryRevenues {
 			revenues.addSums(sum)
-		} else if a.category == AccountCategoryExpenses {
+		} else if a.Category == AccountCategoryExpenses {
 			expenses.addSums(sum)
 		}
 	}
@@ -89,7 +89,7 @@ func (l *Ledger) getProfitLoss(from *time.Time, to *time.Time) (revenues Currenc
 func (l *Ledger) getAccountsByCategory(c AccountCategory) []*Account {
 	var res []*Account
 	for _, a := range l.accounts {
-		if a.category == c {
+		if a.Category == c {
 			res = append(res, a)
 		}
 	}

@@ -54,10 +54,11 @@ import { useI18n } from 'vue-i18n'
 import DialogComponent from '@/core/components/DialogComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import TextInputComponent from '@/core/components/TextInputComponent.vue'
+import type { AccountResponse } from '@/core/composables/useAPI'
 import type { APIResponse } from '@/core/models/dto'
 import type { RelativePosition } from '@/core/models/relativePosition'
 import type { RelativeSize } from '@/core/models/relativeSize'
-import type { AccountDto, CreateAccountDto } from '../models/dto'
+import type { CreateAccountDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 
 const emit = defineEmits<{
@@ -69,7 +70,7 @@ const props = defineProps<{
   size?: RelativeSize
   title: string
   nextAccountIndex: number
-  account?: AccountDto
+  account?: AccountResponse
 }>()
 
 const { t } = useI18n()

@@ -9,30 +9,30 @@ import (
 )
 
 type Transaction struct {
-	id            uint32
-	srcAccountID  uint32
-	destAccountID uint32
-	description   string
-	amount        *money.Money
-	transactedAt  time.Time
-	createdAt     time.Time
-	updatedAt     time.Time
+	ID            uint32
+	SrcAccountID  uint32
+	DestAccountID uint32
+	Description   string
+	Amount        *money.Money
+	TransactedAt  time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 
-	sourceAccount        *Account
-	destinationAccount   *Account
-	scheduledTransaction *ScheduledTransaction
+	SourceAccount        *Account
+	DestinationAccount   *Account
+	ScheduledTransaction *ScheduledTransaction
 }
 
 func NewTransactionFromQueries(data *queries.CashbunnyTransaction) *Transaction {
 	return &Transaction{
-		id:            data.ID,
-		srcAccountID:  data.SrcAccountID,
-		destAccountID: data.DestAccountID,
-		description:   data.Description,
-		amount:        money.NewFromFloat(data.Amount, data.Currency),
-		transactedAt:  data.TransactedAt,
-		createdAt:     data.CreatedAt,
-		updatedAt:     data.UpdatedAt,
+		ID:            data.ID,
+		SrcAccountID:  data.SrcAccountID,
+		DestAccountID: data.DestAccountID,
+		Description:   data.Description,
+		Amount:        money.NewFromFloat(data.Amount, data.Currency),
+		TransactedAt:  data.TransactedAt,
+		CreatedAt:     data.CreatedAt,
+		UpdatedAt:     data.UpdatedAt,
 	}
 }
 
@@ -40,29 +40,29 @@ func (tr *Transaction) Validate() error {
 	return validation.ValidateStruct(
 		tr,
 		validation.Field(
-			&tr.id,
+			&tr.ID,
 			validation.Required,
 		),
 		validation.Field(
-			&tr.description,
+			&tr.Description,
 			validation.Required,
 		),
 		validation.Field(
-			&tr.amount,
+			&tr.Amount,
 			validation.Required,
-			validation.By(isMoneyNotNegative(tr.amount)),
+			validation.By(isMoneyNotNegative(tr.Amount)),
 		),
 		validation.Field(
-			&tr.transactedAt,
+			&tr.TransactedAt,
 			validation.Required,
 		),
 	)
 }
 
 func (tr *Transaction) IsSourceAccount(a *Account) bool {
-	return tr.srcAccountID == a.id
+	return tr.SrcAccountID == a.ID
 }
 
 func (tr *Transaction) IsDestinationAccount(a *Account) bool {
-	return tr.destAccountID == a.id
+	return tr.DestAccountID == a.ID
 }

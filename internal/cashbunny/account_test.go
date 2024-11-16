@@ -43,15 +43,15 @@ func TestAccount_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &Account{
-				id:                   tt.fields.ID,
-				category:             tt.fields.Category,
-				name:                 tt.fields.Name,
-				description:          tt.fields.Description,
-				currency:             tt.fields.Currency,
-				createdAt:            tt.fields.CreatedAt,
-				updatedAt:            tt.fields.UpdatedAt,
-				incomingTransactions: tt.fields.IncomingTransactions,
-				outgoingTransactions: tt.fields.OutgoingTransactions,
+				ID:                   tt.fields.ID,
+				Category:             tt.fields.Category,
+				Name:                 tt.fields.Name,
+				Description:          tt.fields.Description,
+				Currency:             tt.fields.Currency,
+				CreatedAt:            tt.fields.CreatedAt,
+				UpdatedAt:            tt.fields.UpdatedAt,
+				IncomingTransactions: tt.fields.IncomingTransactions,
+				OutgoingTransactions: tt.fields.OutgoingTransactions,
 			}
 			if err := a.validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Account.Validate() error = %v, wantErr %v", err, tt.wantErr)
@@ -108,9 +108,9 @@ func TestAccount_GetType(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &Account{
-				category: tt.fields.Category,
+				Category: tt.fields.Category,
 			}
-			if got := a.getType(); got != tt.want {
+			if got := a.GetType(); got != tt.want {
 				t.Errorf("Account.GetType() = %v, want %v", got, tt.want)
 			}
 		})
@@ -135,18 +135,18 @@ func TestAccount_SumTransactions(t *testing.T) {
 			name: "success - credit account",
 			args: args{
 				account: &Account{
-					category: AccountCategoryAssets,
-					incomingTransactions: []*Transaction{
-						{amount: money.New(500, money.JPY)},
-						{amount: money.New(500, money.JPY)},
-						{amount: money.New(500, money.CAD)},
-						{amount: money.New(500, money.CAD)},
+					Category: AccountCategoryAssets,
+					IncomingTransactions: []*Transaction{
+						{Amount: money.New(500, money.JPY)},
+						{Amount: money.New(500, money.JPY)},
+						{Amount: money.New(500, money.CAD)},
+						{Amount: money.New(500, money.CAD)},
 					},
-					outgoingTransactions: []*Transaction{
-						{amount: money.New(100, money.JPY)},
-						{amount: money.New(100, money.JPY)},
-						{amount: money.New(100, money.CAD)},
-						{amount: money.New(100, money.CAD)},
+					OutgoingTransactions: []*Transaction{
+						{Amount: money.New(100, money.JPY)},
+						{Amount: money.New(100, money.JPY)},
+						{Amount: money.New(100, money.CAD)},
+						{Amount: money.New(100, money.CAD)},
 					},
 				},
 			},
@@ -159,18 +159,18 @@ func TestAccount_SumTransactions(t *testing.T) {
 			name: "success - debit account",
 			args: args{
 				account: &Account{
-					category: AccountCategoryLiabilities,
-					incomingTransactions: []*Transaction{
-						{amount: money.New(100, money.JPY)},
-						{amount: money.New(100, money.JPY)},
-						{amount: money.New(100, money.CAD)},
-						{amount: money.New(100, money.CAD)},
+					Category: AccountCategoryLiabilities,
+					IncomingTransactions: []*Transaction{
+						{Amount: money.New(100, money.JPY)},
+						{Amount: money.New(100, money.JPY)},
+						{Amount: money.New(100, money.CAD)},
+						{Amount: money.New(100, money.CAD)},
 					},
-					outgoingTransactions: []*Transaction{
-						{amount: money.New(500, money.JPY)},
-						{amount: money.New(500, money.JPY)},
-						{amount: money.New(500, money.CAD)},
-						{amount: money.New(500, money.CAD)},
+					OutgoingTransactions: []*Transaction{
+						{Amount: money.New(500, money.JPY)},
+						{Amount: money.New(500, money.JPY)},
+						{Amount: money.New(500, money.CAD)},
+						{Amount: money.New(500, money.CAD)},
 					},
 				},
 			},
@@ -183,33 +183,33 @@ func TestAccount_SumTransactions(t *testing.T) {
 			name: "success - includes transactions after(inclusive) a specific date",
 			args: args{
 				account: &Account{
-					category: AccountCategoryAssets,
-					incomingTransactions: []*Transaction{
+					Category: AccountCategoryAssets,
+					IncomingTransactions: []*Transaction{
 						{
-							amount:       money.New(500, money.JPY),
-							transactedAt: time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(500, money.JPY),
+							TransactedAt: time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC),
 						},
 						{
-							amount:       money.New(500, money.JPY),
-							transactedAt: time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(500, money.JPY),
+							TransactedAt: time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
 						},
 						{
-							amount:       money.New(500, money.CAD),
-							transactedAt: time.Date(2024, 11, 2, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(500, money.CAD),
+							TransactedAt: time.Date(2024, 11, 2, 0, 0, 0, 0, time.UTC),
 						},
 					},
-					outgoingTransactions: []*Transaction{
+					OutgoingTransactions: []*Transaction{
 						{
-							amount:       money.New(200, money.JPY),
-							transactedAt: time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(200, money.JPY),
+							TransactedAt: time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC),
 						},
 						{
-							amount:       money.New(200, money.JPY),
-							transactedAt: time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(200, money.JPY),
+							TransactedAt: time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
 						},
 						{
-							amount:       money.New(200, money.CAD),
-							transactedAt: time.Date(2024, 11, 2, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(200, money.CAD),
+							TransactedAt: time.Date(2024, 11, 2, 0, 0, 0, 0, time.UTC),
 						},
 					},
 				},
@@ -224,33 +224,33 @@ func TestAccount_SumTransactions(t *testing.T) {
 			name: "success - includes transactions before(inclusive) a specific date",
 			args: args{
 				account: &Account{
-					category: AccountCategoryAssets,
-					incomingTransactions: []*Transaction{
+					Category: AccountCategoryAssets,
+					IncomingTransactions: []*Transaction{
 						{
-							amount:       money.New(500, money.JPY),
-							transactedAt: time.Date(2024, 11, 4, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(500, money.JPY),
+							TransactedAt: time.Date(2024, 11, 4, 0, 0, 0, 0, time.UTC),
 						},
 						{
-							amount:       money.New(500, money.CAD),
-							transactedAt: time.Date(2024, 11, 5, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(500, money.CAD),
+							TransactedAt: time.Date(2024, 11, 5, 0, 0, 0, 0, time.UTC),
 						},
 						{
-							amount:       money.New(500, money.JPY),
-							transactedAt: time.Date(2024, 11, 6, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(500, money.JPY),
+							TransactedAt: time.Date(2024, 11, 6, 0, 0, 0, 0, time.UTC),
 						},
 					},
-					outgoingTransactions: []*Transaction{
+					OutgoingTransactions: []*Transaction{
 						{
-							amount:       money.New(200, money.JPY),
-							transactedAt: time.Date(2024, 11, 4, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(200, money.JPY),
+							TransactedAt: time.Date(2024, 11, 4, 0, 0, 0, 0, time.UTC),
 						},
 						{
-							amount:       money.New(200, money.CAD),
-							transactedAt: time.Date(2024, 11, 5, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(200, money.CAD),
+							TransactedAt: time.Date(2024, 11, 5, 0, 0, 0, 0, time.UTC),
 						},
 						{
-							amount:       money.New(200, money.JPY),
-							transactedAt: time.Date(2024, 11, 6, 0, 0, 0, 0, time.UTC),
+							Amount:       money.New(200, money.JPY),
+							TransactedAt: time.Date(2024, 11, 6, 0, 0, 0, 0, time.UTC),
 						},
 					},
 				},
@@ -265,8 +265,8 @@ func TestAccount_SumTransactions(t *testing.T) {
 			name: "success - transactions is nil",
 			args: args{
 				account: &Account{
-					category:             AccountCategoryAssets,
-					incomingTransactions: nil,
+					Category:             AccountCategoryAssets,
+					IncomingTransactions: nil,
 				},
 			},
 			want: NewCurrencySums(nil),
@@ -294,12 +294,12 @@ func TestAccount_AddIncomingTransaction(t *testing.T) {
 			name: "success - add to empty",
 			args: args{
 				tr: &Transaction{
-					description: "foo",
+					Description: "foo",
 				},
 			},
 			want: []*Transaction{
 				{
-					description: "foo",
+					Description: "foo",
 				},
 			},
 		},
@@ -309,7 +309,7 @@ func TestAccount_AddIncomingTransaction(t *testing.T) {
 			a := &Account{}
 			a.addIncomingTransaction(tt.args.tr)
 
-			got := a.incomingTransactions
+			got := a.IncomingTransactions
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Account.GetType() = %v, want %v", got, tt.want)
 			}
@@ -330,12 +330,12 @@ func TestAccount_AddOutgoingTransaction(t *testing.T) {
 			name: "success - add to empty",
 			args: args{
 				tr: &Transaction{
-					description: "foo",
+					Description: "foo",
 				},
 			},
 			want: []*Transaction{
 				{
-					description: "foo",
+					Description: "foo",
 				},
 			},
 		},
@@ -345,7 +345,7 @@ func TestAccount_AddOutgoingTransaction(t *testing.T) {
 			a := &Account{}
 			a.addOutgoingTransaction(tt.args.tr)
 
-			got := a.outgoingTransactions
+			got := a.OutgoingTransactions
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Account.GetType() = %v, want %v", got, tt.want)
 			}

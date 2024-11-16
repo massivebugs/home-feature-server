@@ -5,61 +5,6 @@ import (
 	"time"
 )
 
-type summary map[string]struct {
-	Revenue string `json:"revenue"`
-	Expense string `json:"expense"`
-	Profit  string `json:"profit"`
-}
-
-type overviewResponse struct {
-	From                      time.Time             `json:"from"`
-	To                        time.Time             `json:"to"`
-	NetWorth                  map[string]string     `json:"net_worth"`
-	ProfitLossSummary         summary               `json:"profit_loss_summary"`
-	AssetAccounts             []accountResponse     `json:"asset_accounts"`
-	LiabilityAccounts         []accountResponse     `json:"liability_accounts"`
-	Transactions              []transactionResponse `json:"transactions"`
-	TransactionsFromScheduled []transactionResponse `json:"transactions_from_scheduled"`
-}
-
-func newOverviewResponse(from time.Time, to time.Time, ledger *Ledger, transactionsFromScheduled []*Transaction) overviewResponse {
-	netWorth := map[string]string{}
-	for k, money := range ledger.getNetWorth(&to) {
-		netWorth[k] = money.Display()
-	}
-
-	revenues, expenses, sums := ledger.getProfitLoss(&from, &to)
-	result := summary{}
-	for k, money := range revenues {
-		values := result[k]
-		values.Revenue = money.Display()
-		result[k] = values
-	}
-
-	for k, money := range expenses {
-		values := result[k]
-		values.Expense = money.Display()
-		result[k] = values
-	}
-
-	for k, money := range sums {
-		values := result[k]
-		values.Profit = money.Display()
-		result[k] = values
-	}
-
-	return overviewResponse{
-		From:                      from,
-		To:                        to,
-		NetWorth:                  netWorth,
-		ProfitLossSummary:         result,
-		AssetAccounts:             newListAccountsResponse(ledger.getAccountsByCategory(AccountCategoryAssets)),
-		LiabilityAccounts:         newListAccountsResponse(ledger.getAccountsByCategory(AccountCategoryLiabilities)),
-		Transactions:              newListTransactionsResponse(ledger.getTransactions(&from, &to)),
-		TransactionsFromScheduled: newListTransactionsResponse(transactionsFromScheduled),
-	}
-}
-
 type planResponse struct {
 }
 
@@ -132,30 +77,30 @@ func newPlannerParametersResponse(
 	var assets []plannerAssetResponse
 	for _, aa := range assetAccounts {
 		assets = append(assets, plannerAssetResponse{
-			AssetAccountID: strconv.FormatInt(int64(aa.id), 10),
-			Name:           aa.name,
-			Description:    aa.description,
-			Amount:         aa.amount.AsMajorUnits(),
-			Currency:       aa.currency,
+			AssetAccountID: strconv.FormatInt(int64(aa.ID), 10),
+			Name:           aa.Name,
+			Description:    aa.Description,
+			Amount:         aa.Amount.AsMajorUnits(),
+			Currency:       aa.Currency,
 		})
 	}
 
 	revenues := make([]plannerRevenueResponse, len(scheduledRevenueTransactions))
 	for idx, srt := range scheduledRevenueTransactions {
 		e := plannerRevenueResponse{
-			ScheduledTransactionID:      strconv.FormatInt(int64(srt.id), 10),
-			Description:                 srt.description,
-			Amount:                      srt.amount.AsMajorUnits(),
-			Currency:                    srt.amount.Currency().Code,
-			SourceRevenueAccountID:      strconv.FormatInt(int64(srt.srcAccountID), 10),
-			SourceRevenueAccountName:    srt.sourceAccount.name,
-			DestinationAssetAccountID:   strconv.FormatInt(int64(srt.destAccountID), 10),
-			DestinationAssetAccountName: srt.destinationAccount.name,
-			RecurrenceRule:              newRecurrenceRuleResponse(srt.recurrenceRule),
+			ScheduledTransactionID:      strconv.FormatInt(int64(srt.ID), 10),
+			Description:                 srt.Description,
+			Amount:                      srt.Amount.AsMajorUnits(),
+			Currency:                    srt.Amount.Currency().Code,
+			SourceRevenueAccountID:      strconv.FormatInt(int64(srt.SrcAccountID), 10),
+			SourceRevenueAccountName:    srt.SourceAccount.Name,
+			DestinationAssetAccountID:   strconv.FormatInt(int64(srt.DestAccountID), 10),
+			DestinationAssetAccountName: srt.DestinationAccount.Name,
+			RecurrenceRule:              newRecurrenceRuleResponse(srt.RecurrenceRule),
 		}
 
-		if srt.transactionCategory != nil {
-			trcRes := newTransactionCategoryResponse(srt.transactionCategory)
+		if srt.TransactionCategory != nil {
+			trcRes := newTransactionCategoryResponse(srt.TransactionCategory)
 			e.TransactionCategory = &trcRes
 		}
 
@@ -165,19 +110,19 @@ func newPlannerParametersResponse(
 	liabilities := make([]plannerLiabilityResponse, len(scheduledLiabilityTransactions))
 	for idx, srt := range scheduledLiabilityTransactions {
 		e := plannerLiabilityResponse{
-			ScheduledTransactionID:          strconv.FormatInt(int64(srt.id), 10),
-			Description:                     srt.description,
-			Amount:                          srt.amount.AsMajorUnits(),
-			Currency:                        srt.amount.Currency().Code,
-			SourceAssetAccountID:            strconv.FormatInt(int64(srt.srcAccountID), 10),
-			SourceAssetAccountName:          srt.sourceAccount.name,
-			DestinationLiabilityAccountID:   strconv.FormatInt(int64(srt.destAccountID), 10),
-			DestinationLiabilityAccountName: srt.destinationAccount.name,
-			RecurrenceRule:                  newRecurrenceRuleResponse(srt.recurrenceRule),
+			ScheduledTransactionID:          strconv.FormatInt(int64(srt.ID), 10),
+			Description:                     srt.Description,
+			Amount:                          srt.Amount.AsMajorUnits(),
+			Currency:                        srt.Amount.Currency().Code,
+			SourceAssetAccountID:            strconv.FormatInt(int64(srt.SrcAccountID), 10),
+			SourceAssetAccountName:          srt.SourceAccount.Name,
+			DestinationLiabilityAccountID:   strconv.FormatInt(int64(srt.DestAccountID), 10),
+			DestinationLiabilityAccountName: srt.DestinationAccount.Name,
+			RecurrenceRule:                  newRecurrenceRuleResponse(srt.RecurrenceRule),
 		}
 
-		if srt.transactionCategory != nil {
-			trcRes := newTransactionCategoryResponse(srt.transactionCategory)
+		if srt.TransactionCategory != nil {
+			trcRes := newTransactionCategoryResponse(srt.TransactionCategory)
 			e.TransactionCategory = &trcRes
 		}
 
@@ -187,19 +132,19 @@ func newPlannerParametersResponse(
 	expenses := make([]plannerExpenseResponse, len(scheduledExpenseTransactions))
 	for idx, srt := range scheduledExpenseTransactions {
 		e := plannerExpenseResponse{
-			ScheduledTransactionID:        strconv.FormatInt(int64(srt.id), 10),
-			Description:                   srt.description,
-			Amount:                        srt.amount.AsMajorUnits(),
-			Currency:                      srt.amount.Currency().Code,
-			SourceAssetAccountID:          strconv.FormatInt(int64(srt.srcAccountID), 10),
-			SourceAssetAccountName:        srt.sourceAccount.name,
-			DestinationExpenseAccountID:   strconv.FormatInt(int64(srt.destAccountID), 10),
-			DestinationExpenseAccountName: srt.destinationAccount.name,
-			RecurrenceRule:                newRecurrenceRuleResponse(srt.recurrenceRule),
+			ScheduledTransactionID:        strconv.FormatInt(int64(srt.ID), 10),
+			Description:                   srt.Description,
+			Amount:                        srt.Amount.AsMajorUnits(),
+			Currency:                      srt.Amount.Currency().Code,
+			SourceAssetAccountID:          strconv.FormatInt(int64(srt.SrcAccountID), 10),
+			SourceAssetAccountName:        srt.SourceAccount.Name,
+			DestinationExpenseAccountID:   strconv.FormatInt(int64(srt.DestAccountID), 10),
+			DestinationExpenseAccountName: srt.DestinationAccount.Name,
+			RecurrenceRule:                newRecurrenceRuleResponse(srt.RecurrenceRule),
 		}
 
-		if srt.transactionCategory != nil {
-			trcRes := newTransactionCategoryResponse(srt.transactionCategory)
+		if srt.TransactionCategory != nil {
+			trcRes := newTransactionCategoryResponse(srt.TransactionCategory)
 			e.TransactionCategory = &trcRes
 		}
 
@@ -234,17 +179,17 @@ type accountResponse struct {
 }
 
 func newAccountResponse(a *Account) accountResponse {
-	amount := a.amount.AsMajorUnits()
-	amountDisplay := a.amount.Display()
+	amount := a.Amount.AsMajorUnits()
+	amountDisplay := a.Amount.Display()
 	return accountResponse{
-		ID:            a.id,
-		Category:      string(a.category),
-		Name:          a.name,
-		Description:   a.description,
-		Currency:      a.currency,
-		Type:          string(a.getType()),
-		CreatedAt:     a.createdAt,
-		UpdatedAt:     a.updatedAt,
+		ID:            a.ID,
+		Category:      string(a.Category),
+		Name:          a.Name,
+		Description:   a.Description,
+		Currency:      a.Currency,
+		Type:          string(a.GetType()),
+		CreatedAt:     a.CreatedAt,
+		UpdatedAt:     a.UpdatedAt,
 		Amount:        &amount,
 		AmountDisplay: &amountDisplay,
 	}
@@ -311,23 +256,23 @@ type transactionResponse struct {
 
 func newTransactionResponse(t *Transaction) transactionResponse {
 	d := transactionResponse{
-		ID:            t.id,
-		Description:   t.description,
-		Amount:        t.amount.AsMajorUnits(),
-		Currency:      t.amount.Currency().Code,
-		AmountDisplay: t.amount.Display(),
-		TransactedAt:  t.transactedAt,
-		CreatedAt:     t.createdAt,
-		UpdatedAt:     t.updatedAt,
+		ID:            t.ID,
+		Description:   t.Description,
+		Amount:        t.Amount.AsMajorUnits(),
+		Currency:      t.Amount.Currency().Code,
+		AmountDisplay: t.Amount.Display(),
+		TransactedAt:  t.TransactedAt,
+		CreatedAt:     t.CreatedAt,
+		UpdatedAt:     t.UpdatedAt,
 
-		SourceAccountID:        t.sourceAccount.id,
-		SourceAccountName:      t.sourceAccount.name,
-		DestinationAccountID:   t.destinationAccount.id,
-		DestinationAccountName: t.destinationAccount.name,
+		SourceAccountID:        t.SourceAccount.ID,
+		SourceAccountName:      t.SourceAccount.Name,
+		DestinationAccountID:   t.DestinationAccount.ID,
+		DestinationAccountName: t.DestinationAccount.Name,
 	}
 
-	if t.scheduledTransaction != nil {
-		d.ScheduledTransaction = newScheduledTransactionResponse(t.scheduledTransaction)
+	if t.ScheduledTransaction != nil {
+		d.ScheduledTransaction = newScheduledTransactionResponse(t.ScheduledTransaction)
 	}
 
 	return d
@@ -360,20 +305,20 @@ type scheduledTransactionResponse struct {
 
 func newScheduledTransactionResponse(st *ScheduledTransaction) scheduledTransactionResponse {
 	d := scheduledTransactionResponse{
-		ID:            st.id,
-		Description:   st.description,
-		Amount:        st.amount.AsMajorUnits(),
-		Currency:      st.amount.Currency().Code,
-		AmountDisplay: st.amount.Display(),
-		CreatedAt:     st.createdAt,
-		UpdatedAt:     st.updatedAt,
+		ID:            st.ID,
+		Description:   st.Description,
+		Amount:        st.Amount.AsMajorUnits(),
+		Currency:      st.Amount.Currency().Code,
+		AmountDisplay: st.Amount.Display(),
+		CreatedAt:     st.CreatedAt,
+		UpdatedAt:     st.UpdatedAt,
 
-		RecurrenceRule: newRecurrenceRuleResponse(st.recurrenceRule),
+		RecurrenceRule: newRecurrenceRuleResponse(st.RecurrenceRule),
 
-		SourceAccountID:        st.sourceAccount.id,
-		SourceAccountName:      st.sourceAccount.name,
-		DestinationAccountID:   st.destinationAccount.id,
-		DestinationAccountName: st.destinationAccount.name,
+		SourceAccountID:        st.SourceAccount.ID,
+		SourceAccountName:      st.SourceAccount.Name,
+		DestinationAccountID:   st.DestinationAccount.ID,
+		DestinationAccountName: st.DestinationAccount.Name,
 	}
 
 	return d
@@ -389,11 +334,11 @@ type recurrenceRuleResponse struct {
 
 func newRecurrenceRuleResponse(r *RecurrenceRule) recurrenceRuleResponse {
 	d := recurrenceRuleResponse{
-		Freq:     r.rule.Options.Freq.String(),
-		Dtstart:  r.rule.Options.Dtstart,
-		Count:    r.rule.OrigOptions.Count,
-		Interval: r.rule.Options.Interval,
-		Until:    r.rule.Options.Until,
+		Freq:     r.Rule.Options.Freq.String(),
+		Dtstart:  r.Rule.Options.Dtstart,
+		Count:    r.Rule.OrigOptions.Count,
+		Interval: r.Rule.Options.Interval,
+		Until:    r.Rule.Options.Until,
 	}
 
 	return d

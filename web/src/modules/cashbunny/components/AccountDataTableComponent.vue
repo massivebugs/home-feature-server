@@ -49,16 +49,16 @@ import DataTableComponent, {
   type DataTableRowEditEvent,
   type DataTableRowsDeleteEvent,
 } from '@/core/components/DataTableComponent.vue'
-import type { AccountDto } from '../models/dto'
+import type { AccountResponse } from '@/core/composables/useAPI'
 import { useCashbunnyStore } from '../stores'
 import AccountFormDialogComponent from './AccountFormDialogComponent.vue'
 
 const { t } = useI18n()
 const store = useCashbunnyStore()
-const data = ref<AccountDto[]>([])
+const data = ref<AccountResponse[]>([])
 const isCreate = ref<boolean>(false)
-const rowsToDelete = ref<AccountDto[] | null>(null)
-const rowToEdit = ref<AccountDto | null>(null)
+const rowsToDelete = ref<AccountResponse[] | null>(null)
+const rowToEdit = ref<AccountResponse | null>(null)
 
 const columns: ConfigColumns[] = [
   {
@@ -68,7 +68,7 @@ const columns: ConfigColumns[] = [
   {
     data: 'category',
     title: 'Category',
-    render: function (data: string, _, row: AccountDto) {
+    render: function (data: string, _, row: AccountResponse) {
       return `${data} (${row.type})`
     },
   },
@@ -122,11 +122,11 @@ const onAccountFormCancel = () => {
   rowToEdit.value = null
 }
 
-const onRowEdit = ({ row }: DataTableRowEditEvent<AccountDto>) => {
+const onRowEdit = ({ row }: DataTableRowEditEvent<AccountResponse>) => {
   rowToEdit.value = row
 }
 
-const onRowsDelete = ({ rows }: DataTableRowsDeleteEvent<AccountDto>) => {
+const onRowsDelete = ({ rows }: DataTableRowsDeleteEvent<AccountResponse>) => {
   rowsToDelete.value = rows
 }
 
@@ -139,7 +139,9 @@ const onSuccessConfirmDeleteDialog = async () => {
     return
   }
 
-  await Promise.all([...rowsToDelete.value.map((info: AccountDto) => store.deleteAccount(info.id))])
+  await Promise.all([
+    ...rowsToDelete.value.map((info: AccountResponse) => store.deleteAccount(info.id)),
+  ])
 
   rowsToDelete.value = null
 

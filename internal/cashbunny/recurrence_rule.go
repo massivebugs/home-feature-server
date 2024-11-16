@@ -8,7 +8,7 @@ import (
 )
 
 type RecurrenceRule struct {
-	rule *rrule.RRule
+	Rule *rrule.RRule
 }
 
 func NewRecurrenceRuleWithDefaultParams(freq rrule.Frequency, dtStart time.Time) (*RecurrenceRule, error) {
@@ -21,7 +21,7 @@ func NewRecurrenceRuleWithDefaultParams(freq rrule.Frequency, dtStart time.Time)
 	}
 
 	return &RecurrenceRule{
-		rule: rr,
+		Rule: rr,
 	}, err
 }
 
@@ -43,6 +43,6 @@ func NewRecurrenceRuleFromQueries(data *queries.CashbunnyRecurrenceRule) (*Recur
 	}
 
 	return &RecurrenceRule{
-		rule: rr,
+		Rule: rr,
 	}, nil
 }

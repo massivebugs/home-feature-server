@@ -3,6 +3,7 @@ package cashbunny
 import (
 	"context"
 	"errors"
+	"time"
 
 	// mapset "github.com/deckarep/golang-set/v2"
 	"github.com/Rhymond/go-money"
@@ -109,41 +110,41 @@ func (s *Cashbunny) GetSupportedCurrencies(ctx context.Context) map[string]strin
 	return currencies
 }
 
-// func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Time, to time.Time) (overviewResponse, error) {
-// 	accounts, err := s.accRepo.ListAccountsAndAmountBetweenDates(ctx, s.db, ListAccountsAndAmountBetweenDatesParams{
-// 		UserID:           userID,
-// 		FromTransactedAt: time.Time{},
-// 		ToTransactedAt:   to,
-// 	})
-// 	if err != nil {
-// 		return overviewResponse{}, err
-// 	}
+func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Time, to time.Time) (overview, error) {
+	accounts, err := s.accRepo.ListAccountsAndAmountBetweenDates(ctx, s.db, ListAccountsAndAmountBetweenDatesParams{
+		UserID:           userID,
+		FromTransactedAt: time.Time{},
+		ToTransactedAt:   to,
+	})
+	if err != nil {
+		return overview{}, err
+	}
 
-// 	trs, err := s.trRepo.ListTransactionsBetweenDates(
-// 		ctx,
-// 		s.db,
-// 		ListTransactionsBetweenDatesParams{
-// 			UserID:           userID,
-// 			FromTransactedAt: time.Time{},
-// 			ToTransactedAt:   to,
-// 		},
-// 	)
-// 	if err != nil {
-// 		return overviewResponse{}, err
-// 	}
+	trs, err := s.trRepo.ListTransactionsBetweenDates(
+		ctx,
+		s.db,
+		ListTransactionsBetweenDatesParams{
+			UserID:           userID,
+			FromTransactedAt: time.Time{},
+			ToTransactedAt:   to,
+		},
+	)
+	if err != nil {
+		return overview{}, err
+	}
 
-// 	strs, err := s.strRepo.ListScheduledTransactionsWithAllRelations(ctx, s.db, userID)
-// 	if err != nil {
-// 		return overviewResponse{}, err
-// 	}
+	strs, err := s.strRepo.ListScheduledTransactionsWithAllRelations(ctx, s.db, userID)
+	if err != nil {
+		return overview{}, err
+	}
 
-// 	var tsFromScheduled []*Transaction
-// 	for _, str := range strs {
-// 		tsFromScheduled = append(tsFromScheduled, str.toTransactions(from, to)...)
-// 	}
+	var tsFromScheduled []*Transaction
+	for _, str := range strs {
+		tsFromScheduled = append(tsFromScheduled, str.toTransactions(from, to)...)
+	}
 
-// 	return newOverviewResponse(from, to, NewLedger(accounts, trs), tsFromScheduled), nil
-// }
+	return newOverview(from, to, NewLedger(accounts, trs), tsFromScheduled), nil
+}
 
 // func (s *Cashbunny) GetPlan(ctx context.Context, userID uint32) (planResponse, error) {
 // 	return newPlanResponse(&Planner{}), nil

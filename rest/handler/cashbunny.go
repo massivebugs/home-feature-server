@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"time"
 
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
@@ -69,35 +70,166 @@ func (h *CashbunnyHandler) GetCashbunnySupportedCurrencies(ctx context.Context, 
 	}, nil
 }
 
-// func (h *CashbunnyHandler) GetOverview(c echo.Context) error {
-// 	claims := h.GetTokenClaims(c)
+func (h *CashbunnyHandler) GetCashbunnyOverview(ctx context.Context, request oapi.GetCashbunnyOverviewRequestObject) (oapi.GetCashbunnyOverviewResponseObject, error) {
+	claims := h.GetClaims(ctx)
 
-// 	qFrom, _ := strconv.Atoi(c.QueryParam("from"))
+	var from time.Time
+	var to time.Time
 
-// 	qTo, _ := strconv.Atoi(c.QueryParam("to"))
+	if request.Params.From == nil {
+		from = time.Time{}
+	} else {
+		from = time.Unix(*request.Params.From, 0)
+	}
 
-// 	var from time.Time
-// 	var to time.Time
+	if request.Params.To == nil {
+		to = time.Now()
+	} else {
+		to = time.Unix(*request.Params.To, 0)
+	}
 
-// 	if qFrom == 0 {
-// 		from = time.Time{}
-// 	} else {
-// 		from = time.Unix(int64(qFrom), 0)
-// 	}
+	ov, err := h.cashbunny.GetOverview(ctx, claims.UserID, from, to)
+	if err != nil {
+		return nil, err
+	}
 
-// 	if qTo == 0 {
-// 		to = time.Now()
-// 	} else {
-// 		to = time.Unix(int64(qTo), 0)
-// 	}
+	res := oapi.GetCashbunnyOverview200JSONResponse{
+		From:                      ov.From.String(),
+		To:                        ov.To.String(),
+		NetWorth:                  ov.NetWorth,
+		ProfitLossSummary:         ov.ProfitLossSummary,
+		AssetAccounts:             make([]oapi.CashbunnyAccount, len(ov.AssetAccounts)),
+		LiabilityAccounts:         make([]oapi.CashbunnyAccount, len(ov.LiabilityAccounts)),
+		Transactions:              make([]oapi.CashbunnyTransaction, len(ov.Transactions)),
+		TransactionsFromScheduled: make([]oapi.CashbunnyTransaction, len(ov.TransactionsFromScheduled)),
+	}
 
-// 	result, err := h.cashbunny.GetOverview(c.Request().Context(), claims.UserID, from, to)
-// 	if err != nil {
-// 		return h.CreateErrorResponse(c, err)
-// 	}
+	for idx, a := range ov.AssetAccounts {
+		amount := a.Amount.AsMajorUnits()
+		amountDisplay := a.Amount.Display()
+		res.AssetAccounts[idx] = oapi.CashbunnyAccount{
+			Id:            a.ID,
+			Category:      string(a.Category),
+			Name:          a.Name,
+			Description:   a.Description,
+			Currency:      a.Currency,
+			Type:          string(a.GetType()),
+			CreatedAt:     a.CreatedAt.String(),
+			UpdatedAt:     a.UpdatedAt.String(),
+			Amount:        &amount,
+			AmountDisplay: &amountDisplay,
+		}
+	}
 
-// 	return h.CreateResponse(c, nil, result)
-// }
+	for idx, a := range ov.LiabilityAccounts {
+		amount := a.Amount.AsMajorUnits()
+		amountDisplay := a.Amount.Display()
+		res.LiabilityAccounts[idx] = oapi.CashbunnyAccount{
+			Id:            a.ID,
+			Category:      string(a.Category),
+			Name:          a.Name,
+			Description:   a.Description,
+			Currency:      a.Currency,
+			Type:          string(a.GetType()),
+			CreatedAt:     a.CreatedAt.String(),
+			UpdatedAt:     a.UpdatedAt.String(),
+			Amount:        &amount,
+			AmountDisplay: &amountDisplay,
+		}
+	}
+
+	for idx, tr := range ov.Transactions {
+		e := oapi.CashbunnyTransaction{
+			Id:            tr.ID,
+			Description:   tr.Description,
+			Amount:        tr.Amount.AsMajorUnits(),
+			Currency:      tr.Amount.Currency().Code,
+			AmountDisplay: tr.Amount.Display(),
+			TransactedAt:  tr.TransactedAt.String(),
+			CreatedAt:     tr.CreatedAt.String(),
+			UpdatedAt:     tr.UpdatedAt.String(),
+
+			SourceAccountId:        tr.SourceAccount.ID,
+			SourceAccountName:      tr.SourceAccount.Name,
+			DestinationAccountId:   tr.DestinationAccount.ID,
+			DestinationAccountName: tr.DestinationAccount.Name,
+		}
+
+		if tr.ScheduledTransaction != nil {
+			e.ScheduledTransaction = oapi.CashbunnyScheduledTransaction{
+				Id:            tr.ScheduledTransaction.ID,
+				Description:   tr.ScheduledTransaction.Description,
+				Amount:        tr.ScheduledTransaction.Amount.AsMajorUnits(),
+				Currency:      tr.ScheduledTransaction.Amount.Currency().Code,
+				AmountDisplay: tr.ScheduledTransaction.Amount.Display(),
+				CreatedAt:     tr.ScheduledTransaction.CreatedAt.String(),
+				UpdatedAt:     tr.ScheduledTransaction.UpdatedAt.String(),
+
+				RecurrenceRule: oapi.CashbunnyRecurrenceRule{
+					Freq:     tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Freq.String(),
+					Dtstart:  tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Dtstart.String(),
+					Count:    tr.ScheduledTransaction.RecurrenceRule.Rule.OrigOptions.Count,
+					Interval: tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Interval,
+					Until:    tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Until.String(),
+				},
+
+				SourceAccountId:        tr.ScheduledTransaction.SourceAccount.ID,
+				SourceAccountName:      tr.ScheduledTransaction.SourceAccount.Name,
+				DestinationAccountId:   tr.ScheduledTransaction.DestinationAccount.ID,
+				DestinationAccountName: tr.ScheduledTransaction.DestinationAccount.Name,
+			}
+		}
+
+		res.Transactions[idx] = e
+	}
+
+	for idx, tr := range ov.TransactionsFromScheduled {
+		e := oapi.CashbunnyTransaction{
+			Id:            tr.ID,
+			Description:   tr.Description,
+			Amount:        tr.Amount.AsMajorUnits(),
+			Currency:      tr.Amount.Currency().Code,
+			AmountDisplay: tr.Amount.Display(),
+			TransactedAt:  tr.TransactedAt.String(),
+			CreatedAt:     tr.CreatedAt.String(),
+			UpdatedAt:     tr.UpdatedAt.String(),
+
+			SourceAccountId:        tr.SourceAccount.ID,
+			SourceAccountName:      tr.SourceAccount.Name,
+			DestinationAccountId:   tr.DestinationAccount.ID,
+			DestinationAccountName: tr.DestinationAccount.Name,
+		}
+
+		if tr.ScheduledTransaction != nil {
+			e.ScheduledTransaction = oapi.CashbunnyScheduledTransaction{
+				Id:            tr.ScheduledTransaction.ID,
+				Description:   tr.ScheduledTransaction.Description,
+				Amount:        tr.ScheduledTransaction.Amount.AsMajorUnits(),
+				Currency:      tr.ScheduledTransaction.Amount.Currency().Code,
+				AmountDisplay: tr.ScheduledTransaction.Amount.Display(),
+				CreatedAt:     tr.ScheduledTransaction.CreatedAt.String(),
+				UpdatedAt:     tr.ScheduledTransaction.UpdatedAt.String(),
+
+				RecurrenceRule: oapi.CashbunnyRecurrenceRule{
+					Freq:     tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Freq.String(),
+					Dtstart:  tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Dtstart.String(),
+					Count:    tr.ScheduledTransaction.RecurrenceRule.Rule.OrigOptions.Count,
+					Interval: tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Interval,
+					Until:    tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Until.String(),
+				},
+
+				SourceAccountId:        tr.ScheduledTransaction.SourceAccount.ID,
+				SourceAccountName:      tr.ScheduledTransaction.SourceAccount.Name,
+				DestinationAccountId:   tr.ScheduledTransaction.DestinationAccount.ID,
+				DestinationAccountName: tr.ScheduledTransaction.DestinationAccount.Name,
+			}
+		}
+
+		res.TransactionsFromScheduled[idx] = e
+	}
+
+	return res, nil
+}
 
 // func (h *CashbunnyHandler) GetPlan(c echo.Context) error {
 // 	claims := h.GetTokenClaims(c)

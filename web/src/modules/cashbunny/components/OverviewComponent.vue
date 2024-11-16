@@ -83,9 +83,9 @@
         <DataTableComponent
           :columns="[
             { data: 'name', title: 'Name' },
-            { data: 'amount_display', title: 'Amount' },
+            { data: 'amountDisplay', title: 'Amount' },
           ]"
-          :data="selectedData ? selectedData.asset_accounts : viewData?.asset_accounts"
+          :data="selectedData ? selectedData.assetAccounts : viewData?.assetAccounts"
           @loaded="onAssetAccountDataTableLoaded"
         />
       </section>
@@ -96,9 +96,9 @@
         <DataTableComponent
           :columns="[
             { data: 'name', title: 'Name' },
-            { data: 'amount_display', title: 'Amount' },
+            { data: 'amountDisplay', title: 'Amount' },
           ]"
-          :data="selectedData ? selectedData.liability_accounts : viewData?.liability_accounts"
+          :data="selectedData ? selectedData.liabilityAccounts : viewData?.liabilityAccounts"
           @loaded="onLiabilityAccountDataTableLoaded"
         />
       </section>
@@ -109,8 +109,8 @@
         <DataTableComponent
           :columns="[
             { data: 'description', title: 'Description' },
-            { data: 'destination_account_name', title: 'To' },
-            { data: 'source_account_name', title: 'From' },
+            { data: 'destinationAccountName', title: 'To' },
+            { data: 'sourceAccountName', title: 'From' },
             { data: 'amount', title: 'Amount' },
           ]"
           :data="selectedData ? selectedData.transactions : viewData?.transactions"
@@ -124,14 +124,14 @@
         <DataTableComponent
           :columns="[
             { data: 'description', title: 'Description' },
-            { data: 'destination_account_name', title: 'To' },
-            { data: 'source_account_name', title: 'From' },
+            { data: 'destinationAccountName', title: 'To' },
+            { data: 'sourceAccountName', title: 'From' },
             { data: 'amount', title: 'Amount' },
           ]"
           :data="
             selectedData
-              ? selectedData.transactions_from_scheduled
-              : viewData?.transactions_from_scheduled
+              ? selectedData.transactionsFromScheduled
+              : viewData?.transactionsFromScheduled
           "
           @loaded="onScheduledTransactionDataTableLoaded"
         />
@@ -160,12 +160,11 @@ import type {
   ToggleWindowResizeHandlerFunc,
   WindowSizeQuery,
 } from '@/core/components/WindowComponent.vue'
+import type { API, GetOverviewResponse } from '@/core/composables/useAPI'
 import { ResizeDirection, useDragResize } from '@/core/composables/useDragResize'
 import type { APIResponse } from '@/core/models/dto'
 import { RelativePosition } from '@/core/models/relativePosition'
 import { RelativeSize } from '@/core/models/relativeSize'
-import type { OverviewDto } from '../models/dto'
-import { useCashbunnyStore } from '../stores'
 import CalendarComponent, {
   type CalendarEvent,
   type CalendarLoadedEvent,
@@ -174,16 +173,19 @@ import CalendarComponent, {
   CalendarTabs,
 } from './CalendarComponent.vue'
 
+const props = defineProps<{
+  api: API
+}>()
+
 const { t } = useI18n()
-const store = useCashbunnyStore()
 const overviewContainer = ref()
 const detailSection = ref()
 const errorTitle = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
-const viewData = ref<OverviewDto | null>(null)
+const viewData = ref<GetOverviewResponse | null>(null)
 const viewDateStart = ref<Dayjs>()
 const viewDateEnd = ref<Dayjs>()
-const selectedData = ref<OverviewDto | null>(null)
+const selectedData = ref<GetOverviewResponse | null>(null)
 const selectedDateStart = ref<Dayjs | null>()
 const selectedDateEnd = ref<Dayjs | null>()
 let netWorthDataTableResizeFunc: () => void
@@ -228,11 +230,11 @@ const isColumnLayout = computed(() => {
 
 const netWorthData = computed(() => {
   if (selectedData.value) {
-    return Object.entries(selectedData.value.net_worth).map(([key, value]) => {
+    return Object.entries(selectedData.value.netWorth).map(([key, value]) => {
       return { currency: key, amount: value }
     })
   } else if (viewData.value) {
-    return Object.entries(viewData.value.net_worth).map(([key, value]) => {
+    return Object.entries(viewData.value.netWorth).map(([key, value]) => {
       return { currency: key, amount: value }
     })
   }
@@ -241,11 +243,11 @@ const netWorthData = computed(() => {
 
 const summaryData = computed(() => {
   if (selectedData.value) {
-    return Object.entries(selectedData.value.profit_loss_summary).map(([key, value]) => {
+    return Object.entries(selectedData.value.profitLossSummary).map(([key, value]) => {
       return { currency: key, ...value }
     })
   } else if (viewData.value) {
-    return Object.entries(viewData.value.profit_loss_summary).map(([key, value]) => {
+    return Object.entries(viewData.value.profitLossSummary).map(([key, value]) => {
       return { currency: key, ...value }
     })
   }
@@ -254,17 +256,17 @@ const summaryData = computed(() => {
 
 const calendarEvents = computed<CalendarEvent[]>(() => {
   return [
-    ...(viewData?.value?.transactions?.map(
+    ...(viewData?.value?.transactions.map(
       (transaction): CalendarEvent => ({
         title: transaction.description,
-        start: transaction.transacted_at,
+        start: transaction.transactedAt,
         allDay: false,
       }),
     ) ?? []),
-    ...(viewData?.value?.transactions_from_scheduled?.map(
+    ...(viewData?.value?.transactionsFromScheduled.map(
       (scheduled): CalendarEvent => ({
         title: scheduled.description,
-        start: scheduled.transacted_at,
+        start: scheduled.transactedAt,
         allDay: true,
       }),
     ) ?? []),
@@ -314,11 +316,11 @@ const onCalendarSetDates = async (payload: CalendarSetDatesEvent) => {
   viewDateEnd.value = payload.dateEnd
 
   try {
-    const res = await store.getOverview({
+    const res = await props.api.getOverview({
       from: viewDateStart.value.startOf('day'),
       to: viewDateEnd.value.endOf('day'),
     })
-    viewData.value = res.data.data
+    viewData.value = res
   } catch (error) {
     if (error instanceof AxiosError) {
       const res = error.response?.data as APIResponse<null>
@@ -337,13 +339,11 @@ const onCalendarSelectDates = async (payload: CalendarSelectDatesEvent | null) =
   selectedDateStart.value = payload.dateStart
   selectedDateEnd.value = payload.dateEnd
 
-  const res = await store.getOverview({
+  const res = await props.api.getOverview({
     from: selectedDateStart.value.startOf('day'),
     to: selectedDateEnd.value.endOf('day'),
   })
-  if (res.data.error === null) {
-    selectedData.value = res.data.data
-  }
+  selectedData.value = res
 }
 
 const onErrorDialogClickClose = () => {

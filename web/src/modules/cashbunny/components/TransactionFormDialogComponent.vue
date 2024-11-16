@@ -66,10 +66,11 @@ import DialogComponent from '@/core/components/DialogComponent.vue'
 import NumberInputComponent from '@/core/components/NumberInputComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import TextInputComponent from '@/core/components/TextInputComponent.vue'
+import type { AccountResponse, TransactionResponse } from '@/core/composables/useAPI'
 import type { APIResponse } from '@/core/models/dto'
 import type { RelativePosition } from '@/core/models/relativePosition'
 import type { RelativeSize } from '@/core/models/relativeSize'
-import type { AccountDto, CreateTransactionDto, TransactionDto } from '../models/dto'
+import type { CreateTransactionDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 
 export type TransactionFormValues = {
@@ -89,7 +90,7 @@ const props = defineProps<{
   pos?: RelativePosition | 'center'
   size?: RelativeSize
   title: string
-  transaction?: TransactionDto
+  transaction?: TransactionResponse
 }>()
 
 const { t } = useI18n()
@@ -100,9 +101,9 @@ const formValues = ref<TransactionFormValues>(
         description: props.transaction.description,
         amount: props.transaction.amount,
         currency: props.transaction.currency,
-        sourceAccountId: props.transaction.source_account_id,
-        destinationAccountId: props.transaction.destination_account_id,
-        transactedAt: new Date(props.transaction.transacted_at),
+        sourceAccountId: props.transaction.sourceAccountId,
+        destinationAccountId: props.transaction.destinationAccountId,
+        transactedAt: new Date(props.transaction.transactedAt),
       }
     : {
         description: '',
@@ -122,7 +123,7 @@ const validationErrors = ref<{ [k in keyof CreateTransactionDto]: string }>({
   destination_account_id: '',
   transacted_at: '',
 })
-const accounts = ref<AccountDto[]>([])
+const accounts = ref<AccountResponse[]>([])
 
 const onClickSubmit = async () => {
   const request = props.transaction

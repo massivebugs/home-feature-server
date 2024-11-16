@@ -75,7 +75,7 @@
         </template>
       </TabGroupComponent>
       <div class="cashbunny-window__tab-body">
-        <OverviewComponent v-if="currentTab === Tabs.overview" />
+        <OverviewComponent v-if="currentTab === Tabs.overview" :api="props.api" />
         <PlannerComponent v-else-if="currentTab === Tabs.planner" />
         <SchedulesComponent v-else-if="currentTab === Tabs.schedules" />
         <AccountDataTableComponent v-else-if="currentTab === Tabs.accounts" />
@@ -96,6 +96,7 @@ import { useI18n } from 'vue-i18n'
 import TabGroupComponent from '@/core/components/TabGroupComponent.vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
 import type { WindowToolbarRow } from '@/core/components/WindowToolbarComponent.vue'
+import type { API } from '@/core/composables/useAPI'
 import { RelativeSize } from '@/core/models/relativeSize'
 import AccountDataTableComponent from '@/modules/cashbunny/components/AccountDataTableComponent.vue'
 import AccountsTabIconComponent from '@/modules/cashbunny/components/AccountsTabIconComponent.vue'
@@ -119,6 +120,10 @@ const Tabs = {
 
 const emit = defineEmits<{
   (e: 'clickClose'): void
+}>()
+
+const props = defineProps<{
+  api: API
 }>()
 
 const { t } = useI18n()

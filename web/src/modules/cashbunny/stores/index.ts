@@ -1,19 +1,17 @@
-import type { Dayjs } from 'dayjs'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type {
+  AccountResponse,
   CashbunnyUserPreferenceResponse,
   GetCashbunnySupportedCurrenciesResponse,
+  TransactionResponse,
 } from '@/core/composables/useAPI'
 import type { APIResponse } from '@/core/models/dto'
 import { APIEndpoints, api } from '@/utils/api'
 import {
-  type AccountDto,
   type CreateAccountDto,
   type CreateTransactionDto,
-  type OverviewDto,
   type PlannerParametersDto,
-  type TransactionDto,
   type UpdateAccountDto,
   type UpdateTransactionDto,
 } from '../models/dto'
@@ -29,23 +27,13 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     }
   }
 
-  const getOverview = (dateRange?: { from: Dayjs; to: Dayjs }) =>
-    api.get<APIResponse<OverviewDto>>(APIEndpoints.v1.secure.cashbunny.overview.path, {
-      params: dateRange
-        ? {
-            from: dateRange.from.unix(),
-            to: dateRange.to.unix(),
-          }
-        : undefined,
-    })
-
   const getPlannerParameters = () =>
     api.get<APIResponse<PlannerParametersDto>>(
       APIEndpoints.v1.secure.cashbunny.planner.parameters.path,
     )
 
   const getAccounts = () =>
-    api.get<APIResponse<AccountDto[]>>(APIEndpoints.v1.secure.cashbunny.accounts.path)
+    api.get<APIResponse<AccountResponse[]>>(APIEndpoints.v1.secure.cashbunny.accounts.path)
 
   const createAccount = (data: CreateAccountDto) =>
     api.post<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts.path, data)
@@ -60,7 +48,7 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     api.delete<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts.path + `/${accountId}`)
 
   const getTransactions = () =>
-    api.get<APIResponse<TransactionDto[]>>(APIEndpoints.v1.secure.cashbunny.transactions.path)
+    api.get<APIResponse<TransactionResponse[]>>(APIEndpoints.v1.secure.cashbunny.transactions.path)
 
   const createTransaction = (data: CreateTransactionDto) =>
     api.post(APIEndpoints.v1.secure.cashbunny.transactions.path, data)
@@ -77,7 +65,6 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     currencies,
     userPreference,
     setCurrencies,
-    getOverview,
     getPlannerParameters,
     getAccounts,
     createAccount,
