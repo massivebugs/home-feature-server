@@ -23,5 +23,7 @@ func NewRepeatHandler(cfg *rest.Config) *RepeatHandler {
 func (h *RepeatHandler) Repeat(ctx context.Context, req oapi.RepeatRequestObject) (oapi.RepeatResponseObject, error) {
 	result := h.repeat.Run(ctx, req.Body.Message)
 
-	return oapi.Repeat200JSONResponse(result), nil
+	return oapi.Repeat200JSONResponse{
+		Message: result,
+	}, nil
 }

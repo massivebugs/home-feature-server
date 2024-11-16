@@ -18,6 +18,7 @@
 import type { ContextMenuOptions } from './ContextMenuComponent.vue'
 
 export type FileShortcutIconOption = {
+  programId: string
   icon: string
   name: string
   onDblClick?: () => void

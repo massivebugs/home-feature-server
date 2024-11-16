@@ -5,18 +5,18 @@
     <div class="hfs-desktop__taskbar-container">
       <TaskbarComponent
         class="hfs-desktop__taskbar"
-        :running-processes="store.processesByInsertOrder"
-        :selected-process-id="store.topLevelProcessId"
+        :running-processes="coreStore.processesByInsertOrder"
+        :selected-process-id="coreStore.topLevelProcessId"
         @click-log-out="onClickLogOut"
         @select-process="onSelectProcess"
       />
     </div>
-    <template v-for="process in store.processes.values()" :key="process.id">
+    <template v-for="process in coreStore.processes.values()" :key="process.id">
       <component
         v-show="!hiddenWindowPIDs.has(process.id)"
         :is="process.program.component"
         v-bind="process.program.componentProps"
-        @mousedown="store.setTopLevelProcess(process.id)"
+        @mousedown="coreStore.setTopLevelProcess(process.id)"
         @click-close="onClickWindowClose(process.id)"
         @click-cancel="onClickWindowCancel(process.id)"
         @click-minimize="onClickWindowMinimize(process.id)"
@@ -41,9 +41,8 @@
 </template>
 
 <script setup lang="ts">
-import { AxiosError, HttpStatusCode } from 'axios'
 import { uniqueId } from 'lodash'
-import { onMounted, onUnmounted, provide, ref } from 'vue'
+import { onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ConfirmDialogComponent from '../components/ConfirmDialogComponent.vue'
@@ -55,6 +54,8 @@ import type { FileShortcutIconOption } from '../components/FileShortcutIconCompo
 import TaskbarComponent, {
   type TaskbarSelectProcessEvent,
 } from '../components/TaskbarComponent.vue'
+import { useAPI } from '../composables/useAPI'
+import { API_URL } from '../constants'
 import type { AbsolutePosition } from '../models/absolutePosition'
 import { Process } from '../models/process'
 import { RelativePosition } from '../models/relativePosition'
@@ -69,7 +70,8 @@ export type SetContextMenu = (
 const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const store = useCoreStore()
+const api = useAPI(API_URL)
+const coreStore = useCoreStore()
 const desktopViewEl = ref()
 const contextMenuEl = ref<HTMLElement>()
 const contextMenuOptions = ref<ContextMenuOptions | null>(null)
@@ -96,16 +98,16 @@ provide('contextMenu', contextMenuOptions)
 provide('setContextMenu', setContextMenu)
 
 const onClickWindowClose = (processId: string) => {
-  store.removeProcess(processId)
+  coreStore.removeProcess(processId)
 }
 
 const onClickWindowCancel = (processId: string) => {
-  store.removeProcess(processId)
+  coreStore.removeProcess(processId)
 }
 
 const onClickWindowMinimize = (processId: string) => {
   hiddenWindowPIDs.value.add(processId)
-  store.topLevelProcessId = null
+  coreStore.topLevelProcessId = null
 }
 
 const onClickLogOut = () => {
@@ -128,7 +130,7 @@ const onCloseConfirmLogOutDialog = () => {
 
 const onSelectProcess = (payload: TaskbarSelectProcessEvent) => {
   hiddenWindowPIDs.value.delete(payload.processId)
-  store.setTopLevelProcess(payload.processId)
+  coreStore.setTopLevelProcess(payload.processId)
 }
 
 onMounted(async () => {
@@ -136,47 +138,54 @@ onMounted(async () => {
 
   // Load user data
   try {
-    const res = await store.getUserSystemPreference()
-    store.systemPreference = res.data.user_system_preference
-
-    locale.value = store.systemPreference.language ?? navigator.language
+    const res = await api.getUserSystemPreference({
+      404: async () => {
+        try {
+          const res = await api.createDefaultUserSystemPreference()
+          coreStore.systemPreference = res.data.user_system_preference
+        } catch {
+          // TODO: Error handling
+        }
+      },
+    })
+    coreStore.systemPreference = res.data.user_system_preference
   } catch (error) {
-    if (error instanceof AxiosError && error.status === HttpStatusCode.NotFound) {
-      try {
-        const res = await store.createUserSystemPreference()
-        store.systemPreference = res.data.user_system_preference
-      } catch (error) {
-        // TODO: Error handling
-      }
-    } else {
-      // TODO: Error handling
-    }
+    // TODO: Error handling
+  } finally {
+    locale.value = coreStore.systemPreference.language ?? navigator.language
   }
 
-  store.programs.forEach((program) => {
+  coreStore.programs.forEach((program) => {
     fileOptions.value.push({
+      programId: program.id,
       name: t(`${program.id}.name`),
       icon: program.icon,
       onDblClick: () => {
         const process = new Process(uniqueId('pid_'), program)
-        store.addProcess(process)
+        coreStore.addProcess(process)
       },
     })
   })
 
   if (route.params.programId) {
-    const process = store.findProgramProcesses(route.params.programId as string)
-    const program = store.programs.get(route.params.programId as string)
+    const process = coreStore.findProgramProcesses(route.params.programId as string)
+    const program = coreStore.programs.get(route.params.programId as string)
     if (process.length) {
       console.log(process[0])
     } else if (program) {
       const process = new Process(uniqueId('pid_'), program)
-      store.addProcess(process)
+      coreStore.addProcess(process)
     } else {
       console.log('No programs found!')
       // Show an error dialog
     }
   }
+})
+
+watch(locale, () => {
+  fileOptions.value.forEach((fileOption) => {
+    fileOption.name = t(`${fileOption.programId}.name`)
+  })
 })
 
 onUnmounted(() => {

@@ -9,8 +9,8 @@ const (
 
 // Error Error code and underlying errors
 type Error struct {
-	// Error A useful message describing the error
-	Error              string            `json:"error"`
+	// Message A useful message describing the error
+	Message            string            `json:"message"`
 	ValidationMessages map[string]string `json:"validation_messages"`
 }
 

@@ -1,11 +1,12 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
+import { snakeCase } from 'lodash'
 
 export const isAPIError = (e: any) => {
   return axios.isAxiosError(e)
 }
 
 const api = axios.create({
-  baseURL: `https://${window.location.hostname}:1323/api/`,
+  baseURL: `https://${window.location.hostname}:${import.meta.env.VITE_PORT}/api/`,
   timeout: 10000,
   withCredentials: true,
 })
@@ -18,7 +19,7 @@ api.interceptors.response.use(
     if (err.response?.status === 401 && location.pathname !== '/login') {
       try {
         // If a token has expired, try refreshing it first
-        const refreshRes = await api.put(APIEndpoints.v1.auth.token, null, {
+        const refreshRes = await api.put(APIEndpoints.v1.auth.token.path, null, {
           validateStatus: null,
         })
 
@@ -28,7 +29,7 @@ api.interceptors.response.use(
 
         // Retrieve a new refresh token
         // TODO: Error handling when creating refresh token fails
-        await api.post(APIEndpoints.v1.secure.auth.token, null, {
+        await api.post(APIEndpoints.v1.secure.auth.token.path, null, {
           validateStatus: null,
         })
 
@@ -43,32 +44,57 @@ api.interceptors.response.use(
   },
 )
 
-export const APIEndpoints = {
+const Endpoints = {
   v1: {
+    ping: {},
+    repeat: {},
     auth: {
-      default: 'v1/auth',
-      token: 'v1/auth/token',
+      token: {},
     },
     secure: {
       auth: {
-        token: 'v1/secure/auth/token',
+        token: {},
       },
-      user: {
-        default: 'v1/secure/user',
-      },
-      systemPreferences: {
-        default: 'v1/secure/system_preferences',
-      },
+      user: {},
+      systemPreferences: {},
       cashbunny: {
-        overview: 'v1/secure/cashbunny/overview',
-        plannerParameters: 'v1/secure/cashbunny/planner/parameters',
-        currencies: 'v1/secure/cashbunny/currencies',
-        userPreferences: 'v1/secure/cashbunny/user_preferences',
-        accounts: 'v1/secure/cashbunny/accounts',
-        transactions: 'v1/secure/cashbunny/transactions',
+        overview: {},
+        planner: {
+          parameters: {},
+        },
+        currencies: {},
+        userPreferences: {},
+        accounts: {},
+        transactions: {},
       },
     },
   },
 }
+
+type AugmentedProxy<T> = T extends object
+  ? { [K in keyof T]: AugmentedProxy<T[K]> } & { path: string }
+  : T
+
+function makeEndpointsProxy<T extends Object>(target: T, traversed: string[] = []) {
+  const trap: ProxyHandler<T> = {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver)
+
+      if (prop === 'path') {
+        return traversed.join('/')
+      }
+
+      if (value !== null && typeof value === 'object' && value.constructor.name === 'Object') {
+        return makeEndpointsProxy(value, traversed.concat(snakeCase(prop.toString())))
+      }
+
+      return value
+    },
+  }
+
+  return new Proxy(target, trap) as AugmentedProxy<T>
+}
+
+export const APIEndpoints = makeEndpointsProxy(Endpoints)
 
 export { api }

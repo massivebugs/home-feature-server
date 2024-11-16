@@ -28,7 +28,7 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
   }
 
   const getOverview = (dateRange?: { from: Dayjs; to: Dayjs }) =>
-    api.get<APIResponse<OverviewDto>>(APIEndpoints.v1.secure.cashbunny.overview, {
+    api.get<APIResponse<OverviewDto>>(APIEndpoints.v1.secure.cashbunny.overview.path, {
       params: dateRange
         ? {
             from: dateRange.from.unix(),
@@ -38,41 +38,46 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     })
 
   const getPlannerParameters = () =>
-    api.get<APIResponse<PlannerParametersDto>>(APIEndpoints.v1.secure.cashbunny.plannerParameters)
+    api.get<APIResponse<PlannerParametersDto>>(
+      APIEndpoints.v1.secure.cashbunny.planner.parameters.path,
+    )
 
   const getAllCurrencies = () =>
-    api.get<APIResponse<GetAllCurrenciesDto>>(APIEndpoints.v1.secure.cashbunny.currencies)
+    api.get<APIResponse<GetAllCurrenciesDto>>(APIEndpoints.v1.secure.cashbunny.currencies.path)
 
   const getUserPreferences = () =>
-    api.get<APIResponse<UserPreferencesDto>>(APIEndpoints.v1.secure.cashbunny.userPreferences)
+    api.get<APIResponse<UserPreferencesDto>>(APIEndpoints.v1.secure.cashbunny.userPreferences.path)
 
   const createUserPreferences = () =>
-    api.post<APIResponse<UserPreferencesDto>>(APIEndpoints.v1.secure.cashbunny.userPreferences)
+    api.post<APIResponse<UserPreferencesDto>>(APIEndpoints.v1.secure.cashbunny.userPreferences.path)
 
   const getAccounts = () =>
-    api.get<APIResponse<AccountDto[]>>(APIEndpoints.v1.secure.cashbunny.accounts)
+    api.get<APIResponse<AccountDto[]>>(APIEndpoints.v1.secure.cashbunny.accounts.path)
 
   const createAccount = (data: CreateAccountDto) =>
-    api.post<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts, data)
+    api.post<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts.path, data)
 
   const updateAccount = (accountId: number, data: UpdateAccountDto) =>
-    api.put<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts + `/${accountId}`, data)
+    api.put<APIResponse<null>>(
+      APIEndpoints.v1.secure.cashbunny.accounts.path + `/${accountId}`,
+      data,
+    )
 
   const deleteAccount = (accountId: number) =>
-    api.delete<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts + `/${accountId}`)
+    api.delete<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts.path + `/${accountId}`)
 
   const getTransactions = () =>
-    api.get<APIResponse<TransactionDto[]>>(APIEndpoints.v1.secure.cashbunny.transactions)
+    api.get<APIResponse<TransactionDto[]>>(APIEndpoints.v1.secure.cashbunny.transactions.path)
 
   const createTransaction = (data: CreateTransactionDto) =>
-    api.post(APIEndpoints.v1.secure.cashbunny.transactions, data)
+    api.post(APIEndpoints.v1.secure.cashbunny.transactions.path, data)
 
   const updateTransaction = (transactionId: number, data: UpdateTransactionDto) =>
-    api.put(APIEndpoints.v1.secure.cashbunny.transactions + `/${transactionId}`, data)
+    api.put(APIEndpoints.v1.secure.cashbunny.transactions.path + `/${transactionId}`, data)
 
   const deleteTransaction = (transactionId: number) =>
     api.delete<APIResponse<null>>(
-      APIEndpoints.v1.secure.cashbunny.transactions + `/${transactionId}`,
+      APIEndpoints.v1.secure.cashbunny.transactions.path + `/${transactionId}`,
     )
 
   return {

@@ -21,11 +21,11 @@ func NewHTTPErrorHandler(cfg *Config) func(err error, c echo.Context) {
 		resErr := oapi.Error{}
 		if valErr, ok := err.(*validationError); ok {
 			resCode = 400
-			resErr.Error = validationErrMessage
+			resErr.Message = validationErrMessage
 			resErr.ValidationMessages = valErr.Messages
 		} else if appErr, ok := err.(*app.AppError); ok {
 			resCode = appErr.GetHTTPStatusCode()
-			resErr.Error = appErr.Error()
+			resErr.Message = appErr.Error()
 		} else if httpErr, ok := err.(*echo.HTTPError); ok {
 			msg, ok := httpErr.Message.(string)
 			if !ok {
@@ -33,14 +33,14 @@ func NewHTTPErrorHandler(cfg *Config) func(err error, c echo.Context) {
 			}
 
 			resCode = httpErr.Code
-			resErr.Error = msg
+			resErr.Message = msg
 		} else {
-			resErr.Error = err.Error()
+			resErr.Message = err.Error()
 		}
 
 		// If we are in production environment, we don't want to expose error messages to the client.
 		if resCode == 500 && cfg.Environment == EnvironmentProduction {
-			resErr.Error = http500ErrMessage
+			resErr.Message = http500ErrMessage
 		}
 
 		c.JSON(resCode, resErr)

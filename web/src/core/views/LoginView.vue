@@ -1,50 +1,60 @@
 <template>
   <div class="hfs-login-view">
     <LoginDialogComponent
-      v-if="showLoginDialog"
-      class="hfs-login-view__login-dialog"
-      pos="center"
+      v-if="currDialog === Dialogs.login"
+      class="hfs-login-view__dialog"
       :disabled="isSubmitting"
       :loading-spinner="isSubmitting && SpinnerTypes.dots"
       :error-message="loginErrorMessage"
       :validation-errors="loginValidationErrors"
       @submit="onSubmitLogin"
-      @create-account="onClickShowCreateAccount"
+      @create-user="onClickShowCreateUser"
     />
-    <CreateAccountDialogComponent
-      v-if="showCreateAccountDialog"
-      class="hfs-login-view__login-dialog"
-      :is-pending-approval="isUserPendingAdminApproval"
-      pos="center"
+    <CreateUserDialogComponent
+      v-else-if="currDialog === Dialogs.createUser"
+      class="hfs-login-view__dialog"
       :disabled="isSubmitting"
       :loading-spinner="isSubmitting && SpinnerTypes.dots"
       :error-message="createUserErrorMessage"
       :validation-errors="createUserValidationErrors"
-      @click-cancel="onCancelCreateAccount"
-      @submit="onSubmitCreateAccount"
+      @click-cancel="onCancelDialog"
+      @submit="onSubmitCreateUser"
+    />
+    <UserPendingAdminApprovalDialogComponent
+      v-else-if="currDialog === Dialogs.pendingApproval"
+      class="hfs-login-view__dialog"
+      @click-cancel="onCancelDialog"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import CreateAccountDialogComponent, {
-  type CreateAccountSubmitEvent,
-} from '../components/CreateAccountDialogComponent.vue'
+import type { CreateUserSubmitEvent } from '../components/CreateUserDialogComponent.vue'
+import CreateUserDialogComponent from '../components/CreateUserDialogComponent.vue'
 import LoginDialogComponent, { type LoginSubmitEvent } from '../components/LoginDialogComponent.vue'
 import { SpinnerTypes } from '../components/SpinnerIconComponent.vue'
-import type { APIError, CreateAuthTokenDto, CreateUserDto } from '../models/dto'
+import UserPendingAdminApprovalDialogComponent from '../components/UserPendingAdminApprovalDialogComponent.vue'
+import { useAPI } from '../composables/useAPI'
+import { API_URL } from '../constants'
+import type { CreateAuthTokenDto, CreateUserDto } from '../models/dto'
 import { User } from '../models/user'
 import { useCoreStore } from '../stores'
 import type { ValidationErrors } from '../utils/types'
 
+const Dialogs = {
+  nothing: 'nothing',
+  login: 'login',
+  createUser: 'createUser',
+  pendingApproval: 'pendingApproval',
+} as const
+type Dialog = (typeof Dialogs)[keyof typeof Dialogs]
+
 const coreStore = useCoreStore()
 const router = useRouter()
-const showLoginDialog = ref<boolean>(false) // Toggles login dialog. Is true when user is not authenticated.
-const showCreateAccountDialog = ref<boolean>(false)
-const isUserPendingAdminApproval = ref<boolean>(false)
+const api = useAPI(API_URL)
+const currDialog = ref<Dialog>(Dialogs.nothing)
 const isSubmitting = ref<boolean>(false) // Used to disable login form temporarily
 const loginErrorMessage = ref<string>('')
 const loginValidationErrors = ref<ValidationErrors<CreateAuthTokenDto>>({
@@ -66,67 +76,77 @@ const onSubmitLogin = async (payload: LoginSubmitEvent) => {
   isSubmitting.value = true
 
   try {
-    await coreStore.createAuthToken(payload)
+    await api.createJWTToken(payload, {
+      400: (error) => {
+        loginErrorMessage.value = error.message
+        loginValidationErrors.value = { username: '', password: '', ...error.validation_messages }
+      },
+      403: (error) => {
+        onClickShowCreateUser()
+        loginErrorMessage.value = error.message
+        currDialog.value = Dialogs.pendingApproval
+      },
+    })
 
     // TODO: Error handling when creating refresh token fails
     // Maybe invalidate token
-    await coreStore.createRefreshToken()
+    await api.createJWTRefreshToken({
+      403: (error) => {
+        onClickShowCreateUser()
+        loginErrorMessage.value = error.message
+        currDialog.value = Dialogs.pendingApproval
+      },
+    })
+
     checkAuth()
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      if (error.code === AxiosError.ERR_BAD_REQUEST) {
-        const res = error.response?.data as APIError
-        loginErrorMessage.value = res.error || ''
-        loginValidationErrors.value = { username: '', password: '', ...res.validation_messages }
-      }
-    }
+  } catch {
+    // TODO
   } finally {
     isSubmitting.value = false
   }
 }
 
-const onSubmitCreateAccount = async (payload: CreateAccountSubmitEvent) => {
+const onSubmitCreateUser = async (payload: CreateUserSubmitEvent) => {
   isSubmitting.value = true
+
   try {
-    await coreStore.createUser(payload)
-    isUserPendingAdminApproval.value = true
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      if (error.code === AxiosError.ERR_BAD_REQUEST) {
-        const res = error.response?.data as APIError
-        createUserErrorMessage.value = res.error || ''
+    await api.createUser(payload, {
+      400: (error) => {
+        createUserErrorMessage.value = error.message
         createUserValidationErrors.value = {
           email: '',
           username: '',
           password: '',
-          ...res.validation_messages,
+          ...error.validation_messages,
         }
-      }
-    }
+      },
+    })
+    currDialog.value = Dialogs.pendingApproval
+  } catch {
+    // TODO
   } finally {
     isSubmitting.value = false
   }
 }
 
-const onClickShowCreateAccount = () => {
-  showLoginDialog.value = false
-  showCreateAccountDialog.value = true
+const onClickShowCreateUser = () => {
+  currDialog.value = Dialogs.createUser
 }
 
-const onCancelCreateAccount = () => {
-  showLoginDialog.value = true
-  showCreateAccountDialog.value = false
+const onCancelDialog = () => {
+  currDialog.value = Dialogs.login
+  loginErrorMessage.value = ''
 }
 
 // Checks whether user has been authenticated (has JWT token)
 // and redirects to desktop if so. Otherwise, displays login dialog.
 const checkAuth = async () => {
   try {
-    const res = await coreStore.getUser()
+    const res = await api.getUser()
     coreStore.user = new User(res.data.user)
     router.push({ name: 'desktop' })
-  } catch (_) {
-    showLoginDialog.value = true
+  } catch {
+    currDialog.value = Dialogs.login
   }
 }
 </script>
@@ -137,8 +157,7 @@ const checkAuth = async () => {
   height: 100vh;
 }
 
-.hfs-login-view__login-dialog,
-.hfs-login-view__create-account-dialog {
+.hfs-login-view__dialog {
   min-width: 350px;
 }
 </style>

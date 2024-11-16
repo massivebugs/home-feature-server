@@ -1,7 +1,7 @@
 <template>
   <DialogComponent
     class="hfs-login-dialog"
-    :pos="pos"
+    pos="center"
     :fit-content="true"
     :buttons="{
       success: t('login.submit'),
@@ -24,8 +24,8 @@
     <div class="hfs-login-dialog__container">
       <p class="hfs-login-dialog__error-message" v-if="errorMessage">{{ errorMessage }}</p>
       <p class="hfs-login-dialog__create-user-message">
-        {{ t('createAccount.message') }}
-        <a href="#" @click="emit('createAccount')">{{ t('createAccount.linkTitle') }}</a>
+        {{ t('createUser.message') }}
+        <a href="#" @click="emit('createUser')">{{ t('createUser.linkTitle') }}</a>
       </p>
       <TextInputComponent
         :disabled="disabled"
@@ -67,7 +67,7 @@ export type LoginSubmitEvent = {
 
 const emit = defineEmits<{
   (e: 'submit', payload: LoginSubmitEvent): void
-  (e: 'createAccount'): void
+  (e: 'createUser'): void
 }>()
 
 defineProps<{

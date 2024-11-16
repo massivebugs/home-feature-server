@@ -8,7 +8,7 @@
         'hfs-taskbar__selected': selectedProcessId === process.id,
       }"
       :key="process.id"
-      :option="{ icon: process.program.icon, name: '' }"
+      :option="{ programId: process.program.id, icon: process.program.icon, name: '' }"
       :hide-name="true"
       @click="emit('selectProcess', { processId: process.id })"
     />

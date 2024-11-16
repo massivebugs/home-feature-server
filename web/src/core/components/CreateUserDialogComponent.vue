@@ -1,10 +1,10 @@
 <template>
   <DialogComponent
-    class="hfs-create-account-dialog"
-    :pos="pos"
+    class="hfs-create-user-dialog"
+    pos="center"
     :fit-content="true"
     :buttons="{
-      success: !isPendingApproval && t('createAccount.submit'),
+      success: t('createUser.submit'),
       cancel: true,
     }"
     :controls="{
@@ -19,17 +19,12 @@
   >
     <template #title>
       <LockIconComponent />
-      {{ t('createAccount.title') }}
+      {{ t('createUser.title') }}
     </template>
-    <div class="hfs-create-account-dialog__container" v-if="isPendingApproval">
-      <p class="hfs-create-account-dialog__create-user-disclaimer">
-        {{ t('createAccount.pendingApproval') }}
-      </p>
-    </div>
-    <div class="hfs-create-account-dialog__container" v-else>
-      <p class="hfs-create-account-dialog__error-message" v-if="errorMessage">{{ errorMessage }}</p>
-      <p class="hfs-create-account-dialog__create-user-disclaimer">
-        {{ t('createAccount.disclaimer') }}
+    <div class="hfs-create-user-dialog__container">
+      <p class="hfs-create-user-dialog__error-message" v-if="errorMessage">{{ errorMessage }}</p>
+      <p class="hfs-create-user-dialog__create-user-disclaimer">
+        {{ t('createUser.disclaimer') }}
       </p>
       <TextInputComponent
         :disabled="disabled"
@@ -73,18 +68,17 @@ import type { ValidationErrors } from '../utils/types'
 import LockIconComponent from './LockIconComponent.vue'
 import TextInputComponent from './TextInputComponent.vue'
 
-export type CreateAccountSubmitEvent = {
+export type CreateUserSubmitEvent = {
   username: string
   email: string
   password: string
 }
 
 const emit = defineEmits<{
-  (e: 'submit', payload: CreateAccountSubmitEvent): void
+  (e: 'submit', payload: CreateUserSubmitEvent): void
 }>()
 
 defineProps<{
-  isPendingApproval: boolean
   pos?: RelativePosition | 'center'
   disabled?: boolean
   errorMessage?: string
@@ -103,17 +97,17 @@ const onClickSuccess = () => {
 
 <style scoped lang="scss">
 @use '@/assets/colors';
-.hfs-create-account-dialog {
+.hfs-create-user-dialog {
   transition: box-shadow 0.2s;
 }
 
-.hfs-create-account-dialog:hover {
+.hfs-create-user-dialog:hover {
   box-shadow: 1px 1px 25px 2px rgba(0, 0, 0, 0.4) !important;
   -webkit-box-shadow: 1px 1px 25px 2px rgba(0, 0, 0, 0.4) !important;
   -moz-box-shadow: 1px 1px 25px 2px rgba(0, 0, 0, 0.4) !important;
 }
 
-.hfs-create-account-dialog__container {
+.hfs-create-user-dialog__container {
   width: 100%;
   margin-bottom: 1em;
   display: flex;
@@ -121,13 +115,13 @@ const onClickSuccess = () => {
   gap: 0.5em;
 }
 
-.hfs-create-account-dialog__error-message {
+.hfs-create-user-dialog__error-message {
   margin: 0;
   font-size: 0.8em;
   color: colors.$red-cmyk;
 }
 
-.hfs-create-account-dialog__create-user-disclaimer {
+.hfs-create-user-dialog__create-user-disclaimer {
   white-space: pre-line;
   margin: 0;
   font-size: 0.9em;

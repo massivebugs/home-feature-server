@@ -81,7 +81,7 @@ func (s *Auth) CreateJWTToken(
 ) (string, error) {
 	u, err := s.userRepo.GetUserByName(ctx, s.db, username)
 	if err != nil {
-		return "", app.NewAppError(app.CodeUnauthorized, errors.New("username or password does not match"))
+		return "", app.NewAppError(app.CodeBadRequest, errors.New("username or password does not match"))
 	}
 
 	if u.IsDisabled() {
@@ -90,12 +90,12 @@ func (s *Auth) CreateJWTToken(
 
 	hash, err := s.passRepo.GetUserPasswordByUserID(ctx, s.db, u.Id)
 	if err != nil {
-		return "", app.NewAppError(app.CodeUnauthorized, errors.New("username or password does not match"))
+		return "", app.NewAppError(app.CodeBadRequest, errors.New("username or password does not match"))
 	}
 
 	err = CheckPasswordHash(hash, password)
 	if err != nil {
-		return "", app.NewAppError(app.CodeUnauthorized, errors.New("username or password does not match"))
+		return "", app.NewAppError(app.CodeBadRequest, errors.New("username or password does not match"))
 	}
 
 	// Set custom claims and build/sign token

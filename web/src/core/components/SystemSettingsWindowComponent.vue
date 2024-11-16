@@ -46,6 +46,7 @@ import WindowComponent from '@/core/components/WindowComponent.vue'
 import type { WindowToolbarRow } from '@/core/components/WindowToolbarComponent.vue'
 import { RelativeSize } from '@/core/models/relativeSize'
 import { Locales } from '@/i18n'
+import type { API } from '../composables/useAPI'
 import { useCoreStore } from '../stores'
 import LanguageIconComponent from './LanguageIconComponent.vue'
 import SystemSettingsItemComponent from './SystemSettingsItemComponent.vue'
@@ -53,6 +54,10 @@ import SystemSettingsSectionComponent from './SystemSettingsSectionComponent.vue
 
 const emit = defineEmits<{
   (e: 'clickClose'): void
+}>()
+
+const props = defineProps<{
+  api: API
 }>()
 
 const { t, locale } = useI18n()
@@ -105,7 +110,7 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
 const onChangePreferences = async () => {
   // TODO: API Update preferences
   locale.value = store.systemPreference.language ?? navigator.language
-  await store.updateUserSystemPreference()
+  await props.api.updateUserSystemPreference(store.systemPreference)
 }
 </script>
 

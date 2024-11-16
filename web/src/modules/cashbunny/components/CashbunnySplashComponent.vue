@@ -25,11 +25,10 @@
 </template>
 
 <script setup lang="ts">
+import { AxiosError, HttpStatusCode } from 'axios'
 import { onMounted, ref } from 'vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
-import type { APIResponse } from '@/core/models/dto'
 import { sleep } from '@/core/utils/time'
-import { isAPIError } from '@/utils/api'
 import { useCashbunnyStore } from '../stores'
 import CashbunnyIconComponent from './CashbunnyIconComponent.vue'
 
@@ -47,16 +46,12 @@ const retrieveUserPreferences = async () => {
   try {
     const res = await store.getUserPreferences()
     store.userPreferences = res.data.data
-  } catch (e) {
-    if (isAPIError(e)) {
-      const res = e.response?.data as APIResponse<null>
-      // TODO: Group API error codes
-      if (res.error?.code !== 'not_found') {
-        throw e
-      }
-    } else {
-      throw e
+  } catch (error) {
+    if (error instanceof AxiosError && error.status === HttpStatusCode.NotFound) {
+      return
     }
+
+    throw error
   }
 }
 
