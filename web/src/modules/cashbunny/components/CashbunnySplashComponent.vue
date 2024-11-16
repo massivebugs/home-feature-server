@@ -25,7 +25,6 @@
 </template>
 
 <script setup lang="ts">
-import { AxiosError, HttpStatusCode } from 'axios'
 import { onMounted, ref } from 'vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
 import type { API } from '@/core/composables/useAPI'
@@ -51,29 +50,25 @@ const retrieveUserPreferences = async () => {
   try {
     const res = await props.api.getCashbunnyUserPreference({ 404: () => {} })
     cashbunnyStore.userPreference = res.userPreference
-  } catch (error) {
-    if (error instanceof AxiosError && error.status === HttpStatusCode.NotFound) {
-      return
+  } catch (e) {
+    if (!props.api.isError(e)) {
+      throw e
     }
-
-    throw error
   }
 }
 
 const createUserPreferences = async () => {
   loadMessage.value = 'Setting user preferences...'
   if (!cashbunnyStore.userPreference) {
-    const res = await cashbunnyStore.createUserPreferences()
-    cashbunnyStore.userPreference = res.data
+    const res = await props.api.createCashbunnyDefaultUserPreference()
+    cashbunnyStore.userPreference = res.userPreference
   }
 }
 
 const retrieveAllCurrencies = async () => {
   loadMessage.value = 'Retrieving list of supported currencies...'
-  const res = await cashbunnyStore.getAllCurrencies()
-  if (res.data.error === null) {
-    cashbunnyStore.setCurrencies(res.data.data)
-  }
+  const res = await props.api.getCashbunnySupportedCurrencies()
+  cashbunnyStore.setCurrencies(res)
 }
 
 onMounted(async () => {

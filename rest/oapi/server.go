@@ -47,6 +47,15 @@ type ServerInterface interface {
 	// (DELETE /api/v1/secure/auth/token)
 	DeleteJWTToken(ctx echo.Context) error
 
+	// (GET /api/v1/secure/cashbunny/currencies)
+	GetCashbunnySupportedCurrencies(ctx echo.Context) error
+
+	// (GET /api/v1/secure/cashbunny/user_preferences)
+	GetCashbunnyUserPreference(ctx echo.Context) error
+
+	// (POST /api/v1/secure/cashbunny/user_preferences)
+	CreateCashbunnyDefaultUserPreference(ctx echo.Context) error
+
 	// (GET /api/v1/secure/system_preferences)
 	GetUserSystemPreference(ctx echo.Context) error
 
@@ -145,6 +154,39 @@ func (w *ServerInterfaceWrapper) DeleteJWTToken(ctx echo.Context) error {
 	return err
 }
 
+// GetCashbunnySupportedCurrencies converts echo context to params.
+func (w *ServerInterfaceWrapper) GetCashbunnySupportedCurrencies(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetCashbunnySupportedCurrencies(ctx)
+	return err
+}
+
+// GetCashbunnyUserPreference converts echo context to params.
+func (w *ServerInterfaceWrapper) GetCashbunnyUserPreference(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetCashbunnyUserPreference(ctx)
+	return err
+}
+
+// CreateCashbunnyDefaultUserPreference converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateCashbunnyDefaultUserPreference(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.CreateCashbunnyDefaultUserPreference(ctx)
+	return err
+}
+
 // GetUserSystemPreference converts echo context to params.
 func (w *ServerInterfaceWrapper) GetUserSystemPreference(ctx echo.Context) error {
 	var err error
@@ -225,6 +267,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.DeleteJWTRefreshToken)
 	router.POST(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.CreateJWTRefreshToken)
 	router.DELETE(baseURL+"/api/v1/secure/auth/token", wrapper.DeleteJWTToken)
+	router.GET(baseURL+"/api/v1/secure/cashbunny/currencies", wrapper.GetCashbunnySupportedCurrencies)
+	router.GET(baseURL+"/api/v1/secure/cashbunny/user_preferences", wrapper.GetCashbunnyUserPreference)
+	router.POST(baseURL+"/api/v1/secure/cashbunny/user_preferences", wrapper.CreateCashbunnyDefaultUserPreference)
 	router.GET(baseURL+"/api/v1/secure/system_preferences", wrapper.GetUserSystemPreference)
 	router.POST(baseURL+"/api/v1/secure/system_preferences", wrapper.CreateDefaultUserSystemPreference)
 	router.PUT(baseURL+"/api/v1/secure/system_preferences", wrapper.UpdateUserSystemPreference)
@@ -429,6 +474,70 @@ func (response DeleteJWTToken204Response) VisitDeleteJWTTokenResponse(w http.Res
 	return nil
 }
 
+type GetCashbunnySupportedCurrenciesRequestObject struct {
+}
+
+type GetCashbunnySupportedCurrenciesResponseObject interface {
+	VisitGetCashbunnySupportedCurrenciesResponse(w http.ResponseWriter) error
+}
+
+type GetCashbunnySupportedCurrencies200JSONResponse struct {
+	CurrenciesAndGrapheme map[string]string `json:"currencies_and_grapheme"`
+}
+
+func (response GetCashbunnySupportedCurrencies200JSONResponse) VisitGetCashbunnySupportedCurrenciesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCashbunnyUserPreferenceRequestObject struct {
+}
+
+type GetCashbunnyUserPreferenceResponseObject interface {
+	VisitGetCashbunnyUserPreferenceResponse(w http.ResponseWriter) error
+}
+
+type GetCashbunnyUserPreference200JSONResponse struct {
+	// UserPreference Model defining user's cashbunny preferences such as default currency etc.
+	UserPreference CashbunnyUserPreference `json:"user_preference"`
+}
+
+func (response GetCashbunnyUserPreference200JSONResponse) VisitGetCashbunnyUserPreferenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCashbunnyUserPreference404Response struct {
+}
+
+func (response GetCashbunnyUserPreference404Response) VisitGetCashbunnyUserPreferenceResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type CreateCashbunnyDefaultUserPreferenceRequestObject struct {
+}
+
+type CreateCashbunnyDefaultUserPreferenceResponseObject interface {
+	VisitCreateCashbunnyDefaultUserPreferenceResponse(w http.ResponseWriter) error
+}
+
+type CreateCashbunnyDefaultUserPreference200JSONResponse struct {
+	// UserPreference Model defining user's cashbunny preferences such as default currency etc.
+	UserPreference CashbunnyUserPreference `json:"user_preference"`
+}
+
+func (response CreateCashbunnyDefaultUserPreference200JSONResponse) VisitCreateCashbunnyDefaultUserPreferenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetUserSystemPreferenceRequestObject struct {
 }
 
@@ -539,6 +648,15 @@ type StrictServerInterface interface {
 
 	// (DELETE /api/v1/secure/auth/token)
 	DeleteJWTToken(ctx context.Context, request DeleteJWTTokenRequestObject) (DeleteJWTTokenResponseObject, error)
+
+	// (GET /api/v1/secure/cashbunny/currencies)
+	GetCashbunnySupportedCurrencies(ctx context.Context, request GetCashbunnySupportedCurrenciesRequestObject) (GetCashbunnySupportedCurrenciesResponseObject, error)
+
+	// (GET /api/v1/secure/cashbunny/user_preferences)
+	GetCashbunnyUserPreference(ctx context.Context, request GetCashbunnyUserPreferenceRequestObject) (GetCashbunnyUserPreferenceResponseObject, error)
+
+	// (POST /api/v1/secure/cashbunny/user_preferences)
+	CreateCashbunnyDefaultUserPreference(ctx context.Context, request CreateCashbunnyDefaultUserPreferenceRequestObject) (CreateCashbunnyDefaultUserPreferenceResponseObject, error)
 
 	// (GET /api/v1/secure/system_preferences)
 	GetUserSystemPreference(ctx context.Context, request GetUserSystemPreferenceRequestObject) (GetUserSystemPreferenceResponseObject, error)
@@ -767,6 +885,75 @@ func (sh *strictHandler) DeleteJWTToken(ctx echo.Context) error {
 	return nil
 }
 
+// GetCashbunnySupportedCurrencies operation middleware
+func (sh *strictHandler) GetCashbunnySupportedCurrencies(ctx echo.Context) error {
+	var request GetCashbunnySupportedCurrenciesRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCashbunnySupportedCurrencies(ctx.Request().Context(), request.(GetCashbunnySupportedCurrenciesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCashbunnySupportedCurrencies")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetCashbunnySupportedCurrenciesResponseObject); ok {
+		return validResponse.VisitGetCashbunnySupportedCurrenciesResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetCashbunnyUserPreference operation middleware
+func (sh *strictHandler) GetCashbunnyUserPreference(ctx echo.Context) error {
+	var request GetCashbunnyUserPreferenceRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCashbunnyUserPreference(ctx.Request().Context(), request.(GetCashbunnyUserPreferenceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCashbunnyUserPreference")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetCashbunnyUserPreferenceResponseObject); ok {
+		return validResponse.VisitGetCashbunnyUserPreferenceResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// CreateCashbunnyDefaultUserPreference operation middleware
+func (sh *strictHandler) CreateCashbunnyDefaultUserPreference(ctx echo.Context) error {
+	var request CreateCashbunnyDefaultUserPreferenceRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateCashbunnyDefaultUserPreference(ctx.Request().Context(), request.(CreateCashbunnyDefaultUserPreferenceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateCashbunnyDefaultUserPreference")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(CreateCashbunnyDefaultUserPreferenceResponseObject); ok {
+		return validResponse.VisitCreateCashbunnyDefaultUserPreferenceResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // GetUserSystemPreference operation middleware
 func (sh *strictHandler) GetUserSystemPreference(ctx echo.Context) error {
 	var request GetUserSystemPreferenceRequestObject
@@ -868,31 +1055,34 @@ func (sh *strictHandler) GetUser(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"YDgYsuX58t8AAAD//2k+u+a8GgAA",
+	"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",
+	"AQAA//8RQuGGnSAAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

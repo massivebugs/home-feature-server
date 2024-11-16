@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/db/queries"
 	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 	"github.com/massivebugs/home-feature-server/rest"
+	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
 type CashbunnyHandler struct {
@@ -26,6 +29,44 @@ func NewCashbunnyHandler(cfg *rest.Config, db *db.Handle, querier queries.Querie
 			cashbunny.NewUserPreferencesRepository(querier),
 		),
 	}
+}
+
+func (h *CashbunnyHandler) GetCashbunnyUserPreference(ctx context.Context, request oapi.GetCashbunnyUserPreferenceRequestObject) (oapi.GetCashbunnyUserPreferenceResponseObject, error) {
+	claims := h.GetClaims(ctx)
+
+	result, err := h.cashbunny.GetUserPreference(ctx, claims.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return oapi.GetCashbunnyUserPreference200JSONResponse{
+		UserPreference: oapi.CashbunnyUserPreference{
+			UserCurrencies: result.UserCurrencies,
+		},
+	}, nil
+}
+
+func (h *CashbunnyHandler) CreateCashbunnyDefaultUserPreference(ctx context.Context, request oapi.CreateCashbunnyDefaultUserPreferenceRequestObject) (oapi.CreateCashbunnyDefaultUserPreferenceResponseObject, error) {
+	claims := h.GetClaims(ctx)
+
+	result, err := h.cashbunny.CreateDefaultUserPreferences(ctx, claims.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return oapi.CreateCashbunnyDefaultUserPreference200JSONResponse{
+		UserPreference: oapi.CashbunnyUserPreference{
+			UserCurrencies: result.UserCurrencies,
+		},
+	}, nil
+}
+
+func (h *CashbunnyHandler) GetCashbunnySupportedCurrencies(ctx context.Context, request oapi.GetCashbunnySupportedCurrenciesRequestObject) (oapi.GetCashbunnySupportedCurrenciesResponseObject, error) {
+	result := h.cashbunny.GetSupportedCurrencies(ctx)
+
+	return oapi.GetCashbunnySupportedCurrencies200JSONResponse{
+		CurrenciesAndGrapheme: result,
+	}, nil
 }
 
 // func (h *CashbunnyHandler) GetOverview(c echo.Context) error {
@@ -90,34 +131,6 @@ func NewCashbunnyHandler(cfg *rest.Config, db *db.Handle, querier queries.Querie
 // 	}
 
 // 	result, err := h.cashbunny.SavePlannerParameters(c.Request().Context(), claims.UserID, req)
-// 	if err != nil {
-// 		return h.CreateErrorResponse(c, err)
-// 	}
-
-// 	return h.CreateResponse(c, nil, result)
-// }
-
-// func (h *CashbunnyHandler) GetCurrencies(c echo.Context) error {
-// 	result := h.cashbunny.GetAllCurrencies(c.Request().Context())
-
-// 	return h.CreateResponse(c, nil, result)
-// }
-
-// func (h *CashbunnyHandler) GetUserPreferences(c echo.Context) error {
-// 	claims := h.GetTokenClaims(c)
-
-// 	result, err := h.cashbunny.GetUserPreferences(c.Request().Context(), claims.UserID)
-// 	if err != nil {
-// 		return h.CreateErrorResponse(c, err)
-// 	}
-
-// 	return h.CreateResponse(c, nil, result)
-// }
-
-// func (h *CashbunnyHandler) CreateDefaultUserPreferences(c echo.Context) error {
-// 	claims := h.GetTokenClaims(c)
-
-// 	result, err := h.cashbunny.CreateDefaultUserPreferences(c.Request().Context(), claims.UserID)
 // 	if err != nil {
 // 		return h.CreateErrorResponse(c, err)
 // 	}

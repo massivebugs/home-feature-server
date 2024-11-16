@@ -267,41 +267,61 @@ paths:
                 properties:
                   user_system_preference:
                     $ref: '#/components/schemas/userSystemPreference'
-  # /secure/cashbunny/user_preferences:
-  #   get:
-  #     operationId: GetCashbunnyUserPreference
-  #     description: Returns user preferences for cashbunny
-  #     security:
-  #       - bearerAuth: []
-  #     responses:
-  #       200:
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               required: [user_preference]
-  #               properties:
-  #                 user_preference:
-  #                   $ref: '#/components/schemas/cashbunnyUserPreference'
-  #       404:
-  #         description: User preference has not been created yet
-    # post:
-    #   operationId: CreateCashbunnyDefaultUserPreference
-    #   description: Create default cashbunny user preference
-    #   security:
-    #     - bearerAuth: []
-    #   responses:
-    #     200:
-    #       description: OK
-    #       content:
-    #         application/json:
-    #           schema:
-    #             type: object
-    #             required: [user_preference]
-    #             properties:
-    #               user_preference:
-    #                 $ref: '#/components/schemas/cashbunnyUserPreference'
+  /api/v1/secure/cashbunny/user_preferences:
+    get:
+      operationId: GetCashbunnyUserPreference
+      description: Returns user preferences for Cashbunny
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_preference]
+                properties:
+                  user_preference:
+                    $ref: '#/components/schemas/cashbunnyUserPreference'
+        404:
+          description: User preference has not been created yet
+    post:
+      operationId: CreateCashbunnyDefaultUserPreference
+      description: Create default Cashbunny user preference
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_preference]
+                properties:
+                  user_preference:
+                    $ref: '#/components/schemas/cashbunnyUserPreference'
+  /api/v1/secure/cashbunny/currencies:
+    get:
+      operationId: GetCashbunnySupportedCurrencies
+      description: Returns Cashbunny's supported currencies
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [currencies_and_grapheme]
+                properties:
+                  currencies_and_grapheme:
+                    type: object
+                    additionalProperties:
+                      type: string
+
   # /secure/cashbunny/accounts:
   #   get:
   #     tags: 

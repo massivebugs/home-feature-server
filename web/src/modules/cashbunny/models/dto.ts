@@ -9,14 +9,6 @@ export type OverviewDto = {
   transactions_from_scheduled: TransactionDto[]
 }
 
-export type GetAllCurrenciesDto = {
-  currencies_and_grapheme: { [key: string]: string }
-}
-
-export type UserPreferencesDto = {
-  user_currencies: string[]
-}
-
 export type PlannerAssetDto = {
   asset_account_id: string
   name: string

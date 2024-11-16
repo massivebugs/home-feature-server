@@ -15,7 +15,7 @@ type CreateUserCurrencyParams struct {
 type IUserPreferenceRepository interface {
 	GetUserPreferenceExistsByUserID(ctx context.Context, db db.DB, userID uint32) (bool, error)
 	CreateUserPreferences(ctx context.Context, db db.DB, userID uint32) (uint32, error)
-	GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*UserPreferences, error)
+	GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*UserPreference, error)
 	CreateUserCurrency(ctx context.Context, db db.DB, params CreateUserCurrencyParams) (uint32, error)
 	ListUserCurrencies(ctx context.Context, db db.DB, userID uint32) ([]string, error)
 }
@@ -54,7 +54,7 @@ func (r *UserPreferencesRepository) CreateUserPreferences(ctx context.Context, d
 	return uint32(id), nil
 }
 
-func (r *UserPreferencesRepository) GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*UserPreferences, error) {
+func (r *UserPreferencesRepository) GetUserPreferencesByUserID(ctx context.Context, db db.DB, userID uint32) (*UserPreference, error) {
 	ucs, err := r.ListUserCurrencies(ctx, db, userID)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (r *UserPreferencesRepository) GetUserPreferencesByUserID(ctx context.Conte
 		return nil, err
 	}
 
-	up := NewUserPreferencesFromQueries(upData, ucs)
+	up := NewUserPreferenceFromQueries(upData, ucs)
 
 	return up, nil
 }

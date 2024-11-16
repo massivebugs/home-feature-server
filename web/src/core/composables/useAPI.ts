@@ -82,6 +82,10 @@ export class APIError {
   get isHandled() {
     return this.handled
   }
+
+  toString() {
+    return this.message
+  }
 }
 
 export type RepeatRequest = {
@@ -130,7 +134,13 @@ export type GetCashbunnyUserPreferenceResponse = {
   userPreference: CashbunnyUserPreferenceResponse
 }
 
-export type APIErrorHandlers<T extends number[]> = { [key in T[number]]: (error: APIError) => void }
+export type GetCashbunnySupportedCurrenciesResponse = {
+  currenciesAndGrapheme: { [key: string]: string }
+}
+
+export type APIErrorHandlers<T extends number[]> = {
+  [key in T[number]]: (error: APIError) => void
+}
 
 export class API {
   ax: AxiosInstance
@@ -223,6 +233,14 @@ export class API {
     )
   }
 
+  getCashbunnySupportedCurrencies() {
+    return this.wrapRequest(
+      this.ax.get<GetCashbunnySupportedCurrenciesResponse>(
+        APIEndpoints.v1.secure.cashbunny.currencies.path,
+      ),
+    )
+  }
+
   // Enforces error handling of known error responses, and converts snake_case response to camelCase
   private async wrapRequest<T extends Object, K extends number[]>(
     promise: Promise<AxiosResponse<T, any>>,
@@ -241,8 +259,11 @@ export class API {
         const errorData = error.response?.data
         if ('message' in errorData && 'validation_messages' in errorData) {
           const apiErr = new APIError(errorData.message, errorData.validation_messages)
-          errorHandlers[error.status as K[number]](apiErr)
-          apiErr.setHandled()
+          const handler = errorHandlers[error.status as K[number]]
+          if (handler) {
+            handler(apiErr)
+            apiErr.setHandled()
+          }
           throw apiErr
         }
       }

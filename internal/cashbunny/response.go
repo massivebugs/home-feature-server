@@ -220,26 +220,6 @@ func newPlannerParametersResponse(
 	}
 }
 
-type getAllCurrenciesResponse struct {
-	CurrenciesAndGrapheme map[string]string `json:"currencies_and_grapheme"`
-}
-
-func newGetAllCurrenciesResponse(cgMap map[string]string) getAllCurrenciesResponse {
-	return getAllCurrenciesResponse{
-		CurrenciesAndGrapheme: cgMap,
-	}
-}
-
-type userPreferencesResponse struct {
-	UserCurrencies []string `json:"user_currencies"`
-}
-
-func newUserPreferencesResponse(up *UserPreferences) userPreferencesResponse {
-	return userPreferencesResponse{
-		UserCurrencies: up.userCurrencies,
-	}
-}
-
 type accountResponse struct {
 	ID            uint32    `json:"id"`
 	Category      string    `json:"category"`

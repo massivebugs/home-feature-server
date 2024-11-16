@@ -7,6 +7,11 @@ const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
+// CashbunnyUserPreference Model defining user's cashbunny preferences such as default currency etc.
+type CashbunnyUserPreference struct {
+	UserCurrencies []string `json:"user_currencies"`
+}
+
 // Error Error code and underlying errors
 type Error struct {
 	// Message A useful message describing the error

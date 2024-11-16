@@ -18,6 +18,7 @@ type Server struct {
 	*handler.RepeatHandler
 	*handler.AuthHandler
 	*handler.SystemPreferenceHandler
+	*handler.CashbunnyHandler
 }
 
 var _ oapi.StrictServerInterface = (*Server)(nil)
@@ -75,7 +76,7 @@ func main() {
 		RepeatHandler:           handler.NewRepeatHandler(cfg),
 		AuthHandler:             handler.NewAuthHandler(cfg, db, querier),
 		SystemPreferenceHandler: handler.NewSystemPreferenceHandler(cfg, db, querier),
-		// CashbunnyHandler:             rest.NewCashbunnyHandler(cfg, db, querier),
+		CashbunnyHandler:        handler.NewCashbunnyHandler(cfg, db, querier),
 	}
 
 	oapi.RegisterHandlers(

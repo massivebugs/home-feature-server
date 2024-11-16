@@ -71,7 +71,7 @@ export const i18nOptions: I18nOptions = {
         processAlreadyExistsTitle: 'Error',
         processAlreadyExistsMessage: 'This program can have only one running process',
         errorLoadingDataTitle: 'Error',
-        errorLoadingDataMessage: 'An error occured while loading data: {e}',
+        errorLoadingDataMessage: 'An error occured while loading data:\n\n{e}',
         assets: {
           name: 'Assets',
         },
@@ -329,7 +329,7 @@ export const i18nOptions: I18nOptions = {
         processAlreadyExistsTitle: 'エラー',
         processAlreadyExistsMessage: 'すでに起動しているプロセスがあります',
         errorLoadingDataTitle: 'エラー',
-        errorLoadingDataMessage: 'データ取得中エラーが発生しました: {e}',
+        errorLoadingDataMessage: 'データ取得中エラーが発生しました:\n\n{e}',
         assets: {
           name: '資産',
         },

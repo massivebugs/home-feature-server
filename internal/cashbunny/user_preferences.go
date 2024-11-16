@@ -6,18 +6,18 @@ import (
 	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
-type UserPreferences struct {
-	userCurrencies []string
+type UserPreference struct {
+	UserCurrencies []string
 	createdAt      time.Time
 	updatedAt      time.Time
 }
 
-func NewUserPreferencesFromQueries(
+func NewUserPreferenceFromQueries(
 	up *queries.CashbunnyUserPreference,
 	ucs []string,
-) *UserPreferences {
-	return &UserPreferences{
-		userCurrencies: ucs,
+) *UserPreference {
+	return &UserPreference{
+		UserCurrencies: ucs,
 		createdAt:      up.CreatedAt,
 		updatedAt:      up.UpdatedAt,
 	}
