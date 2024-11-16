@@ -27,6 +27,7 @@ type Querier interface {
 	DeleteTransaction(ctx context.Context, db DBTX, arg DeleteTransactionParams) error
 	DeleteTransactionsByAccountID(ctx context.Context, db DBTX, arg DeleteTransactionsByAccountIDParams) error
 	DeleteUser(ctx context.Context, db DBTX, id uint32) error
+	DeleteUserRefreshTokenByValue(ctx context.Context, db DBTX, arg DeleteUserRefreshTokenByValueParams) (sql.Result, error)
 	GetAccountByID(ctx context.Context, db DBTX, arg GetAccountByIDParams) (*CashbunnyAccount, error)
 	GetTransactionByID(ctx context.Context, db DBTX, arg GetTransactionByIDParams) (*CashbunnyTransaction, error)
 	GetUser(ctx context.Context, db DBTX, id uint32) (*User, error)

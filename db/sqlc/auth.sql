@@ -93,3 +93,10 @@ SELECT
     LIMIT
       1
   );
+
+-- name: DeleteUserRefreshTokenByValue :execresult
+DELETE 
+  FROM user_refresh_tokens
+  WHERE
+    user_id = ?
+    AND value = ?;

@@ -147,6 +147,20 @@ paths:
                 type: string
                 description: "Token Set-Cookie header"
   /api/v1/secure/auth/token:
+    delete:
+      operationId: DeleteJWTToken
+      description: Makes the client delete their stored cookie by setting expires to a past date
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                description: "Token Set-Cookie header"
+  /api/v1/secure/auth/refresh_token:
     post:
       operationId: CreateJWTRefreshToken
       description: Returns a new JWT Refresh Token for a user
@@ -166,6 +180,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+    delete:
+      operationId: DeleteJWTRefreshToken
+      description: Makes the client delete their stored cookie by setting expires to a past date
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                description: "Token Set-Cookie header"
   /api/v1/secure/user:
     get:
       operationId: GetUser
@@ -240,41 +267,41 @@ paths:
                 properties:
                   user_system_preference:
                     $ref: '#/components/schemas/userSystemPreference'
-  /secure/cashbunny/user_preferences:
-    get:  
-      operationId: GetCashbunnyUserPreference 
-      description: Returns user preferences for cashbunny
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [user_preference]
-                properties:
-                  user_preference:
-                    $ref: '#/components/schemas/cashbunnyUserPreference'
-        404:
-          description: User preference has not been created yet
-    post:
-      operationId: CreateCashbunnyDefaultUserPreference
-      description: Create default cashbunny user preference
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [user_preference]
-                properties:
-                  user_preference:
-                    $ref: '#/components/schemas/cashbunnyUserPreference'
+  # /secure/cashbunny/user_preferences:
+  #   get:
+  #     operationId: GetCashbunnyUserPreference
+  #     description: Returns user preferences for cashbunny
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               required: [user_preference]
+  #               properties:
+  #                 user_preference:
+  #                   $ref: '#/components/schemas/cashbunnyUserPreference'
+  #       404:
+  #         description: User preference has not been created yet
+    # post:
+    #   operationId: CreateCashbunnyDefaultUserPreference
+    #   description: Create default cashbunny user preference
+    #   security:
+    #     - bearerAuth: []
+    #   responses:
+    #     200:
+    #       description: OK
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: object
+    #             required: [user_preference]
+    #             properties:
+    #               user_preference:
+    #                 $ref: '#/components/schemas/cashbunnyUserPreference'
   # /secure/cashbunny/accounts:
   #   get:
   #     tags: 

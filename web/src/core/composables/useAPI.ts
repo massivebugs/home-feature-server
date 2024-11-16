@@ -17,6 +17,7 @@ const Endpoints = {
     secure: {
       auth: {
         token: {},
+        refresh_token: {},
       },
       user: {},
       system_preferences: {},
@@ -160,12 +161,23 @@ export class API {
     return this.wrapRequest(this.ax.post(APIEndpoints.v1.auth.token.path, data), errorHandlers)
   }
 
+  deleteJWTToken() {
+    return this.wrapRequest(this.ax.delete(APIEndpoints.v1.secure.auth.token.path))
+  }
+
   refreshJWTToken() {
-    return this.wrapRequest(this.ax.put(APIEndpoints.v1.auth.token.path))
+    return this.wrapRequest(this.ax.put(APIEndpoints.v1.secure.auth.token.path))
   }
 
   createJWTRefreshToken(errorHandlers: APIErrorHandlers<[403]>) {
-    return this.wrapRequest(this.ax.post(APIEndpoints.v1.secure.auth.token.path), errorHandlers)
+    return this.wrapRequest(
+      this.ax.post(APIEndpoints.v1.secure.auth.refresh_token.path),
+      errorHandlers,
+    )
+  }
+
+  deleteJWTRefreshToken() {
+    return this.wrapRequest(this.ax.delete(APIEndpoints.v1.secure.auth.refresh_token.path))
   }
 
   getUser() {

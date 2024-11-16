@@ -38,8 +38,14 @@ type ServerInterface interface {
 	// (POST /api/v1/repeat)
 	Repeat(ctx echo.Context) error
 
-	// (POST /api/v1/secure/auth/token)
+	// (DELETE /api/v1/secure/auth/refresh_token)
+	DeleteJWTRefreshToken(ctx echo.Context) error
+
+	// (POST /api/v1/secure/auth/refresh_token)
 	CreateJWTRefreshToken(ctx echo.Context) error
+
+	// (DELETE /api/v1/secure/auth/token)
+	DeleteJWTToken(ctx echo.Context) error
 
 	// (GET /api/v1/secure/system_preferences)
 	GetUserSystemPreference(ctx echo.Context) error
@@ -106,6 +112,17 @@ func (w *ServerInterfaceWrapper) Repeat(ctx echo.Context) error {
 	return err
 }
 
+// DeleteJWTRefreshToken converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteJWTRefreshToken(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteJWTRefreshToken(ctx)
+	return err
+}
+
 // CreateJWTRefreshToken converts echo context to params.
 func (w *ServerInterfaceWrapper) CreateJWTRefreshToken(ctx echo.Context) error {
 	var err error
@@ -114,6 +131,17 @@ func (w *ServerInterfaceWrapper) CreateJWTRefreshToken(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.CreateJWTRefreshToken(ctx)
+	return err
+}
+
+// DeleteJWTToken converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteJWTToken(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteJWTToken(ctx)
 	return err
 }
 
@@ -194,7 +222,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/v1/auth/token", wrapper.RefreshJWTToken)
 	router.GET(baseURL+"/api/v1/ping", wrapper.Ping)
 	router.POST(baseURL+"/api/v1/repeat", wrapper.Repeat)
-	router.POST(baseURL+"/api/v1/secure/auth/token", wrapper.CreateJWTRefreshToken)
+	router.DELETE(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.DeleteJWTRefreshToken)
+	router.POST(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.CreateJWTRefreshToken)
+	router.DELETE(baseURL+"/api/v1/secure/auth/token", wrapper.DeleteJWTToken)
 	router.GET(baseURL+"/api/v1/secure/system_preferences", wrapper.GetUserSystemPreference)
 	router.POST(baseURL+"/api/v1/secure/system_preferences", wrapper.CreateDefaultUserSystemPreference)
 	router.PUT(baseURL+"/api/v1/secure/system_preferences", wrapper.UpdateUserSystemPreference)
@@ -327,6 +357,27 @@ func (response Repeat200JSONResponse) VisitRepeatResponse(w http.ResponseWriter)
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteJWTRefreshTokenRequestObject struct {
+}
+
+type DeleteJWTRefreshTokenResponseObject interface {
+	VisitDeleteJWTRefreshTokenResponse(w http.ResponseWriter) error
+}
+
+type DeleteJWTRefreshToken204ResponseHeaders struct {
+	SetCookie string
+}
+
+type DeleteJWTRefreshToken204Response struct {
+	Headers DeleteJWTRefreshToken204ResponseHeaders
+}
+
+func (response DeleteJWTRefreshToken204Response) VisitDeleteJWTRefreshTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Set-Cookie", fmt.Sprint(response.Headers.SetCookie))
+	w.WriteHeader(204)
+	return nil
+}
+
 type CreateJWTRefreshTokenRequestObject struct {
 }
 
@@ -355,6 +406,27 @@ func (response CreateJWTRefreshToken403JSONResponse) VisitCreateJWTRefreshTokenR
 	w.WriteHeader(403)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteJWTTokenRequestObject struct {
+}
+
+type DeleteJWTTokenResponseObject interface {
+	VisitDeleteJWTTokenResponse(w http.ResponseWriter) error
+}
+
+type DeleteJWTToken204ResponseHeaders struct {
+	SetCookie string
+}
+
+type DeleteJWTToken204Response struct {
+	Headers DeleteJWTToken204ResponseHeaders
+}
+
+func (response DeleteJWTToken204Response) VisitDeleteJWTTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Set-Cookie", fmt.Sprint(response.Headers.SetCookie))
+	w.WriteHeader(204)
+	return nil
 }
 
 type GetUserSystemPreferenceRequestObject struct {
@@ -459,8 +531,14 @@ type StrictServerInterface interface {
 	// (POST /api/v1/repeat)
 	Repeat(ctx context.Context, request RepeatRequestObject) (RepeatResponseObject, error)
 
-	// (POST /api/v1/secure/auth/token)
+	// (DELETE /api/v1/secure/auth/refresh_token)
+	DeleteJWTRefreshToken(ctx context.Context, request DeleteJWTRefreshTokenRequestObject) (DeleteJWTRefreshTokenResponseObject, error)
+
+	// (POST /api/v1/secure/auth/refresh_token)
 	CreateJWTRefreshToken(ctx context.Context, request CreateJWTRefreshTokenRequestObject) (CreateJWTRefreshTokenResponseObject, error)
+
+	// (DELETE /api/v1/secure/auth/token)
+	DeleteJWTToken(ctx context.Context, request DeleteJWTTokenRequestObject) (DeleteJWTTokenResponseObject, error)
 
 	// (GET /api/v1/secure/system_preferences)
 	GetUserSystemPreference(ctx context.Context, request GetUserSystemPreferenceRequestObject) (GetUserSystemPreferenceResponseObject, error)
@@ -620,6 +698,29 @@ func (sh *strictHandler) Repeat(ctx echo.Context) error {
 	return nil
 }
 
+// DeleteJWTRefreshToken operation middleware
+func (sh *strictHandler) DeleteJWTRefreshToken(ctx echo.Context) error {
+	var request DeleteJWTRefreshTokenRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteJWTRefreshToken(ctx.Request().Context(), request.(DeleteJWTRefreshTokenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteJWTRefreshToken")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeleteJWTRefreshTokenResponseObject); ok {
+		return validResponse.VisitDeleteJWTRefreshTokenResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // CreateJWTRefreshToken operation middleware
 func (sh *strictHandler) CreateJWTRefreshToken(ctx echo.Context) error {
 	var request CreateJWTRefreshTokenRequestObject
@@ -637,6 +738,29 @@ func (sh *strictHandler) CreateJWTRefreshToken(ctx echo.Context) error {
 		return err
 	} else if validResponse, ok := response.(CreateJWTRefreshTokenResponseObject); ok {
 		return validResponse.VisitCreateJWTRefreshTokenResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// DeleteJWTToken operation middleware
+func (sh *strictHandler) DeleteJWTToken(ctx echo.Context) error {
+	var request DeleteJWTTokenRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteJWTToken(ctx.Request().Context(), request.(DeleteJWTTokenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteJWTToken")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeleteJWTTokenResponseObject); ok {
+		return validResponse.VisitDeleteJWTTokenResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
@@ -744,30 +868,31 @@ func (sh *strictHandler) GetUser(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+RYb2/bthP+Klf+fi+V2IlbbDBQYG3Xrs0wLGgS9EUQGLR4tthIJMc/SbzA3304UrKt",
-	"SE7S1F037E3gSLzj3XPPczzqluW6Mlqh8o6Nb5nLC6x4/InWaks/BLrcSuOlVmzM3tJjyLVA4EpAUAJt",
-	"uZBqDtHAsYwZqw1aLzH6qdA5Pseup1cQHM5CCfUKSK+n5MsXmPyxjOENr0yJbMx8gRbhmv44XSEYq6cl",
-	"Vg6upS+ijeCew0IHenUlBQqWMb8wZOy8lWrOlhm74qUUnKKY1FvHQLkQkh7y8riVQMd+FdAtozAmM4ml",
-	"SOFBiWruC6iC8zBFmKK/RlRwEME6HJJ57U9PP2Pu2XKZMYt/BGlRsPH5Cq7+MC865hkLDmOd2rDnFrlH",
-	"MeG+Nwcp6PFM24oWsCCVHx2uwZLK4xwtrSz1fI5iItU2V4pX2PPiTl6SShGX3nGZbYa6Lb+ThfNYHVuc",
-	"oUWV97DpNy2wBIEzqYhAZAQuWoFZmTlwIS+AOyi5mgc+xwy8rBD+1AoBfb7foW+zMEpixcTPfO/omBIK",
-	"Zcmn9MjbgFkPBt1qO8yDlX5xQlpLm0yRW7Svgi/W/71ranP06ZRlSZnkKb1dl6rw3rAlOZZqpmMhpI9B",
-	"vieNvEPug0U4QXuFFj6+PTmFV8cfiF9oXcLuYH+4H6mpDSpuJBuz0f5wf0RgcF/EEAfcyMHVwYDXQRrt",
-	"fLcKb2IpHXBQeJ2KEFxTD6p+BlhxWUY5GO7ctbZEDEI8Uv2DWHk5czFNIhE6/1qLReS1Vh5V3JobU8o8",
-	"mg0+O9q/aWBdOcRdu/E2OuUQ1ZaCa/ccdJ6C/6l+tJ/rqtNUMnazp7mRe9QX56j28MZbvuf5PG5eK5kM",
-	"0gZUrVX2W4NqmseP4DX8cAh5wS3PPVqXRfwICi4VcCjRe7QZqFBN0caXHJzBXPJybdbJa9LEMDk4HD37",
-	"iqxWjmJmTa0fzmxEmb0YAi9NwVWo0Mp8M2LXW4qvCLTZKKukejnKKn7z8sUwqWezWTU0WGWyUa5ui2pb",
-	"UyOID5zRyiX2HQ4Pu2D8/itJ7vlw+EW0/r/FGRuz/w3WB/egPrUH6cSM8bS3es0FfEw6otfLrCXngdeX",
-	"qLaL+iP6YFUj6qNPp3BKBjDTFjjUFelT8NGn07hyZyre1Mw9VO479B8m5VYSZmm+qPiNrEJFfF29g1wH",
-	"5b8dS7fwc3e8HPbyMmMFckH6G9+yE/R7b7S+lNguTdsqUWK9FpKHbiliWH8/62nP0bffkw4tkA6EdDQX",
-	"iLTGhF5ZzSy6Al2cXPNgLSq/lldHU/X6lqi+fy03Bho2Pm+PMucXy4vNZmPIaHzL5uj7rgO5VleoJA1q",
-	"gEoYLZWnAyIvML+M3SbXSmEeDe6ic5wk1gfJE5vN1ovLsVbzZy3NN0/uH4Ebh/1K7R4OrUZt0WAawO9v",
-	"0sQlR0Sqd8sicNSUaAwzwRpN6HTJFd3vqlFvxe6EZtLmwkcXtWueijytw57y/LKF7XssS/214D6qDe46",
-	"19OinSrlt/vUHuBNFCc+8ZyvW84XnPe1xT+pQ32/zv8FrbEuU7qxTjZurFv7ZVOt/ptup0K/oD/ru0jv",
-	"VAoUy6STw0OQ9l7w+0aeHteP1QSR4HkXxLNe8KDgDpSmqRAV1J8nYIH+ETXN7r0Zg8AZD6VPVbunXGn5",
-	"z2n1f7lwjwG8b7o6MzRMP4hzWrYV4KedhU/A7BufUf/i+nabZPPB8962SHMQHXqoPIGEIlEhfiPb0ht3",
-	"L6nHANwL6A7hiyvsVTxez++i9U5b2LyTsowFW9ZfFd14MCh1zstCOz8+GB2O2PJi+VcAAAD//75QsJoz",
-	"GAAA",
+	"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",
+	"YDgYsuX58t8AAAD//2k+u+a8GgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

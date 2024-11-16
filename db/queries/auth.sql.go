@@ -73,6 +73,23 @@ func (q *Queries) DeleteUser(ctx context.Context, db DBTX, id uint32) error {
 	return err
 }
 
+const deleteUserRefreshTokenByValue = `-- name: DeleteUserRefreshTokenByValue :execresult
+DELETE 
+  FROM user_refresh_tokens
+  WHERE
+    user_id = ?
+    AND value = ?
+`
+
+type DeleteUserRefreshTokenByValueParams struct {
+	UserID uint32
+	Value  string
+}
+
+func (q *Queries) DeleteUserRefreshTokenByValue(ctx context.Context, db DBTX, arg DeleteUserRefreshTokenByValueParams) (sql.Result, error) {
+	return db.ExecContext(ctx, deleteUserRefreshTokenByValue, arg.UserID, arg.Value)
+}
+
 const getUser = `-- name: GetUser :one
 SELECT
   id, name, email, disabled_at, created_at, updated_at, deleted_at

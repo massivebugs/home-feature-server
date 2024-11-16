@@ -117,8 +117,11 @@ const onClickLogOut = () => {
 const onSuccessConfirmLogOutDialog = async () => {
   showLogOutConfirmDialog.value = false
 
-  // Remove API token and reload login page
-  // TODO: Call server endpoint to remove cookie for us
+  // Remove auth tokens and reload login page
+  await api.deleteJWTRefreshToken()
+  await api.deleteJWTToken()
+
+  // TODO: Error handling
 
   await router.push({ name: 'login' })
   router.go(0)

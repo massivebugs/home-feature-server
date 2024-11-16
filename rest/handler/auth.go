@@ -71,6 +71,25 @@ func (h *AuthHandler) CreateJWTToken(ctx context.Context, request oapi.CreateJWT
 	}, nil
 }
 
+func (h *AuthHandler) DeleteJWTToken(ctx context.Context, request oapi.DeleteJWTTokenRequestObject) (oapi.DeleteJWTTokenResponseObject, error) {
+	cookie := http.Cookie{
+		Name:     h.Config.AuthJWTCookieName,
+		Value:    "", // Empty token value for good measure
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   0,
+		Expires:  time.Unix(0, 0),
+	}
+
+	return oapi.DeleteJWTToken204Response{
+		Headers: oapi.DeleteJWTToken204ResponseHeaders{
+			SetCookie: cookie.String(),
+		},
+	}, nil
+}
+
 func (h *AuthHandler) CreateJWTRefreshToken(ctx context.Context, request oapi.CreateJWTRefreshTokenRequestObject) (oapi.CreateJWTRefreshTokenResponseObject, error) {
 	claims := h.GetClaims(ctx)
 	now := time.Now()
@@ -100,6 +119,32 @@ func (h *AuthHandler) CreateJWTRefreshToken(ctx context.Context, request oapi.Cr
 
 	return oapi.CreateJWTRefreshToken200Response{
 		Headers: oapi.CreateJWTRefreshToken200ResponseHeaders{
+			SetCookie: cookie.String(),
+		},
+	}, nil
+}
+
+func (h *AuthHandler) DeleteJWTRefreshToken(ctx context.Context, request oapi.DeleteJWTRefreshTokenRequestObject) (oapi.DeleteJWTRefreshTokenResponseObject, error) {
+	claims := h.GetClaims(ctx)
+
+	err := h.auth.DeleteJWTRefreshToken(ctx, claims.UserID, claims.TokenID)
+	if err != nil {
+		return nil, err
+	}
+
+	cookie := http.Cookie{
+		Name:     h.Config.RefreshJWTCookieName,
+		Value:    "", // Empty token value for good measure
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   0,
+		Expires:  time.Unix(0, 0),
+	}
+
+	return oapi.DeleteJWTRefreshToken204Response{
+		Headers: oapi.DeleteJWTRefreshToken204ResponseHeaders{
 			SetCookie: cookie.String(),
 		},
 	}, nil

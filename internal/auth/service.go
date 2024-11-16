@@ -148,6 +148,17 @@ func (s *Auth) CreateJWTRefreshToken(
 	return refreshTokenStr, nil
 }
 
+func (s *Auth) DeleteJWTRefreshToken(
+	ctx context.Context,
+	userID uint32,
+	tokenID string,
+) error {
+	return s.rtRepo.DeleteUserRefreshTokenByValue(ctx, s.db, DeleteUserRefreshTokenByValueParams{
+		UserID: userID,
+		Value:  tokenID,
+	})
+}
+
 func (s *Auth) RefreshJWTToken(
 	ctx context.Context,
 	now time.Time,
