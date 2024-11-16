@@ -36,7 +36,7 @@ import CreateUserDialogComponent from '../components/CreateUserDialogComponent.v
 import LoginDialogComponent, { type LoginSubmitEvent } from '../components/LoginDialogComponent.vue'
 import { SpinnerTypes } from '../components/SpinnerIconComponent.vue'
 import UserPendingAdminApprovalDialogComponent from '../components/UserPendingAdminApprovalDialogComponent.vue'
-import { useAPI } from '../composables/useAPI'
+import { APIError, useAPI } from '../composables/useAPI'
 import { API_URL } from '../constants'
 import type { CreateAuthTokenDto, CreateUserDto } from '../models/dto'
 import { User } from '../models/user'
@@ -79,7 +79,7 @@ const onSubmitLogin = async (payload: LoginSubmitEvent) => {
     await api.createJWTToken(payload, {
       400: (error) => {
         loginErrorMessage.value = error.message
-        loginValidationErrors.value = { username: '', password: '', ...error.validation_messages }
+        loginValidationErrors.value = { username: '', password: '', ...error.validationMessages }
       },
       403: (error) => {
         onClickShowCreateUser()
@@ -99,7 +99,10 @@ const onSubmitLogin = async (payload: LoginSubmitEvent) => {
     })
 
     checkAuth()
-  } catch {
+  } catch (e) {
+    if (e instanceof APIError && e.isHandled) {
+      return
+    }
     // TODO
   } finally {
     isSubmitting.value = false
@@ -117,13 +120,16 @@ const onSubmitCreateUser = async (payload: CreateUserSubmitEvent) => {
           email: '',
           username: '',
           password: '',
-          ...error.validation_messages,
+          ...error.validationMessages,
         }
       },
     })
+
     currDialog.value = Dialogs.pendingApproval
-  } catch {
-    // TODO
+  } catch (e) {
+    if (e instanceof APIError && e.isHandled) {
+      return
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -143,7 +149,7 @@ const onCancelDialog = () => {
 const checkAuth = async () => {
   try {
     const res = await api.getUser()
-    coreStore.user = new User(res.data.user)
+    coreStore.user = new User(res.user)
     router.push({ name: 'desktop' })
   } catch {
     currDialog.value = Dialogs.login

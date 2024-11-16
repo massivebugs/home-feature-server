@@ -27,7 +27,7 @@
         :label="t('cashbunny.transactionAmount')"
         placeholder="0"
         :min="0"
-        :units="store.userPreferences?.user_currencies"
+        :units="store.userPreference?.userCurrencies"
         :error-message="validationErrors.amount || validationErrors.currency"
         v-model:value="formValues.amount"
         v-model:unit="formValues.currency"

@@ -28,6 +28,7 @@
 import { AxiosError, HttpStatusCode } from 'axios'
 import { onMounted, ref } from 'vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
+import type { API } from '@/core/composables/useAPI'
 import { sleep } from '@/core/utils/time'
 import { useCashbunnyStore } from '../stores'
 import CashbunnyIconComponent from './CashbunnyIconComponent.vue'
@@ -37,15 +38,19 @@ const emit = defineEmits<{
   (e: 'error', message: any): void
 }>()
 
-const store = useCashbunnyStore()
+const props = defineProps<{
+  api: API
+}>()
+
+const cashbunnyStore = useCashbunnyStore()
 const loadMessage = ref<string>('Initializing Cashbunny...')
 const loadPercent = ref<number>(0)
 
 const retrieveUserPreferences = async () => {
   loadMessage.value = 'Retrieving user preferences...'
   try {
-    const res = await store.getUserPreferences()
-    store.userPreferences = res.data.data
+    const res = await props.api.getCashbunnyUserPreference({ 404: () => {} })
+    cashbunnyStore.userPreference = res.userPreference
   } catch (error) {
     if (error instanceof AxiosError && error.status === HttpStatusCode.NotFound) {
       return
@@ -57,17 +62,17 @@ const retrieveUserPreferences = async () => {
 
 const createUserPreferences = async () => {
   loadMessage.value = 'Setting user preferences...'
-  if (!store.userPreferences) {
-    const res = await store.createUserPreferences()
-    store.userPreferences = res.data.data
+  if (!cashbunnyStore.userPreference) {
+    const res = await cashbunnyStore.createUserPreferences()
+    cashbunnyStore.userPreference = res.data
   }
 }
 
 const retrieveAllCurrencies = async () => {
   loadMessage.value = 'Retrieving list of supported currencies...'
-  const res = await store.getAllCurrencies()
+  const res = await cashbunnyStore.getAllCurrencies()
   if (res.data.error === null) {
-    store.setCurrencies(res.data.data)
+    cashbunnyStore.setCurrencies(res.data.data)
   }
 }
 

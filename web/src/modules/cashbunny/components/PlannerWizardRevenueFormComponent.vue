@@ -37,7 +37,7 @@
         :label="t('cashbunny.planner.revenue.amount')"
         placeholder="1"
         :min="1"
-        :units="store.userPreferences?.user_currencies"
+        :units="store.userPreference?.userCurrencies"
         :required="true"
         v-model:value="values.amount"
         v-model:unit="values.currency"
@@ -119,7 +119,7 @@ const presetOptions = computed<{ buttonType?: ButtonType; revenue: PlannerRevenu
       scheduled_transaction_id: '',
       description: t('cashbunny.planner.revenue.presets.salary.description'),
       amount: 0,
-      currency: store.userPreferences?.user_currencies[0] ?? '',
+      currency: store.userPreference?.userCurrencies[0] ?? '',
       source_revenue_account_id: '',
       source_revenue_account_name: t('cashbunny.planner.revenue.presets.salary.from'),
       destination_asset_account_id: '',
@@ -139,7 +139,7 @@ const presetOptions = computed<{ buttonType?: ButtonType; revenue: PlannerRevenu
       scheduled_transaction_id: '',
       description: t('cashbunny.planner.revenue.presets.pension.description'),
       amount: 0,
-      currency: store.userPreferences?.user_currencies[0] ?? '',
+      currency: store.userPreference?.userCurrencies[0] ?? '',
       source_revenue_account_id: '',
       source_revenue_account_name: t('cashbunny.planner.revenue.presets.pension.from'),
       destination_asset_account_id: '',
@@ -159,7 +159,7 @@ const presetOptions = computed<{ buttonType?: ButtonType; revenue: PlannerRevenu
       scheduled_transaction_id: '',
       description: t('cashbunny.planner.revenue.presets.dividends.description'),
       amount: 0,
-      currency: store.userPreferences?.user_currencies[0] ?? '',
+      currency: store.userPreference?.userCurrencies[0] ?? '',
       source_revenue_account_id: '',
       source_revenue_account_name: t('cashbunny.planner.revenue.presets.dividends.from'),
       destination_asset_account_id: '',

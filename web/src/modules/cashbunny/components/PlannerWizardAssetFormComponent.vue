@@ -44,7 +44,7 @@
         :label="t('cashbunny.planner.asset.amount')"
         placeholder="0"
         :min="0"
-        :units="store.userPreferences?.user_currencies"
+        :units="store.userPreference?.userCurrencies"
         v-model:value="values.amount"
         v-model:unit="values.currency"
       />
@@ -94,7 +94,7 @@ const presetOptions: { buttonType?: ButtonType; asset: PlannerAssetDto }[] = [
       name: t('cashbunny.planner.asset.presets.checkingAccount.name'),
       description: t('cashbunny.planner.asset.presets.checkingAccount.description'),
       amount: 0,
-      currency: store.userPreferences?.user_currencies[0] ?? '',
+      currency: store.userPreference?.userCurrencies[0] ?? '',
     },
   },
   {
@@ -104,7 +104,7 @@ const presetOptions: { buttonType?: ButtonType; asset: PlannerAssetDto }[] = [
       name: t('cashbunny.planner.asset.presets.savingsAccount.name'),
       description: t('cashbunny.planner.asset.presets.checkingAccount.description'),
       amount: 0,
-      currency: store.userPreferences?.user_currencies[0] ?? '',
+      currency: store.userPreference?.userCurrencies[0] ?? '',
     },
   },
   {
@@ -114,7 +114,7 @@ const presetOptions: { buttonType?: ButtonType; asset: PlannerAssetDto }[] = [
       name: t('cashbunny.planner.asset.presets.sinkingFunds.name'),
       description: t('cashbunny.planner.asset.presets.sinkingFunds.description'),
       amount: 0,
-      currency: store.userPreferences?.user_currencies[0] ?? '',
+      currency: store.userPreference?.userCurrencies[0] ?? '',
     },
   },
 ]

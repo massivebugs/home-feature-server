@@ -37,7 +37,7 @@
         :label="t('cashbunny.planner.liability.amount')"
         placeholder="1"
         :min="1"
-        :units="store.userPreferences?.user_currencies"
+        :units="store.userPreference?.userCurrencies"
         :required="true"
         v-model:value="values.amount"
         v-model:unit="values.currency"
@@ -120,7 +120,7 @@ const presetOptions = computed<{ buttonType?: ButtonType; liability: PlannerLiab
         scheduled_transaction_id: '',
         description: t('cashbunny.planner.liability.presets.studentLoans.description'),
         amount: 0,
-        currency: store.userPreferences?.user_currencies[0] ?? '',
+        currency: store.userPreference?.userCurrencies[0] ?? '',
         source_asset_account_id: '',
         source_asset_account_name: t('cashbunny.planner.liability.presets.studentLoans.from'),
         destination_liability_account_id: '',
@@ -140,7 +140,7 @@ const presetOptions = computed<{ buttonType?: ButtonType; liability: PlannerLiab
         scheduled_transaction_id: '',
         description: t('cashbunny.planner.liability.presets.carLoans.description'),
         amount: 0,
-        currency: store.userPreferences?.user_currencies[0] ?? '',
+        currency: store.userPreference?.userCurrencies[0] ?? '',
         source_asset_account_id: '',
         source_asset_account_name: t('cashbunny.planner.liability.presets.carLoans.from'),
         destination_liability_account_id: '',
@@ -160,7 +160,7 @@ const presetOptions = computed<{ buttonType?: ButtonType; liability: PlannerLiab
         scheduled_transaction_id: '',
         description: t('cashbunny.planner.liability.presets.mortgage.description'),
         amount: 0,
-        currency: store.userPreferences?.user_currencies[0] ?? '',
+        currency: store.userPreference?.userCurrencies[0] ?? '',
         source_asset_account_id: '',
         source_asset_account_name: t('cashbunny.planner.liability.presets.mortgage.from'),
         destination_liability_account_id: '',

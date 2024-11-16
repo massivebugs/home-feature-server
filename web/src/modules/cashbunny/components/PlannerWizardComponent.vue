@@ -254,7 +254,7 @@ const assetFormValues = ref<PlannerAssetDto>({
 const revenueFormValues = ref<PlannerRevenueDto>({
   scheduled_transaction_id: '',
   description: '',
-  currency: store.userPreferences?.user_currencies[0] ?? '',
+  currency: store.userPreference?.userCurrencies[0] ?? '',
   amount: 0,
   source_revenue_account_id: '',
   source_revenue_account_name: '',
@@ -272,7 +272,7 @@ const revenueFormValues = ref<PlannerRevenueDto>({
 const liabilityFormValues = ref<PlannerLiabilityDto>({
   scheduled_transaction_id: '',
   description: '',
-  currency: store.userPreferences?.user_currencies[0] ?? '',
+  currency: store.userPreference?.userCurrencies[0] ?? '',
   amount: 0,
   source_asset_account_id: '',
   source_asset_account_name: '',
@@ -321,7 +321,7 @@ const resetAssetFormValues = () => {
     asset_account_id: '',
     name: '',
     description: '',
-    currency: store.userPreferences?.user_currencies[0] ?? '',
+    currency: store.userPreference?.userCurrencies[0] ?? '',
     amount: 0,
   }
 
@@ -333,7 +333,7 @@ const resetRevenueFormValues = () => {
   revenueFormValues.value = {
     scheduled_transaction_id: '',
     description: '',
-    currency: store.userPreferences?.user_currencies[0] ?? '',
+    currency: store.userPreference?.userCurrencies[0] ?? '',
     amount: 0,
     source_revenue_account_id: '',
     source_revenue_account_name: '',
@@ -357,7 +357,7 @@ const resetLiabilityFormValues = () => {
   liabilityFormValues.value = {
     scheduled_transaction_id: '',
     description: '',
-    currency: store.userPreferences?.user_currencies[0] ?? '',
+    currency: store.userPreference?.userCurrencies[0] ?? '',
     amount: 0,
     source_asset_account_id: '',
     source_asset_account_name: '',

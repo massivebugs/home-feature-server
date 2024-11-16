@@ -1,6 +1,7 @@
 import type { Dayjs } from 'dayjs'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { CashbunnyUserPreferenceResponse } from '@/core/composables/useAPI'
 import type { APIResponse } from '@/core/models/dto'
 import { APIEndpoints, api } from '@/utils/api'
 import {
@@ -19,7 +20,7 @@ import {
 export const useCashbunnyStore = defineStore('cashbunny', () => {
   // Currency Code and Grapheme pair
   const currencies = ref<Record<string, string>>({})
-  const userPreferences = ref<UserPreferencesDto | null>(null)
+  const userPreference = ref<CashbunnyUserPreferenceResponse | null>(null)
 
   const setCurrencies = (dto: GetAllCurrenciesDto) => {
     for (const [code, grapheme] of Object.entries(dto.currencies_and_grapheme)) {
@@ -82,7 +83,7 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
 
   return {
     currencies,
-    userPreferences,
+    userPreference,
     setCurrencies,
     getOverview,
     getPlannerParameters,

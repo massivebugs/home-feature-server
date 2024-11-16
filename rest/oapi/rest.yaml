@@ -240,6 +240,41 @@ paths:
                 properties:
                   user_system_preference:
                     $ref: '#/components/schemas/userSystemPreference'
+  /secure/cashbunny/user_preferences:
+    get:  
+      operationId: GetCashbunnyUserPreference 
+      description: Returns user preferences for cashbunny
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_preference]
+                properties:
+                  user_preference:
+                    $ref: '#/components/schemas/cashbunnyUserPreference'
+        404:
+          description: User preference has not been created yet
+    post:
+      operationId: CreateCashbunnyDefaultUserPreference
+      description: Create default cashbunny user preference
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_preference]
+                properties:
+                  user_preference:
+                    $ref: '#/components/schemas/cashbunnyUserPreference'
   # /secure/cashbunny/accounts:
   #   get:
   #     tags: 
@@ -409,6 +444,7 @@ components:
           example: {"some_field": "the length must be between 1 and 20"}
     user:
       type: object
+      required: [id, name, logged_in_at, created_at]
       properties:
         id:
           type: integer
@@ -419,7 +455,6 @@ components:
           type: string
         created_at:
           type: string
-      required: [id, name, logged_in_at, created_at]
     userSystemPreference:
       type: object
       description: Model defining user system preferences such as language, time zone etc.
@@ -428,3 +463,12 @@ components:
           type: string
           example: "ja-JP"
           nullable: true
+    cashbunnyUserPreference:
+      type: object
+      description: Model defining user's cashbunny preferences such as default currency etc.
+      required: [user_currencies]
+      properties:
+        user_currencies:
+          type: array
+          items:
+            type: string

@@ -4,6 +4,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from 'axios'
+import { nestedSnakeToCamel } from '../utils/object'
 
 // A nested dictionary including all paths and their subpaths
 const Endpoints = {
@@ -62,9 +63,24 @@ function makeEndpointsProxy<T extends Object>(target: T, traversed: string[] = [
 // A endpoint path builder helper proxy object (why did I make this)
 const APIEndpoints = makeEndpointsProxy(Endpoints)
 
-export type APIError = {
+export class APIError {
   message: string
-  validation_messages: { [key: string]: string }
+  validationMessages: { [key: string]: string }
+  private handled: boolean
+
+  constructor(message: string, validationMessages: { [key: string]: string }) {
+    this.message = message
+    this.validationMessages = validationMessages
+    this.handled = false
+  }
+
+  setHandled() {
+    this.handled = true
+  }
+
+  get isHandled() {
+    return this.handled
+  }
 }
 
 export type RepeatRequest = {
@@ -87,8 +103,8 @@ export type CreateJWTTokenRequest = {
 export type UserResponse = {
   id: number
   name: string
-  logged_in_at: string // time
-  created_at: string // time
+  loggedInAt: string // time
+  createdAt: string // time
 }
 
 export type GetUserResponse = {
@@ -100,10 +116,18 @@ export type UserSystemPreferenceResponse = {
 }
 
 export type GetUserSystemPreferenceResponse = {
-  user_system_preference: UserSystemPreferenceResponse
+  userSystemPreference: UserSystemPreferenceResponse
 }
 
 export type UpdateUserSystemPreferenceRequest = UserSystemPreferenceResponse
+
+export type CashbunnyUserPreferenceResponse = {
+  userCurrencies: string[]
+}
+
+export type GetCashbunnyUserPreferenceResponse = {
+  userPreference: CashbunnyUserPreferenceResponse
+}
 
 export type APIErrorHandlers<T extends number[]> = { [key in T[number]]: (error: APIError) => void }
 
@@ -113,24 +137,8 @@ export class API {
     this.ax = ax
   }
 
-  private async wrapRequest<T, K extends number[]>(
-    promise: Promise<AxiosResponse<T, any>>,
-    errorHandlers?: APIErrorHandlers<K>,
-  ) {
-    try {
-      const res = await promise
-      return res
-    } catch (error) {
-      if (
-        error instanceof AxiosError &&
-        error.status &&
-        errorHandlers &&
-        error.status in errorHandlers
-      ) {
-        errorHandlers[error.status as K[number]](error.response?.data as APIError)
-      }
-      throw error
-    }
+  isError<T>(res: T | APIError) {
+    return res instanceof APIError
   }
 
   ping() {
@@ -184,6 +192,50 @@ export class API {
         data,
       ),
     )
+  }
+
+  getCashbunnyUserPreference(errorHandlers: APIErrorHandlers<[404]>) {
+    return this.wrapRequest(
+      this.ax.get<GetCashbunnyUserPreferenceResponse>(
+        APIEndpoints.v1.secure.cashbunny.user_preferences.path,
+      ),
+      errorHandlers,
+    )
+  }
+
+  createCashbunnyDefaultUserPreference() {
+    return this.wrapRequest(
+      this.ax.post<GetCashbunnyUserPreferenceResponse>(
+        APIEndpoints.v1.secure.cashbunny.user_preferences.path,
+      ),
+    )
+  }
+
+  // Enforces error handling of known error responses, and converts snake_case response to camelCase
+  private async wrapRequest<T extends Object, K extends number[]>(
+    promise: Promise<AxiosResponse<T, any>>,
+    errorHandlers?: APIErrorHandlers<K>,
+  ) {
+    try {
+      const res = await promise
+      return nestedSnakeToCamel(res.data) as T
+    } catch (error) {
+      if (
+        error instanceof AxiosError &&
+        error.status &&
+        errorHandlers &&
+        error.status in errorHandlers
+      ) {
+        const errorData = error.response?.data
+        if ('message' in errorData && 'validation_messages' in errorData) {
+          const apiErr = new APIError(errorData.message, errorData.validation_messages)
+          errorHandlers[error.status as K[number]](apiErr)
+          apiErr.setHandled()
+          throw apiErr
+        }
+      }
+      throw error
+    }
   }
 }
 

@@ -1,14 +1,14 @@
-import type { UserDto } from './dto'
+import type { UserResponse } from '../composables/useAPI'
 
 export class User {
   id: number
   name: string
   loggedInAt: Date
   createdAt: Date
-  constructor(userDto: UserDto) {
-    this.id = userDto.id
-    this.name = userDto.name
-    this.loggedInAt = new Date(userDto.logged_in_at)
-    this.createdAt = new Date(userDto.created_at)
+  constructor(user: UserResponse) {
+    this.id = user.id
+    this.name = user.name
+    this.loggedInAt = new Date(user.loggedInAt)
+    this.createdAt = new Date(user.createdAt)
   }
 }

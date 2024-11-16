@@ -39,7 +39,7 @@
       <SelectInputComponent
         name="accountCurrency"
         :label="t('cashbunny.transactionCurrency')"
-        :options="store.userPreferences?.user_currencies"
+        :options="store.userPreference?.userCurrencies"
         :error-message="validationErrors.currency"
         v-model="formValues.currency"
       />

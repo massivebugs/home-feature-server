@@ -142,13 +142,13 @@ onMounted(async () => {
       404: async () => {
         try {
           const res = await api.createDefaultUserSystemPreference()
-          coreStore.systemPreference = res.data.user_system_preference
+          coreStore.systemPreference = res.userSystemPreference
         } catch {
           // TODO: Error handling
         }
       },
     })
-    coreStore.systemPreference = res.data.user_system_preference
+    coreStore.systemPreference = res.userSystemPreference
   } catch (error) {
     // TODO: Error handling
   } finally {

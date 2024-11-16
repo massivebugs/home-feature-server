@@ -7,6 +7,7 @@
   />
   <CashbunnySplashComponent
     v-else-if="!isLoadedInitialData"
+    :api="api"
     @loaded="onLoadedData"
     @error="onErrorLoadingData"
   />
@@ -17,12 +18,15 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ErrorDialogComponent from '@/core/components/ErrorDialogComponent.vue'
+import { useAPI } from '@/core/composables/useAPI'
+import { API_URL } from '@/core/constants'
 import { useCoreStore } from '@/core/stores'
 import CashbunnySplashComponent from '../components/CashbunnySplashComponent.vue'
 import CashbunnyWindowComponent from '../components/CashbunnyWindowComponent.vue'
 import { CASHBUNNY_PROGRAM_ID } from '../constants'
 
 const { t } = useI18n()
+const api = useAPI(API_URL)
 const coreStore = useCoreStore()
 const errorTitle = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
