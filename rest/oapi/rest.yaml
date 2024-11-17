@@ -160,7 +160,7 @@ paths:
               schema:
                 type: string
                 description: "Token Set-Cookie header"
-  /api/v1/secure/auth/refresh_token:
+  /api/v1/secure/auth/refresh-token:
     post:
       operationId: CreateJWTRefreshToken
       description: Returns a new JWT Refresh Token for a user
@@ -210,7 +210,7 @@ paths:
                   user:
                     $ref: '#/components/schemas/user'
                 required: [user]
-  /api/v1/secure/system_preferences:
+  /api/v1/secure/system-preferences:
     get:  
       operationId: GetUserSystemPreference 
       description: Returns user system preference
@@ -267,7 +267,7 @@ paths:
                 properties:
                   user_system_preference:
                     $ref: '#/components/schemas/userSystemPreference'
-  /api/v1/secure/cashbunny/user_preferences:
+  /api/v1/secure/cashbunny/user-preferences:
     get:
       operationId: GetCashbunnyUserPreference
       description: Returns user preferences for Cashbunny

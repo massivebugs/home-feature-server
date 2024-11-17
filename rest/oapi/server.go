@@ -39,10 +39,10 @@ type ServerInterface interface {
 	// (POST /api/v1/repeat)
 	Repeat(ctx echo.Context) error
 
-	// (DELETE /api/v1/secure/auth/refresh_token)
+	// (DELETE /api/v1/secure/auth/refresh-token)
 	DeleteJWTRefreshToken(ctx echo.Context) error
 
-	// (POST /api/v1/secure/auth/refresh_token)
+	// (POST /api/v1/secure/auth/refresh-token)
 	CreateJWTRefreshToken(ctx echo.Context) error
 
 	// (DELETE /api/v1/secure/auth/token)
@@ -66,19 +66,19 @@ type ServerInterface interface {
 	// (GET /api/v1/secure/cashbunny/overview)
 	GetCashbunnyOverview(ctx echo.Context, params GetCashbunnyOverviewParams) error
 
-	// (GET /api/v1/secure/cashbunny/user_preferences)
+	// (GET /api/v1/secure/cashbunny/user-preferences)
 	GetCashbunnyUserPreference(ctx echo.Context) error
 
-	// (POST /api/v1/secure/cashbunny/user_preferences)
+	// (POST /api/v1/secure/cashbunny/user-preferences)
 	CreateCashbunnyDefaultUserPreference(ctx echo.Context) error
 
-	// (GET /api/v1/secure/system_preferences)
+	// (GET /api/v1/secure/system-preferences)
 	GetUserSystemPreference(ctx echo.Context) error
 
-	// (POST /api/v1/secure/system_preferences)
+	// (POST /api/v1/secure/system-preferences)
 	CreateDefaultUserSystemPreference(ctx echo.Context) error
 
-	// (PUT /api/v1/secure/system_preferences)
+	// (PUT /api/v1/secure/system-preferences)
 	UpdateUserSystemPreference(ctx echo.Context) error
 
 	// (GET /api/v1/secure/user)
@@ -365,8 +365,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/v1/auth/token", wrapper.RefreshJWTToken)
 	router.GET(baseURL+"/api/v1/ping", wrapper.Ping)
 	router.POST(baseURL+"/api/v1/repeat", wrapper.Repeat)
-	router.DELETE(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.DeleteJWTRefreshToken)
-	router.POST(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.CreateJWTRefreshToken)
+	router.DELETE(baseURL+"/api/v1/secure/auth/refresh-token", wrapper.DeleteJWTRefreshToken)
+	router.POST(baseURL+"/api/v1/secure/auth/refresh-token", wrapper.CreateJWTRefreshToken)
 	router.DELETE(baseURL+"/api/v1/secure/auth/token", wrapper.DeleteJWTToken)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/accounts", wrapper.GetCashbunnyAccounts)
 	router.POST(baseURL+"/api/v1/secure/cashbunny/accounts", wrapper.CreateCashbunnyAccount)
@@ -374,11 +374,11 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/v1/secure/cashbunny/accounts/:accountId", wrapper.UpdateCashbunnyAccount)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/currencies", wrapper.GetCashbunnySupportedCurrencies)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/overview", wrapper.GetCashbunnyOverview)
-	router.GET(baseURL+"/api/v1/secure/cashbunny/user_preferences", wrapper.GetCashbunnyUserPreference)
-	router.POST(baseURL+"/api/v1/secure/cashbunny/user_preferences", wrapper.CreateCashbunnyDefaultUserPreference)
-	router.GET(baseURL+"/api/v1/secure/system_preferences", wrapper.GetUserSystemPreference)
-	router.POST(baseURL+"/api/v1/secure/system_preferences", wrapper.CreateDefaultUserSystemPreference)
-	router.PUT(baseURL+"/api/v1/secure/system_preferences", wrapper.UpdateUserSystemPreference)
+	router.GET(baseURL+"/api/v1/secure/cashbunny/user-preferences", wrapper.GetCashbunnyUserPreference)
+	router.POST(baseURL+"/api/v1/secure/cashbunny/user-preferences", wrapper.CreateCashbunnyDefaultUserPreference)
+	router.GET(baseURL+"/api/v1/secure/system-preferences", wrapper.GetUserSystemPreference)
+	router.POST(baseURL+"/api/v1/secure/system-preferences", wrapper.CreateDefaultUserSystemPreference)
+	router.PUT(baseURL+"/api/v1/secure/system-preferences", wrapper.UpdateUserSystemPreference)
 	router.GET(baseURL+"/api/v1/secure/user", wrapper.GetUser)
 
 }
@@ -848,10 +848,10 @@ type StrictServerInterface interface {
 	// (POST /api/v1/repeat)
 	Repeat(ctx context.Context, request RepeatRequestObject) (RepeatResponseObject, error)
 
-	// (DELETE /api/v1/secure/auth/refresh_token)
+	// (DELETE /api/v1/secure/auth/refresh-token)
 	DeleteJWTRefreshToken(ctx context.Context, request DeleteJWTRefreshTokenRequestObject) (DeleteJWTRefreshTokenResponseObject, error)
 
-	// (POST /api/v1/secure/auth/refresh_token)
+	// (POST /api/v1/secure/auth/refresh-token)
 	CreateJWTRefreshToken(ctx context.Context, request CreateJWTRefreshTokenRequestObject) (CreateJWTRefreshTokenResponseObject, error)
 
 	// (DELETE /api/v1/secure/auth/token)
@@ -875,19 +875,19 @@ type StrictServerInterface interface {
 	// (GET /api/v1/secure/cashbunny/overview)
 	GetCashbunnyOverview(ctx context.Context, request GetCashbunnyOverviewRequestObject) (GetCashbunnyOverviewResponseObject, error)
 
-	// (GET /api/v1/secure/cashbunny/user_preferences)
+	// (GET /api/v1/secure/cashbunny/user-preferences)
 	GetCashbunnyUserPreference(ctx context.Context, request GetCashbunnyUserPreferenceRequestObject) (GetCashbunnyUserPreferenceResponseObject, error)
 
-	// (POST /api/v1/secure/cashbunny/user_preferences)
+	// (POST /api/v1/secure/cashbunny/user-preferences)
 	CreateCashbunnyDefaultUserPreference(ctx context.Context, request CreateCashbunnyDefaultUserPreferenceRequestObject) (CreateCashbunnyDefaultUserPreferenceResponseObject, error)
 
-	// (GET /api/v1/secure/system_preferences)
+	// (GET /api/v1/secure/system-preferences)
 	GetUserSystemPreference(ctx context.Context, request GetUserSystemPreferenceRequestObject) (GetUserSystemPreferenceResponseObject, error)
 
-	// (POST /api/v1/secure/system_preferences)
+	// (POST /api/v1/secure/system-preferences)
 	CreateDefaultUserSystemPreference(ctx context.Context, request CreateDefaultUserSystemPreferenceRequestObject) (CreateDefaultUserSystemPreferenceResponseObject, error)
 
-	// (PUT /api/v1/secure/system_preferences)
+	// (PUT /api/v1/secure/system-preferences)
 	UpdateUserSystemPreference(ctx context.Context, request UpdateUserSystemPreferenceRequestObject) (UpdateUserSystemPreferenceResponseObject, error)
 
 	// (GET /api/v1/secure/user)
@@ -1411,51 +1411,51 @@ func (sh *strictHandler) GetUser(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"TqP1zfr/AQAA//+AT1BuHz0AAA==",
+	"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",
+	"ajM8Pj05jZY3y/8HAAD//xsRZJEfPQAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

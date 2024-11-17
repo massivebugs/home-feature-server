@@ -21,6 +21,17 @@ export const camelToSnake = (str: string): string => {
   return split.map((s) => s.toLowerCase()).join('_')
 }
 
+// Converts camelCase to kebab-case
+export const camelToKebab = (str: string): string => {
+  const split = str.match(/^[^A-Z]+|[A-Z][^A-Z]*/g)
+
+  if (!split) {
+    return str
+  }
+
+  return split.map((s) => s.toLowerCase()).join('-')
+}
+
 // Converts an object and it's nested object keys from snake_case to camelCase
 export const nestedSnakeToCamel = (obj: any): any => {
   if (obj === null) {

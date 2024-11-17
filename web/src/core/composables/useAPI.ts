@@ -6,7 +6,7 @@ import axios, {
 } from 'axios'
 import type { Dayjs } from 'dayjs'
 import type { FrequencyStr } from '@/modules/cashbunny/models/recurrence_rule'
-import { nestedCamelToSnake, nestedSnakeToCamel } from '../utils/object'
+import { camelToKebab, nestedCamelToSnake, nestedSnakeToCamel } from '../utils/object'
 
 //API request/response models
 
@@ -148,17 +148,17 @@ const Endpoints = {
     secure: {
       auth: {
         token: {},
-        refresh_token: {},
+        refreshToken: {},
       },
       user: {},
-      system_preferences: {},
+      systemPreferences: {},
       cashbunny: {
         overview: {},
         planner: {
           parameters: {},
         },
         currencies: {},
-        user_preferences: {},
+        userPreferences: {},
         accounts: {},
         transactions: {},
       },
@@ -182,7 +182,7 @@ function makeEndpointsProxy<T extends Object>(target: T, traversed: string[] = [
       }
 
       if (value !== null && typeof value === 'object' && value.constructor.name === 'Object') {
-        return makeEndpointsProxy(value, traversed.concat(prop.toString()))
+        return makeEndpointsProxy(value, traversed.concat(camelToKebab(prop.toString())))
       }
 
       return value
@@ -264,13 +264,13 @@ export class API {
 
   createJWTRefreshToken(errorHandlers: APIErrorHandlers<[403]>) {
     return this.wrapRequest(
-      this.ax.post(APIEndpoints.v1.secure.auth.refresh_token.path),
+      this.ax.post(APIEndpoints.v1.secure.auth.refreshToken.path),
       errorHandlers,
     )
   }
 
   deleteJWTRefreshToken() {
-    return this.wrapRequest(this.ax.delete(APIEndpoints.v1.secure.auth.refresh_token.path))
+    return this.wrapRequest(this.ax.delete(APIEndpoints.v1.secure.auth.refreshToken.path))
   }
 
   getUser() {
@@ -279,21 +279,21 @@ export class API {
 
   getUserSystemPreference(errorHandlers: APIErrorHandlers<[404]>) {
     return this.wrapRequest(
-      this.ax.get<GetUserSystemPreferenceResponse>(APIEndpoints.v1.secure.system_preferences.path),
+      this.ax.get<GetUserSystemPreferenceResponse>(APIEndpoints.v1.secure.systemPreferences.path),
       errorHandlers,
     )
   }
 
   createDefaultUserSystemPreference() {
     return this.wrapRequest(
-      this.ax.post<GetUserSystemPreferenceResponse>(APIEndpoints.v1.secure.system_preferences.path),
+      this.ax.post<GetUserSystemPreferenceResponse>(APIEndpoints.v1.secure.systemPreferences.path),
     )
   }
 
   updateUserSystemPreference(data: UpdateUserSystemPreferenceRequest) {
     return this.wrapRequest(
       this.ax.put<GetUserSystemPreferenceResponse>(
-        APIEndpoints.v1.secure.system_preferences.path,
+        APIEndpoints.v1.secure.systemPreferences.path,
         data,
       ),
     )
@@ -302,7 +302,7 @@ export class API {
   getCashbunnyUserPreference(errorHandlers: APIErrorHandlers<[404]>) {
     return this.wrapRequest(
       this.ax.get<GetCashbunnyUserPreferenceResponse>(
-        APIEndpoints.v1.secure.cashbunny.user_preferences.path,
+        APIEndpoints.v1.secure.cashbunny.userPreferences.path,
       ),
       errorHandlers,
     )
@@ -311,7 +311,7 @@ export class API {
   createCashbunnyDefaultUserPreference() {
     return this.wrapRequest(
       this.ax.post<GetCashbunnyUserPreferenceResponse>(
-        APIEndpoints.v1.secure.cashbunny.user_preferences.path,
+        APIEndpoints.v1.secure.cashbunny.userPreferences.path,
       ),
     )
   }
@@ -444,7 +444,7 @@ export function useAPI(baseURL: string) {
 
           // Retrieve a new refresh token
           // TODO: Error handling when creating refresh token fails
-          await ax.post(APIEndpoints.v1.secure.auth.refresh_token.path, null, {
+          await ax.post(APIEndpoints.v1.secure.auth.refreshToken.path, null, {
             validateStatus: null,
           })
 
