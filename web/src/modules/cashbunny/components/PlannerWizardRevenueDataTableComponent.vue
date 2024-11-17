@@ -25,7 +25,7 @@
         {
           data: 'recurrence_rule',
           title: t('cashbunny.planner.revenue.recurrence'),
-          render: (recurrenceRule: RecurrenceRuleResponse) =>
+          render: (recurrenceRule: CashbunnyRecurrenceRuleResponse) =>
             new RecurrenceRule(recurrenceRule).toHumanFriendlyString(),
         },
       ]"
@@ -51,7 +51,7 @@ import DataTableComponent, {
   type DataTableRowEditEvent,
   type DataTableRowsDeleteEvent,
 } from '@/core/components/DataTableComponent.vue'
-import type { RecurrenceRuleResponse } from '@/core/composables/useAPI'
+import type { CashbunnyRecurrenceRuleResponse } from '@/core/composables/useAPI'
 import type { PlannerRevenueDto } from '../models/dto'
 import { RecurrenceRule } from '../models/recurrence_rule'
 

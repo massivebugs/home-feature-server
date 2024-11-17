@@ -100,12 +100,12 @@ import dayjs from 'dayjs'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import RecurrenceRuleInputComponent from './RecurrenceRuleInputComponent.vue'
 import { FrequencyStrs } from '../models/recurrence_rule'
-import type { AccountResponse } from '@/core/composables/useAPI'
+import type { CashbunnyAccountResponse } from '@/core/composables/useAPI'
 
 const props = defineProps<{
   display?: PlannerWizardLiabilityFormDisplay
   assets: PlannerAssetDto[]
-  liabilityAccounts: AccountResponse[]
+  liabilityAccounts: CashbunnyAccountResponse[]
 }>()
 
 const { t } = useI18n()

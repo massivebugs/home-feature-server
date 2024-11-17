@@ -146,6 +146,113 @@ func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Ti
 	return newOverview(from, to, NewLedger(accounts, trs), tsFromScheduled), nil
 }
 
+func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32, now time.Time) ([]*Account, error) {
+	accs, err := s.accRepo.ListAccountsAndAmountBetweenDates(ctx, s.db, ListAccountsAndAmountBetweenDatesParams{
+		UserID:           userID,
+		FromTransactedAt: time.Time{},
+		ToTransactedAt:   now,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return accs, nil
+}
+
+func (s *Cashbunny) CreateAccount(
+	ctx context.Context,
+	userID uint32,
+	name string,
+	category string,
+	description string,
+	currency string,
+	orderIndex *uint32,
+) error {
+	return s.db.WithTx(ctx, func(tx db.DB) error {
+		if orderIndex != nil {
+			err := s.accRepo.IncrementAccountIndices(
+				ctx,
+				tx,
+				IncrementAccountIndicesParams{
+					UserID:     userID,
+					OrderIndex: *orderIndex,
+				},
+			)
+			if err != nil {
+				return err
+			}
+		}
+
+		_, err := s.accRepo.CreateAccount(ctx, tx,
+			CreateAccountParams{
+				UserID:      userID,
+				Category:    AccountCategory(category),
+				Name:        name,
+				Description: description,
+				Currency:    currency,
+				OrderIndex:  orderIndex,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (s *Cashbunny) UpdateAccount(
+	ctx context.Context,
+	userID uint32,
+	accountID uint32,
+	args struct {
+		Name        string
+		Description string
+		OrderIndex  uint32
+	}) error {
+	return s.db.WithTx(ctx, func(tx db.DB) error {
+		_, err := s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
+			UserID: userID,
+			ID:     accountID,
+		})
+		if err != nil {
+			return err
+		}
+
+		p := UpdateAccountParams{
+			UserID:      userID,
+			ID:          accountID,
+			Name:        args.Name,
+			Description: args.Description,
+			OrderIndex:  args.OrderIndex,
+		}
+
+		return s.accRepo.UpdateAccount(ctx, tx, p)
+	})
+}
+
+func (s *Cashbunny) DeleteAccount(ctx context.Context, userID uint32, accountID uint32) error {
+	return s.db.WithTx(ctx, func(tx db.DB) error {
+		err := s.accRepo.DeleteAccount(ctx, tx, DeleteAccountParams{
+			UserID: userID,
+			ID:     accountID,
+		})
+		if err != nil {
+			return err
+		}
+
+		err = s.trRepo.DeleteTransactionsByAccountID(ctx, tx, DeleteTransactionsByAccountIDParams{
+			UserID:    userID,
+			AccountID: accountID,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 // func (s *Cashbunny) GetPlan(ctx context.Context, userID uint32) (planResponse, error) {
 // 	return newPlanResponse(&Planner{}), nil
 // }
@@ -195,79 +302,6 @@ func (s *Cashbunny) GetOverview(ctx context.Context, userID uint32, from time.Ti
 
 // func (s *Cashbunny) SavePlannerParameters(ctx context.Context, userID uint32, p *SavePlannerParametersRequest) (planResponse, error) {
 // 	return newPlanResponse(&Planner{}), nil
-// }
-
-// func (s *Cashbunny) CreateAccount(ctx context.Context, userID uint32, req *CreateAccountRequest) error {
-// 	return s.db.WithTx(ctx, func(tx db.DB) error {
-// 		orderIndexParam := sql.NullInt32{}
-// 		if req.OrderIndex != nil {
-// 			err := s.accRepo.IncrementAccountIndices(
-// 				ctx,
-// 				tx,
-// 				IncrementAccountIndicesParams{
-// 					UserID:     userID,
-// 					OrderIndex: *req.OrderIndex,
-// 				},
-// 			)
-// 			if err != nil {
-// 				return err
-// 			}
-
-// 			orderIndexParam.Valid = true
-// 			orderIndexParam.Int32 = int32(*req.OrderIndex)
-// 		}
-
-// 		_, err := s.accRepo.CreateAccount(ctx, tx,
-// 			CreateAccountParams{
-// 				UserID:      userID,
-// 				Category:    AccountCategory(req.Category),
-// 				Name:        req.Name,
-// 				Description: req.Description,
-// 				Currency:    req.Currency,
-// 				OrderIndex:  orderIndexParam,
-// 			},
-// 		)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		return nil
-// 	})
-// }
-
-// func (s *Cashbunny) ListAccounts(ctx context.Context, userID uint32, now time.Time) ([]accountResponse, error) {
-// 	accounts, err := s.accRepo.ListAccountsAndAmountBetweenDates(ctx, s.db, ListAccountsAndAmountBetweenDatesParams{
-// 		UserID:           userID,
-// 		FromTransactedAt: time.Time{},
-// 		ToTransactedAt:   now,
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return newListAccountsResponse(accounts), nil
-// }
-
-// func (s *Cashbunny) DeleteAccount(ctx context.Context, userID uint32, accountID uint32) error {
-// 	return s.db.WithTx(ctx, func(tx db.DB) error {
-// 		err := s.accRepo.DeleteAccount(ctx, tx, DeleteAccountParams{
-// 			UserID: userID,
-// 			ID:     accountID,
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		err = s.trRepo.DeleteTransactionsByAccountID(ctx, tx, DeleteTransactionsByAccountIDParams{
-// 			UserID:    userID,
-// 			AccountID: accountID,
-// 		})
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		return nil
-// 	})
 // }
 
 // func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *CreateTransactionRequest) error {

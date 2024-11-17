@@ -1,4 +1,4 @@
-import type { RecurrenceRuleResponse } from '@/core/composables/useAPI'
+import type { CashbunnyRecurrenceRuleResponse } from '@/core/composables/useAPI'
 
 export type PlannerAssetDto = {
   asset_account_id: string
@@ -17,7 +17,7 @@ export type PlannerRevenueDto = {
   source_revenue_account_name: string
   destination_asset_account_id: string
   destination_asset_account_name: string
-  recurrence_rule: RecurrenceRuleResponse
+  recurrence_rule: CashbunnyRecurrenceRuleResponse
   transaction_category: TransactionCategoryDto | null
 }
 
@@ -30,7 +30,7 @@ export type PlannerLiabilityDto = {
   source_asset_account_name: string
   destination_liability_account_id: string
   destination_liability_account_name: string
-  recurrence_rule: RecurrenceRuleResponse
+  recurrence_rule: CashbunnyRecurrenceRuleResponse
   transaction_category: TransactionCategoryDto | null
 }
 
@@ -43,7 +43,7 @@ export type PlannerExpenseDto = {
   source_asset_account_name: string
   destination_expense_account_id: string
   destination_expense_account_name: string
-  recurrence_rule: RecurrenceRuleResponse
+  recurrence_rule: CashbunnyRecurrenceRuleResponse
   transaction_category: TransactionCategoryDto | null
 }
 
@@ -52,20 +52,6 @@ export type PlannerParametersDto = {
   revenues: PlannerRevenueDto[]
   liabilities: PlannerLiabilityDto[]
   transaction_categories: TransactionCategoryDto[]
-}
-
-export type CreateAccountDto = {
-  name: string
-  category: string
-  description: string
-  currency: string
-  order_index?: number
-}
-
-export type UpdateAccountDto = {
-  name?: string
-  description?: string
-  order_index?: number
 }
 
 export type TransactionCategoryDto = {

@@ -17,29 +17,39 @@
       </div>
       <TextInputComponent
         name="accountName"
-        :label="t('cashbunny.accountName')"
-        :placeholder="t('cashbunny.accountNamePlaceholder')"
+        :label="t('cashbunny.account.name')"
+        :placeholder="t('cashbunny.account.form.namePlaceholder')"
         :error-message="validationErrors.name"
         v-model="formValues.name"
       />
       <SelectInputComponent
         name="accountCategory"
-        :label="t('cashbunny.accountCategory')"
-        :options="['assets', 'liabilities', 'revenues', 'expenses']"
+        :label="t('cashbunny.account.category')"
+        :options="[
+          { label: 'Assets', value: 'assets' },
+          { label: 'Liabilities', value: 'liabilities' },
+          { label: 'Revenues', value: 'revenues' },
+          { label: 'Expenses', value: 'expenses' },
+        ]"
         :error-message="validationErrors.category"
         v-model="formValues.category"
       />
       <TextInputComponent
         name="accountDescription"
-        :label="t('cashbunny.accountDescription')"
-        :placeholder="t('cashbunny.accountDescriptionPlaceholder')"
+        :label="t('cashbunny.account.description')"
+        :placeholder="t('cashbunny.account.form.descriptionPlaceholder')"
         :error-message="validationErrors.description"
         v-model="formValues.description"
       />
       <SelectInputComponent
         name="accountCurrency"
-        :label="t('cashbunny.transactionCurrency')"
-        :options="store.userPreference?.userCurrencies"
+        :label="t('cashbunny.transaction.currency')"
+        :options="
+          cashbunnyStore.userPreference?.userCurrencies.map((v) => ({
+            label: `${v} (${cashbunnyStore.currencies[v]})`,
+            value: v,
+          }))
+        "
         :error-message="validationErrors.currency"
         v-model="formValues.currency"
       />
@@ -48,17 +58,18 @@
 </template>
 
 <script setup lang="ts">
-import { AxiosError } from 'axios'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DialogComponent from '@/core/components/DialogComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import TextInputComponent from '@/core/components/TextInputComponent.vue'
-import type { AccountResponse } from '@/core/composables/useAPI'
-import type { APIResponse } from '@/core/models/dto'
+import type {
+  API,
+  CashbunnyAccountResponse,
+  CreateCashbunnyAccountRequest,
+} from '@/core/composables/useAPI'
 import type { RelativePosition } from '@/core/models/relativePosition'
 import type { RelativeSize } from '@/core/models/relativeSize'
-import type { CreateAccountDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 
 const emit = defineEmits<{
@@ -66,16 +77,17 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps<{
+  api: API
   pos?: RelativePosition | 'center'
   size?: RelativeSize
   title: string
   nextAccountIndex: number
-  account?: AccountResponse
+  account?: CashbunnyAccountResponse
 }>()
 
 const { t } = useI18n()
-const store = useCashbunnyStore()
-const formValues = ref<CreateAccountDto>(
+const cashbunnyStore = useCashbunnyStore()
+const formValues = ref<CreateCashbunnyAccountRequest>(
   props.account
     ? {
         name: props.account.name,
@@ -87,43 +99,58 @@ const formValues = ref<CreateAccountDto>(
         name: '',
         category: 'assets',
         description: '',
-        currency: 'CAD',
+        currency: cashbunnyStore.userPreference?.userCurrencies[0] ?? 'CAD',
       },
 )
 const errorMessage = ref<string>('')
-const validationErrors = ref<{ [k in keyof CreateAccountDto]: string }>({
+const validationErrors = ref<{ [k in keyof CreateCashbunnyAccountRequest]: string }>({
   name: '',
   category: '',
   description: '',
   currency: '',
-  order_index: '',
+  orderIndex: '',
 })
 
 const onClickSubmit = async () => {
   const request = props.account
-    ? store.updateAccount(props.account.id, {
-        name: formValues.value.name,
-        description: formValues.value.description,
-      })
-    : store.createAccount({
-        name: formValues.value.name,
-        category: formValues.value.category,
-        description: formValues.value.description,
-        currency: formValues.value.currency,
-        // order_index: props.nextAccountIndex,
-      })
+    ? props.api.updateCashbunnyAccount(
+        props.account.id,
+        {
+          name: formValues.value.name,
+          description: formValues.value.description,
+          orderIndex: props.account.orderIndex,
+        },
+        {
+          400: () => {
+            // Handle in catch below
+          },
+        },
+      )
+    : props.api.createCashbunnyAccount(
+        {
+          name: formValues.value.name,
+          category: formValues.value.category,
+          description: formValues.value.description,
+          currency: formValues.value.currency,
+        },
+        {
+          400: () => {
+            // Handle in catch below
+          },
+        },
+      )
 
-  await request
-    .then(() => {
-      emit('success')
-    })
-    .catch((error: AxiosError) => {
-      if (error.code === AxiosError.ERR_BAD_REQUEST) {
-        const res = error.response?.data as APIResponse<null>
-        errorMessage.value = res.error?.message || ''
-        validationErrors.value = { ...validationErrors.value, ...res.error?.validation_errors }
-      }
-    })
+  try {
+    await request
+    emit('success')
+  } catch (error) {
+    if (props.api.isError(error) && error.status === 400) {
+      errorMessage.value = error.message
+      validationErrors.value = error.validationMessages as any
+    } else {
+      throw error
+    }
+  }
 }
 </script>
 

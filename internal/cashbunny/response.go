@@ -165,44 +165,6 @@ func newPlannerParametersResponse(
 	}
 }
 
-type accountResponse struct {
-	ID            uint32    `json:"id"`
-	Category      string    `json:"category"`
-	Name          string    `json:"name"`
-	Description   string    `json:"description"`
-	Currency      string    `json:"currency"`
-	Type          string    `json:"type"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	Amount        *float64  `json:"amount"`
-	AmountDisplay *string   `json:"amount_display"`
-}
-
-func newAccountResponse(a *Account) accountResponse {
-	amount := a.Amount.AsMajorUnits()
-	amountDisplay := a.Amount.Display()
-	return accountResponse{
-		ID:            a.ID,
-		Category:      string(a.Category),
-		Name:          a.Name,
-		Description:   a.Description,
-		Currency:      a.Currency,
-		Type:          string(a.GetType()),
-		CreatedAt:     a.CreatedAt,
-		UpdatedAt:     a.UpdatedAt,
-		Amount:        &amount,
-		AmountDisplay: &amountDisplay,
-	}
-}
-
-func newListAccountsResponse(accounts []*Account) []accountResponse {
-	result := make([]accountResponse, len(accounts))
-	for idx, a := range accounts {
-		result[idx] = newAccountResponse(a)
-	}
-	return result
-}
-
 type transactionCategoryResponse struct {
 	ID          uint32                                  `json:"id"`
 	Name        string                                  `json:"name"`
@@ -235,93 +197,6 @@ func newTransactionCategoryAllocationResponse(e *TransactionCategoryAllocation) 
 		Amount:   e.Amount.AsMajorUnits(),
 		Currency: e.Amount.Currency().Code,
 	}
-}
-
-type transactionResponse struct {
-	ID            uint32    `json:"id"`
-	Description   string    `json:"description"`
-	Amount        float64   `json:"amount"`
-	Currency      string    `json:"currency"`
-	AmountDisplay string    `json:"amount_display"`
-	TransactedAt  time.Time `json:"transacted_at"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
-
-	SourceAccountID        uint32                       `json:"source_account_id"`
-	SourceAccountName      string                       `json:"source_account_name"`
-	DestinationAccountID   uint32                       `json:"destination_account_id"`
-	DestinationAccountName string                       `json:"destination_account_name"`
-	ScheduledTransaction   scheduledTransactionResponse `json:"scheduled_transaction"`
-}
-
-func newTransactionResponse(t *Transaction) transactionResponse {
-	d := transactionResponse{
-		ID:            t.ID,
-		Description:   t.Description,
-		Amount:        t.Amount.AsMajorUnits(),
-		Currency:      t.Amount.Currency().Code,
-		AmountDisplay: t.Amount.Display(),
-		TransactedAt:  t.TransactedAt,
-		CreatedAt:     t.CreatedAt,
-		UpdatedAt:     t.UpdatedAt,
-
-		SourceAccountID:        t.SourceAccount.ID,
-		SourceAccountName:      t.SourceAccount.Name,
-		DestinationAccountID:   t.DestinationAccount.ID,
-		DestinationAccountName: t.DestinationAccount.Name,
-	}
-
-	if t.ScheduledTransaction != nil {
-		d.ScheduledTransaction = newScheduledTransactionResponse(t.ScheduledTransaction)
-	}
-
-	return d
-}
-
-func newListTransactionsResponse(transactions []*Transaction) []transactionResponse {
-	result := make([]transactionResponse, len(transactions))
-	for idx, t := range transactions {
-		result[idx] = newTransactionResponse(t)
-	}
-	return result
-}
-
-type scheduledTransactionResponse struct {
-	ID            uint32    `json:"id"`
-	Description   string    `json:"description"`
-	Amount        float64   `json:"amount"`
-	Currency      string    `json:"currency"`
-	AmountDisplay string    `json:"amount_display"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
-
-	RecurrenceRule recurrenceRuleResponse `json:"recurrence_rule"`
-
-	SourceAccountID        uint32 `json:"source_account_id"`
-	SourceAccountName      string `json:"source_account_name"`
-	DestinationAccountID   uint32 `json:"destination_account_id"`
-	DestinationAccountName string `json:"destination_account_name"`
-}
-
-func newScheduledTransactionResponse(st *ScheduledTransaction) scheduledTransactionResponse {
-	d := scheduledTransactionResponse{
-		ID:            st.ID,
-		Description:   st.Description,
-		Amount:        st.Amount.AsMajorUnits(),
-		Currency:      st.Amount.Currency().Code,
-		AmountDisplay: st.Amount.Display(),
-		CreatedAt:     st.CreatedAt,
-		UpdatedAt:     st.UpdatedAt,
-
-		RecurrenceRule: newRecurrenceRuleResponse(st.RecurrenceRule),
-
-		SourceAccountID:        st.SourceAccount.ID,
-		SourceAccountName:      st.SourceAccount.Name,
-		DestinationAccountID:   st.DestinationAccount.ID,
-		DestinationAccountName: st.DestinationAccount.Name,
-	}
-
-	return d
 }
 
 type recurrenceRuleResponse struct {

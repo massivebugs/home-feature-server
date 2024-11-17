@@ -27,6 +27,7 @@ type Account struct {
 	Name        string
 	Description string
 	Currency    string
+	OrderIndex  uint32
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 
@@ -41,6 +42,7 @@ func NewAccountFromQueries(account *queries.CashbunnyAccount, amount *float64) *
 		Category:    AccountCategory(account.Category),
 		Name:        account.Name,
 		Description: account.Description,
+		OrderIndex:  account.OrderIndex,
 		Currency:    account.Currency,
 		CreatedAt:   account.CreatedAt,
 		UpdatedAt:   account.UpdatedAt,

@@ -15,7 +15,15 @@ type CreateAccountParams struct {
 	Name        string
 	Description string
 	Currency    string
-	OrderIndex  sql.NullInt32
+	OrderIndex  *uint32
+}
+
+type UpdateAccountParams struct {
+	Name        string
+	Description string
+	OrderIndex  uint32
+	UserID      uint32
+	ID          uint32
 }
 
 type ListAccountsAndAmountBetweenDatesParams struct {
@@ -51,6 +59,7 @@ type IncrementAccountIndicesParams struct {
 
 type IAccountRepository interface {
 	CreateAccount(ctx context.Context, db db.DB, params CreateAccountParams) (uint32, error)
+	UpdateAccount(ctx context.Context, db db.DB, arg UpdateAccountParams) error
 	ListAccountsAndAmountBetweenDates(ctx context.Context, db db.DB, params ListAccountsAndAmountBetweenDatesParams) ([]*Account, error)
 	ListAccountsAndAmountByCategory(ctx context.Context, db db.DB, params ListAccountsAndAmountByCategoryParams) ([]*Account, error)
 	ListAccountsByIDs(ctx context.Context, db db.DB, params ListAccountsByIDsParams) ([]*Account, error)
@@ -72,14 +81,22 @@ func NewAccountRepository(querier queries.Querier) *AccountRepository {
 }
 
 func (r *AccountRepository) CreateAccount(ctx context.Context, db db.DB, params CreateAccountParams) (uint32, error) {
-	result, err := r.querier.CreateAccount(ctx, db, queries.CreateAccountParams{
+	p := queries.CreateAccountParams{
 		UserID:      params.UserID,
 		Category:    string(params.Category),
 		Name:        params.Name,
 		Description: params.Description,
 		Currency:    params.Currency,
-		OrderIndex:  params.OrderIndex,
-	})
+	}
+
+	if params.OrderIndex != nil {
+		p.OrderIndex = sql.NullInt32{
+			Valid: true,
+			Int32: int32(*params.OrderIndex),
+		}
+	}
+
+	result, err := r.querier.CreateAccount(ctx, db, p)
 	if err != nil {
 		return 0, err
 	}
@@ -90,6 +107,18 @@ func (r *AccountRepository) CreateAccount(ctx context.Context, db db.DB, params 
 	}
 
 	return uint32(id), nil
+}
+
+func (r *AccountRepository) UpdateAccount(ctx context.Context, db db.DB, arg UpdateAccountParams) error {
+	p := queries.UpdateCashbunnyAccountParams{
+		UserID:      arg.UserID,
+		ID:          arg.ID,
+		Name:        arg.Name,
+		Description: arg.Description,
+		OrderIndex:  arg.OrderIndex,
+	}
+
+	return r.querier.UpdateCashbunnyAccount(ctx, db, p)
 }
 
 func (r *AccountRepository) ListAccountsAndAmountBetweenDates(ctx context.Context, db db.DB, params ListAccountsAndAmountBetweenDatesParams) ([]*Account, error) {

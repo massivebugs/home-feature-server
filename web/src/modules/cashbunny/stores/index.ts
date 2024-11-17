@@ -1,18 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type {
-  AccountResponse,
+  CashbunnyTransactionResponse,
   CashbunnyUserPreferenceResponse,
   GetCashbunnySupportedCurrenciesResponse,
-  TransactionResponse,
 } from '@/core/composables/useAPI'
 import type { APIResponse } from '@/core/models/dto'
 import { APIEndpoints, api } from '@/utils/api'
 import {
-  type CreateAccountDto,
   type CreateTransactionDto,
   type PlannerParametersDto,
-  type UpdateAccountDto,
   type UpdateTransactionDto,
 } from '../models/dto'
 
@@ -32,23 +29,10 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
       APIEndpoints.v1.secure.cashbunny.planner.parameters.path,
     )
 
-  const getAccounts = () =>
-    api.get<APIResponse<AccountResponse[]>>(APIEndpoints.v1.secure.cashbunny.accounts.path)
-
-  const createAccount = (data: CreateAccountDto) =>
-    api.post<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts.path, data)
-
-  const updateAccount = (accountId: number, data: UpdateAccountDto) =>
-    api.put<APIResponse<null>>(
-      APIEndpoints.v1.secure.cashbunny.accounts.path + `/${accountId}`,
-      data,
-    )
-
-  const deleteAccount = (accountId: number) =>
-    api.delete<APIResponse<null>>(APIEndpoints.v1.secure.cashbunny.accounts.path + `/${accountId}`)
-
   const getTransactions = () =>
-    api.get<APIResponse<TransactionResponse[]>>(APIEndpoints.v1.secure.cashbunny.transactions.path)
+    api.get<APIResponse<CashbunnyTransactionResponse[]>>(
+      APIEndpoints.v1.secure.cashbunny.transactions.path,
+    )
 
   const createTransaction = (data: CreateTransactionDto) =>
     api.post(APIEndpoints.v1.secure.cashbunny.transactions.path, data)
@@ -66,10 +50,6 @@ export const useCashbunnyStore = defineStore('cashbunny', () => {
     userPreference,
     setCurrencies,
     getPlannerParameters,
-    getAccounts,
-    createAccount,
-    updateAccount,
-    deleteAccount,
     getTransactions,
     createTransaction,
     updateTransaction,

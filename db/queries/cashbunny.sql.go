@@ -38,7 +38,6 @@ VALUES
           cashbunny_accounts AS t
         WHERE
           t.user_id = ?
-          AND deleted_at IS NULL
       )
     )
   )
@@ -995,4 +994,34 @@ func (q *Queries) ListUserCurrencies(ctx context.Context, db DBTX, userID uint32
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateCashbunnyAccount = `-- name: UpdateCashbunnyAccount :exec
+UPDATE cashbunny_accounts
+SET
+  name = ?,
+  description = ?,
+  order_index = ?
+WHERE
+  user_id = ?
+  AND id = ?
+`
+
+type UpdateCashbunnyAccountParams struct {
+	Name        string
+	Description string
+	OrderIndex  uint32
+	UserID      uint32
+	ID          uint32
+}
+
+func (q *Queries) UpdateCashbunnyAccount(ctx context.Context, db DBTX, arg UpdateCashbunnyAccountParams) error {
+	_, err := db.ExecContext(ctx, updateCashbunnyAccount,
+		arg.Name,
+		arg.Description,
+		arg.OrderIndex,
+		arg.UserID,
+		arg.ID,
+	)
+	return err
 }

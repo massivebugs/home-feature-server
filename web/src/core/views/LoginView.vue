@@ -36,9 +36,13 @@ import CreateUserDialogComponent from '../components/CreateUserDialogComponent.v
 import LoginDialogComponent, { type LoginSubmitEvent } from '../components/LoginDialogComponent.vue'
 import { SpinnerTypes } from '../components/SpinnerIconComponent.vue'
 import UserPendingAdminApprovalDialogComponent from '../components/UserPendingAdminApprovalDialogComponent.vue'
-import { APIError, useAPI } from '../composables/useAPI'
+import {
+  APIError,
+  type CreateJWTTokenRequest,
+  type CreateUserRequest,
+  useAPI,
+} from '../composables/useAPI'
 import { API_URL } from '../constants'
-import type { CreateAuthTokenDto, CreateUserDto } from '../models/dto'
 import { User } from '../models/user'
 import { useCoreStore } from '../stores'
 import type { ValidationErrors } from '../utils/types'
@@ -57,12 +61,12 @@ const api = useAPI(API_URL)
 const currDialog = ref<Dialog>(Dialogs.nothing)
 const isSubmitting = ref<boolean>(false) // Used to disable login form temporarily
 const loginErrorMessage = ref<string>('')
-const loginValidationErrors = ref<ValidationErrors<CreateAuthTokenDto>>({
+const loginValidationErrors = ref<ValidationErrors<CreateJWTTokenRequest>>({
   username: '',
   password: '',
 })
 const createUserErrorMessage = ref<string>('')
-const createUserValidationErrors = ref<ValidationErrors<CreateUserDto>>({
+const createUserValidationErrors = ref<ValidationErrors<CreateUserRequest>>({
   email: '',
   username: '',
   password: '',

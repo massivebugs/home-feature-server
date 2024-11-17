@@ -38,6 +38,6 @@ db-seed:
 sqlc:
 	go generate db/sqlc/generate.go
 
-.PHONY: oapi-codegen 
-oapi-codegen:
+.PHONY: oapi 
+oapi:
 	go generate rest/oapi/generate.go

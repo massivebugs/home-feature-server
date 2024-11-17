@@ -50,7 +50,7 @@ import DataTableComponent, {
   type DataTableRowEditEvent,
   type DataTableRowsDeleteEvent,
 } from '@/core/components/DataTableComponent.vue'
-import type { TransactionResponse } from '@/core/composables/useAPI'
+import type { CashbunnyTransactionResponse } from '@/core/composables/useAPI'
 import { useCashbunnyStore } from '../stores'
 import TransactionFormDialogComponent from './TransactionFormDialogComponent.vue'
 
@@ -58,11 +58,11 @@ DataTable.use(DataTablesCore)
 
 const { t } = useI18n()
 const store = useCashbunnyStore()
-const data = ref<TransactionResponse[]>([])
-const clickedData = ref<TransactionResponse | null>(null)
+const data = ref<CashbunnyTransactionResponse[]>([])
+const clickedData = ref<CashbunnyTransactionResponse | null>(null)
 const isCreate = ref<boolean>(false)
-const rowsToDelete = ref<TransactionResponse[] | null>(null)
-const rowToEdit = ref<TransactionResponse | null>(null)
+const rowsToDelete = ref<CashbunnyTransactionResponse[] | null>(null)
+const rowToEdit = ref<CashbunnyTransactionResponse | null>(null)
 
 const columns: ConfigColumns[] = [
   {
@@ -91,14 +91,14 @@ const columns: ConfigColumns[] = [
   {
     data: 'source_account_id',
     title: t('cashbunny.transactionSourceAccount'),
-    render: function (data: string, _, row: TransactionResponse) {
+    render: function (data: string, _, row: CashbunnyTransactionResponse) {
       return `${row.sourceAccountName} (${data})`
     },
   },
   {
     data: 'destination_account_id',
     title: t('cashbunny.transactionDestinationAccount'),
-    render: function (data: string, _, row: TransactionResponse) {
+    render: function (data: string, _, row: CashbunnyTransactionResponse) {
       return `${row.destinationAccountName} (${data})`
     },
   },
@@ -144,11 +144,11 @@ const onTransactionFormCancel = () => {
   rowToEdit.value = null
 }
 
-const onRowEdit = ({ row }: DataTableRowEditEvent<TransactionResponse>) => {
+const onRowEdit = ({ row }: DataTableRowEditEvent<CashbunnyTransactionResponse>) => {
   rowToEdit.value = row
 }
 
-const onRowsDelete = ({ rows }: DataTableRowsDeleteEvent<TransactionResponse>) => {
+const onRowsDelete = ({ rows }: DataTableRowsDeleteEvent<CashbunnyTransactionResponse>) => {
   rowsToDelete.value = rows
 }
 

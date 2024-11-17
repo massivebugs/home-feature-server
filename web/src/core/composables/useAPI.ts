@@ -6,7 +6,136 @@ import axios, {
 } from 'axios'
 import type { Dayjs } from 'dayjs'
 import type { FrequencyStr } from '@/modules/cashbunny/models/recurrence_rule'
-import { nestedSnakeToCamel } from '../utils/object'
+import { nestedCamelToSnake, nestedSnakeToCamel } from '../utils/object'
+
+//API request/response models
+
+export type RepeatRequest = {
+  message: string
+}
+
+export type RepeatResponse = RepeatRequest
+
+export type CreateUserRequest = {
+  email: string
+  username: string
+  password: string
+}
+
+export type CreateJWTTokenRequest = {
+  username: string
+  password: string
+}
+
+export type UserResponse = {
+  id: number
+  name: string
+  loggedInAt: string // time
+  createdAt: string // time
+}
+
+export type GetUserResponse = {
+  user: UserResponse
+}
+
+export type UserSystemPreferenceResponse = {
+  language: string | null
+}
+
+export type GetUserSystemPreferenceResponse = {
+  userSystemPreference: UserSystemPreferenceResponse
+}
+
+export type UpdateUserSystemPreferenceRequest = UserSystemPreferenceResponse
+
+export type CashbunnyUserPreferenceResponse = {
+  userCurrencies: string[]
+}
+
+export type GetCashbunnyUserPreferenceResponse = {
+  userPreference: CashbunnyUserPreferenceResponse
+}
+
+export type GetCashbunnySupportedCurrenciesResponse = {
+  currenciesAndGrapheme: { [key: string]: string }
+}
+
+export type GetCashbunnyOverviewResponse = {
+  netWorth: { [key: string]: string }
+  profitLossSummary: { [key: string]: { revenue: string; expense: string; profit: string } }
+  assetAccounts: CashbunnyAccountResponse[]
+  liabilityAccounts: CashbunnyAccountResponse[]
+  transactions: CashbunnyTransactionResponse[]
+  transactionsFromScheduled: CashbunnyTransactionResponse[]
+}
+
+export type CashbunnyAccountResponse = {
+  id: number
+  category: string
+  name: string
+  description: string
+  amount: number
+  amountDisplay: string
+  currency: string
+  type: string
+  orderIndex: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type CashbunnyTransactionResponse = {
+  id: number
+  description: string
+  amount: number
+  currency: string
+  amountDisplay: string
+  transactedAt: string
+  createdAt: string
+  updatedAt: string
+  sourceAccountId: number
+  sourceAccountName: string
+  destinationAccountId: number
+  destinationAccountName: string
+  scheduledTransaction: CashbunnyScheduledTransactionResponse | null
+}
+
+export type CashbunnyScheduledTransactionResponse = {
+  id: number
+  description: string
+  amount: number
+  currency: string
+  amountDisplay: string
+  createdAt: string
+  updatedAt: string
+  recurrenceRule: CashbunnyRecurrenceRuleResponse
+  sourceAccountId: number
+  sourceAccountName: string
+  destinationAccountId: number
+  destinationAccountName: string
+}
+
+export type CashbunnyRecurrenceRuleResponse = {
+  freq: FrequencyStr
+  dtstart: string
+  count: number
+  interval: number
+  until: string
+}
+
+export type GetCashbunnyAccountsResponse = {
+  accounts: CashbunnyAccountResponse[]
+}
+
+export type CreateCashbunnyAccountRequest = Pick<
+  CashbunnyAccountResponse,
+  'name' | 'category' | 'description' | 'currency'
+> &
+  Partial<Pick<CashbunnyAccountResponse, 'orderIndex'>>
+
+export type UpdateCashbunnyAccountRequest = Pick<
+  CashbunnyAccountResponse,
+  'name' | 'description' | 'orderIndex'
+>
 
 // A nested dictionary including all paths and their subpaths
 const Endpoints = {
@@ -67,11 +196,13 @@ function makeEndpointsProxy<T extends Object>(target: T, traversed: string[] = [
 const APIEndpoints = makeEndpointsProxy(Endpoints)
 
 export class APIError {
+  status: number
   message: string
   validationMessages: { [key: string]: string }
   private handled: boolean
 
-  constructor(message: string, validationMessages: { [key: string]: string }) {
+  constructor(status: number, message: string, validationMessages: { [key: string]: string }) {
+    this.status = status
     this.message = message
     this.validationMessages = validationMessages
     this.handled = false
@@ -90,119 +221,8 @@ export class APIError {
   }
 }
 
-export type RepeatRequest = {
-  message: string
-}
-
-export type RepeatResponse = RepeatRequest
-
-export type CreateUserRequestDto = {
-  email: string
-  username: string
-  password: string
-}
-
-export type CreateJWTTokenRequest = {
-  username: string
-  password: string
-}
-
-export type UserResponse = {
-  id: number
-  name: string
-  loggedInAt: string // time
-  createdAt: string // time
-}
-
-export type GetUserResponse = {
-  user: UserResponse
-}
-
-export type UserSystemPreferenceResponse = {
-  language: string | null
-}
-
-export type GetUserSystemPreferenceResponse = {
-  userSystemPreference: UserSystemPreferenceResponse
-}
-
-export type UpdateUserSystemPreferenceRequest = UserSystemPreferenceResponse
-
-export type CashbunnyUserPreferenceResponse = {
-  userCurrencies: string[]
-}
-
-export type GetCashbunnyUserPreferenceResponse = {
-  userPreference: CashbunnyUserPreferenceResponse
-}
-
-export type GetCashbunnySupportedCurrenciesResponse = {
-  currenciesAndGrapheme: { [key: string]: string }
-}
-
 export type APIErrorHandlers<T extends number[]> = {
   [key in T[number]]: (error: APIError) => void
-}
-
-export type GetOverviewResponse = {
-  netWorth: { [key: string]: string }
-  profitLossSummary: { [key: string]: { revenue: string; expense: string; profit: string } }
-  assetAccounts: AccountResponse[]
-  liabilityAccounts: AccountResponse[]
-  transactions: TransactionResponse[]
-  transactionsFromScheduled: TransactionResponse[]
-}
-
-export type AccountResponse = {
-  id: number
-  category: string
-  name: string
-  description: string
-  amount: number
-  amountDisplay: string
-  currency: string
-  type: string
-  createdAt: string
-  updatedAt: string
-}
-
-export type TransactionResponse = {
-  id: number
-  description: string
-  amount: number
-  currency: string
-  amountDisplay: string
-  transactedAt: string
-  createdAt: string
-  updatedAt: string
-  sourceAccountId: number
-  sourceAccountName: string
-  destinationAccountId: number
-  destinationAccountName: string
-  scheduledTransaction: ScheduledTransactionResponse | null
-}
-
-export type ScheduledTransactionResponse = {
-  id: number
-  description: string
-  amount: number
-  currency: string
-  amountDisplay: string
-  createdAt: string
-  updatedAt: string
-  recurrenceRule: RecurrenceRuleResponse
-  sourceAccountId: number
-  sourceAccountName: string
-  destinationAccountId: number
-  destinationAccountName: string
-}
-
-export type RecurrenceRuleResponse = {
-  freq: FrequencyStr
-  dtstart: string
-  count: number
-  interval: number
-  until: string
 }
 
 export class API {
@@ -226,7 +246,7 @@ export class API {
     )
   }
 
-  createUser(data: CreateUserRequestDto, errorHandlers: APIErrorHandlers<[400]>) {
+  createUser(data: CreateUserRequest, errorHandlers: APIErrorHandlers<[400]>) {
     return this.wrapRequest(this.ax.post(APIEndpoints.v1.auth.path, data), errorHandlers)
   }
 
@@ -304,9 +324,9 @@ export class API {
     )
   }
 
-  getOverview(dateRange?: { from: Dayjs; to: Dayjs }) {
+  getCashbunnyOverview(dateRange?: { from: Dayjs; to: Dayjs }) {
     return this.wrapRequest(
-      this.ax.get<GetOverviewResponse>(APIEndpoints.v1.secure.cashbunny.overview.path, {
+      this.ax.get<GetCashbunnyOverviewResponse>(APIEndpoints.v1.secure.cashbunny.overview.path, {
         params: dateRange
           ? {
               from: dateRange.from.unix(),
@@ -314,6 +334,39 @@ export class API {
             }
           : undefined,
       }),
+    )
+  }
+
+  getCashbunnyAccounts() {
+    return this.wrapRequest(
+      this.ax.get<GetCashbunnyAccountsResponse>(APIEndpoints.v1.secure.cashbunny.accounts.path),
+    )
+  }
+
+  createCashbunnyAccount(
+    data: CreateCashbunnyAccountRequest,
+    errorHandlers: APIErrorHandlers<[400]>,
+  ) {
+    return this.wrapRequest(
+      this.ax.post(APIEndpoints.v1.secure.cashbunny.accounts.path, data),
+      errorHandlers,
+    )
+  }
+
+  deleteCashbunnyAccount(accountId: number) {
+    return this.wrapRequest(
+      this.ax.delete(APIEndpoints.v1.secure.cashbunny.accounts.path + `/${accountId}`),
+    )
+  }
+
+  updateCashbunnyAccount(
+    accountId: number,
+    data: UpdateCashbunnyAccountRequest,
+    errorHandlers: APIErrorHandlers<[400]>,
+  ) {
+    return this.wrapRequest(
+      this.ax.put(APIEndpoints.v1.secure.cashbunny.accounts.path + `/${accountId}`, data),
+      errorHandlers,
     )
   }
 
@@ -334,7 +387,11 @@ export class API {
       ) {
         const errorData = error.response?.data
         if ('message' in errorData && 'validation_messages' in errorData) {
-          const apiErr = new APIError(errorData.message, errorData.validation_messages)
+          const apiErr = new APIError(
+            error.status,
+            errorData.message,
+            errorData.validation_messages,
+          )
           const handler = errorHandlers[error.status as K[number]]
           if (handler) {
             handler(apiErr)
@@ -353,6 +410,20 @@ export function useAPI(baseURL: string) {
     baseURL,
     timeout: 10000,
     withCredentials: true,
+  })
+
+  ax.interceptors.request.use((req) => {
+    // If we have any data we are sending, convert it to snake_case.
+    // Even if req.data is a number or string, nestedCamelToSnake will handle that and return as is
+    // so all we need is "if (req.data)" to check for data.
+    if (req.data) {
+      try {
+        req.data = nestedCamelToSnake(req.data)
+      } catch {
+        // Do nothing
+      }
+    }
+    return req
   })
 
   ax.interceptors.response.use(

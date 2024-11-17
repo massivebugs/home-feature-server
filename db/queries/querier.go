@@ -49,6 +49,7 @@ type Querier interface {
 	ListTransactions(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyTransaction, error)
 	ListTransactionsBetweenDates(ctx context.Context, db DBTX, arg ListTransactionsBetweenDatesParams) ([]*CashbunnyTransaction, error)
 	ListUserCurrencies(ctx context.Context, db DBTX, userID uint32) ([]*CashbunnyUserCurrency, error)
+	UpdateCashbunnyAccount(ctx context.Context, db DBTX, arg UpdateCashbunnyAccountParams) error
 	UpdateUser(ctx context.Context, db DBTX, arg UpdateUserParams) error
 	UpdateUserPassword(ctx context.Context, db DBTX, arg UpdateUserPasswordParams) error
 	UpdateUserSystemPreference(ctx context.Context, db DBTX, arg UpdateUserSystemPreferenceParams) error

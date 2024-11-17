@@ -148,7 +148,6 @@
 </template>
 
 <script setup lang="ts">
-import { AxiosError } from 'axios'
 import dayjs, { Dayjs } from 'dayjs'
 import { computed, inject, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -160,9 +159,8 @@ import type {
   ToggleWindowResizeHandlerFunc,
   WindowSizeQuery,
 } from '@/core/components/WindowComponent.vue'
-import type { API, GetOverviewResponse } from '@/core/composables/useAPI'
+import type { API, GetCashbunnyOverviewResponse } from '@/core/composables/useAPI'
 import { ResizeDirection, useDragResize } from '@/core/composables/useDragResize'
-import type { APIResponse } from '@/core/models/dto'
 import { RelativePosition } from '@/core/models/relativePosition'
 import { RelativeSize } from '@/core/models/relativeSize'
 import CalendarComponent, {
@@ -182,10 +180,10 @@ const overviewContainer = ref()
 const detailSection = ref()
 const errorTitle = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
-const viewData = ref<GetOverviewResponse | null>(null)
+const viewData = ref<GetCashbunnyOverviewResponse | null>(null)
 const viewDateStart = ref<Dayjs>()
 const viewDateEnd = ref<Dayjs>()
-const selectedData = ref<GetOverviewResponse | null>(null)
+const selectedData = ref<GetCashbunnyOverviewResponse | null>(null)
 const selectedDateStart = ref<Dayjs | null>()
 const selectedDateEnd = ref<Dayjs | null>()
 let netWorthDataTableResizeFunc: () => void
@@ -316,16 +314,15 @@ const onCalendarSetDates = async (payload: CalendarSetDatesEvent) => {
   viewDateEnd.value = payload.dateEnd
 
   try {
-    const res = await props.api.getOverview({
+    const res = await props.api.getCashbunnyOverview({
       from: viewDateStart.value.startOf('day'),
       to: viewDateEnd.value.endOf('day'),
     })
     viewData.value = res
   } catch (error) {
-    if (error instanceof AxiosError) {
-      const res = error.response?.data as APIResponse<null>
-      errorTitle.value = 'An error occured while loading data'
-      errorMessage.value = res.error?.message || ''
+    errorTitle.value = 'An error occured while loading data'
+    if (props.api.isError(error)) {
+      errorMessage.value = error.message
     }
   }
 }
@@ -339,7 +336,7 @@ const onCalendarSelectDates = async (payload: CalendarSelectDatesEvent | null) =
   selectedDateStart.value = payload.dateStart
   selectedDateEnd.value = payload.dateEnd
 
-  const res = await props.api.getOverview({
+  const res = await props.api.getCashbunnyOverview({
     from: selectedDateStart.value.startOf('day'),
     to: selectedDateEnd.value.endOf('day'),
   })

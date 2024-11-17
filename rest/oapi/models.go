@@ -17,6 +17,7 @@ type CashbunnyAccount struct {
 	Description   string   `json:"description"`
 	Id            uint32   `json:"id"`
 	Name          string   `json:"name"`
+	OrderIndex    uint32   `json:"order_index"`
 	Type          string   `json:"type"`
 	UpdatedAt     string   `json:"updated_at"`
 }
@@ -142,6 +143,31 @@ type RepeatJSONBody struct {
 	Message string `json:"message"`
 }
 
+// CreateCashbunnyAccountJSONBody defines parameters for CreateCashbunnyAccount.
+type CreateCashbunnyAccountJSONBody struct {
+	// Category Category of the account.
+	Category    string `json:"category" validate:"required,oneof=assets liabilities revenues expenses"`
+	Currency    string `json:"currency" validate:"required,_cashbunny_currency"`
+	Description string `json:"description" validate:"required,max=200"`
+
+	// Name Name of the account to save
+	Name string `json:"name" validate:"required,max=100"`
+
+	// OrderIndex Order of the record to be placed in
+	OrderIndex *uint32 `json:"order_index"`
+}
+
+// UpdateCashbunnyAccountJSONBody defines parameters for UpdateCashbunnyAccount.
+type UpdateCashbunnyAccountJSONBody struct {
+	Description string `json:"description" validate:"required,max=200"`
+
+	// Name Name of the account to save
+	Name string `json:"name" validate:"required,max=100"`
+
+	// OrderIndex Order of the record to be placed in
+	OrderIndex uint32 `json:"order_index" validate:"required,number"`
+}
+
 // GetCashbunnyOverviewParams defines parameters for GetCashbunnyOverview.
 type GetCashbunnyOverviewParams struct {
 	// From Overview timeframe's start date
@@ -159,6 +185,12 @@ type CreateJWTTokenJSONRequestBody CreateJWTTokenJSONBody
 
 // RepeatJSONRequestBody defines body for Repeat for application/json ContentType.
 type RepeatJSONRequestBody RepeatJSONBody
+
+// CreateCashbunnyAccountJSONRequestBody defines body for CreateCashbunnyAccount for application/json ContentType.
+type CreateCashbunnyAccountJSONRequestBody CreateCashbunnyAccountJSONBody
+
+// UpdateCashbunnyAccountJSONRequestBody defines body for UpdateCashbunnyAccount for application/json ContentType.
+type UpdateCashbunnyAccountJSONRequestBody UpdateCashbunnyAccountJSONBody
 
 // UpdateUserSystemPreferenceJSONRequestBody defines body for UpdateUserSystemPreference for application/json ContentType.
 type UpdateUserSystemPreferenceJSONRequestBody = UserSystemPreference

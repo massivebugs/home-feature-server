@@ -2,8 +2,11 @@ package cashbunny
 
 import (
 	"errors"
+	"reflect"
 
 	"github.com/Rhymond/go-money"
+	"github.com/go-playground/validator/v10"
+	"github.com/massivebugs/home-feature-server/internal/util"
 )
 
 func isMoneyNotNegative(m *money.Money) func(v interface{}) error {
@@ -24,4 +27,14 @@ func isValidCurrency(currencyCode string) func(v interface{}) error {
 
 		return nil
 	}
+}
+
+func IsValidCurrency(fl validator.FieldLevel) bool {
+	if fl.Field().Kind() != reflect.String {
+		return false
+	}
+
+	value := fl.Field().String()
+
+	return util.SliceExists(supportedCurrencyCodes, value)
 }

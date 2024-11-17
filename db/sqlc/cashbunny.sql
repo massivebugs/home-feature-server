@@ -71,10 +71,19 @@ VALUES
           cashbunny_accounts AS t
         WHERE
           t.user_id = sqlc.arg(user_id)
-          AND deleted_at IS NULL
       )
     )
   );
+
+-- name: UpdateCashbunnyAccount :exec
+UPDATE cashbunny_accounts
+SET
+  name = ?,
+  description = ?,
+  order_index = ?
+WHERE
+  user_id = ?
+  AND id = ?;
 
 -- name: ListAccountsAndAmountByCategory :many
 SELECT

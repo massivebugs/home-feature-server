@@ -55,7 +55,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DialogComponent from '@/core/components/DialogComponent.vue'
 import type { RelativePosition } from '@/core/models/relativePosition'
-import type { CreateAuthTokenDto } from '../models/dto'
+import type { CreateJWTTokenRequest } from '../composables/useAPI'
 import type { ValidationErrors } from '../utils/types'
 import LockIconComponent from './LockIconComponent.vue'
 import TextInputComponent from './TextInputComponent.vue'
@@ -74,7 +74,7 @@ defineProps<{
   pos?: RelativePosition | 'center'
   disabled?: boolean
   errorMessage?: string
-  validationErrors?: ValidationErrors<CreateAuthTokenDto>
+  validationErrors?: ValidationErrors<CreateJWTTokenRequest>
 }>()
 
 const { t } = useI18n()

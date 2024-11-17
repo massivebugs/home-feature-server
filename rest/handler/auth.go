@@ -199,8 +199,8 @@ func (h *AuthHandler) GetUser(ctx context.Context, request oapi.GetUserRequestOb
 	res := oapi.GetUser200JSONResponse{}
 	res.User.Id = u.Id
 	res.User.Name = u.Name
-	res.User.CreatedAt = u.CreatedAt.String()
-	res.User.LoggedInAt = u.CreatedAt.String()
+	res.User.CreatedAt = u.CreatedAt.Format(time.RFC3339Nano)
+	res.User.LoggedInAt = u.CreatedAt.Format(time.RFC3339Nano)
 
 	return res, nil
 }

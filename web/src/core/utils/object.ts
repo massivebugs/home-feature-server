@@ -10,9 +10,18 @@ export const snakeToCamel = (str: string): string => {
   }, split.shift() ?? '')
 }
 
-// TODO: children don't seem to be converted well?
-// TODO: make copy of object (this will solve the problem above)
-// Converts an object and it's nested objects keys from snake to camel
+// Converts camelCase to snake_case
+export const camelToSnake = (str: string): string => {
+  const split = str.match(/^[^A-Z]+|[A-Z][^A-Z]*/g)
+
+  if (!split) {
+    return str
+  }
+
+  return split.map((s) => s.toLowerCase()).join('_')
+}
+
+// Converts an object and it's nested object keys from snake_case to camelCase
 export const nestedSnakeToCamel = (obj: any): any => {
   if (obj === null) {
     return obj
@@ -29,6 +38,30 @@ export const nestedSnakeToCamel = (obj: any): any => {
     case 'Array':
       for (let i = 0; i < obj.length; i++) {
         result[i] = nestedSnakeToCamel(obj[i])
+      }
+      return result
+    default:
+      return obj
+  }
+}
+
+// Converts an object and it's nested object keys from camelCase to snake_case
+export const nestedCamelToSnake = (obj: any): any => {
+  if (obj === null) {
+    return obj
+  }
+
+  const result = new obj.constructor()
+
+  switch (obj.constructor.name) {
+    case 'Object':
+      for (const key in obj) {
+        result[camelToSnake(key)] = nestedCamelToSnake(obj[key])
+      }
+      return result
+    case 'Array':
+      for (let i = 0; i < obj.length; i++) {
+        result[i] = nestedCamelToSnake(obj[i])
       }
       return result
     default:

@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/massivebugs/home-feature-server/internal/auth"
+	"github.com/massivebugs/home-feature-server/internal/cashbunny"
 	"github.com/massivebugs/home-feature-server/rest/oapi"
 )
 
@@ -23,6 +24,7 @@ func NewRequestValidator() *requestValidator {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
 	v.RegisterValidation("_password", auth.IsValidPassword)
+	v.RegisterValidation("_cashbunny_currency", cashbunny.IsValidCurrency)
 
 	// Copied straight from go-playground/validator documentation
 	v.RegisterTagNameFunc(func(fld reflect.StructField) string {

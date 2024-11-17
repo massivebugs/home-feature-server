@@ -66,7 +66,10 @@ import DialogComponent from '@/core/components/DialogComponent.vue'
 import NumberInputComponent from '@/core/components/NumberInputComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import TextInputComponent from '@/core/components/TextInputComponent.vue'
-import type { AccountResponse, TransactionResponse } from '@/core/composables/useAPI'
+import type {
+  CashbunnyAccountResponse,
+  CashbunnyTransactionResponse,
+} from '@/core/composables/useAPI'
 import type { APIResponse } from '@/core/models/dto'
 import type { RelativePosition } from '@/core/models/relativePosition'
 import type { RelativeSize } from '@/core/models/relativeSize'
@@ -90,7 +93,7 @@ const props = defineProps<{
   pos?: RelativePosition | 'center'
   size?: RelativeSize
   title: string
-  transaction?: TransactionResponse
+  transaction?: CashbunnyTransactionResponse
 }>()
 
 const { t } = useI18n()
@@ -123,7 +126,7 @@ const validationErrors = ref<{ [k in keyof CreateTransactionDto]: string }>({
   destination_account_id: '',
   transacted_at: '',
 })
-const accounts = ref<AccountResponse[]>([])
+const accounts = ref<CashbunnyAccountResponse[]>([])
 
 const onClickSubmit = async () => {
   const request = props.transaction

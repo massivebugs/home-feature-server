@@ -27,6 +27,7 @@
     />
     <AccountFormDialogComponent
       v-if="isCreate || rowToEdit"
+      :api="props.api"
       pos="center"
       :title="t('cashbunny.addAccount')"
       :next-account-index="data.length"
@@ -49,16 +50,18 @@ import DataTableComponent, {
   type DataTableRowEditEvent,
   type DataTableRowsDeleteEvent,
 } from '@/core/components/DataTableComponent.vue'
-import type { AccountResponse } from '@/core/composables/useAPI'
-import { useCashbunnyStore } from '../stores'
+import type { API, CashbunnyAccountResponse } from '@/core/composables/useAPI'
 import AccountFormDialogComponent from './AccountFormDialogComponent.vue'
 
+const props = defineProps<{
+  api: API
+}>()
+
 const { t } = useI18n()
-const store = useCashbunnyStore()
-const data = ref<AccountResponse[]>([])
+const data = ref<CashbunnyAccountResponse[]>([])
 const isCreate = ref<boolean>(false)
-const rowsToDelete = ref<AccountResponse[] | null>(null)
-const rowToEdit = ref<AccountResponse | null>(null)
+const rowsToDelete = ref<CashbunnyAccountResponse[] | null>(null)
+const rowToEdit = ref<CashbunnyAccountResponse | null>(null)
 
 const columns: ConfigColumns[] = [
   {
@@ -68,36 +71,36 @@ const columns: ConfigColumns[] = [
   {
     data: 'category',
     title: 'Category',
-    render: function (data: string, _, row: AccountResponse) {
+    render: function (data: string, _, row: CashbunnyAccountResponse) {
       return `${data} (${row.type})`
     },
   },
   {
     data: 'name',
-    title: t('cashbunny.accountName'),
+    title: t('cashbunny.account.name'),
   },
   {
     data: 'description',
-    title: t('cashbunny.accountDescription'),
+    title: t('cashbunny.account.description'),
   },
   {
-    data: 'amount',
-    title: t('cashbunny.accountAmount'),
+    data: 'amountDisplay',
+    title: t('cashbunny.account.amount'),
   },
   {
     data: 'currency',
-    title: t('cashbunny.accountCurrency'),
+    title: t('cashbunny.account.currency'),
   },
   {
-    data: 'created_at',
-    title: t('cashbunny.accountCreatedAt'),
+    data: 'createdAt',
+    title: t('cashbunny.account.createdAt'),
     render: function (data: string) {
       return new Date(data).toLocaleString(navigator.language)
     },
   },
   {
-    data: 'updated_at',
-    title: t('cashbunny.accountUpdatedAt'),
+    data: 'updatedAt',
+    title: t('cashbunny.account.updatedAt'),
     render: function (data: string) {
       return new Date(data).toLocaleString(navigator.language)
     },
@@ -111,10 +114,8 @@ const onClickAddAccount = () => {
 const onAccountFormSuccess = async () => {
   isCreate.value = false
   rowToEdit.value = null
-  const res = await store.getAccounts()
-  if (res.data.error === null) {
-    data.value = res.data.data
-  }
+  const res = await props.api.getCashbunnyAccounts()
+  data.value = res.accounts
 }
 
 const onAccountFormCancel = () => {
@@ -122,11 +123,11 @@ const onAccountFormCancel = () => {
   rowToEdit.value = null
 }
 
-const onRowEdit = ({ row }: DataTableRowEditEvent<AccountResponse>) => {
+const onRowEdit = ({ row }: DataTableRowEditEvent<CashbunnyAccountResponse>) => {
   rowToEdit.value = row
 }
 
-const onRowsDelete = ({ rows }: DataTableRowsDeleteEvent<AccountResponse>) => {
+const onRowsDelete = ({ rows }: DataTableRowsDeleteEvent<CashbunnyAccountResponse>) => {
   rowsToDelete.value = rows
 }
 
@@ -140,22 +141,20 @@ const onSuccessConfirmDeleteDialog = async () => {
   }
 
   await Promise.all([
-    ...rowsToDelete.value.map((info: AccountResponse) => store.deleteAccount(info.id)),
+    ...rowsToDelete.value.map((info: CashbunnyAccountResponse) =>
+      props.api.deleteCashbunnyAccount(info.id),
+    ),
   ])
 
   rowsToDelete.value = null
 
-  const res = await store.getAccounts()
-  if (res.data.error === null) {
-    data.value = res.data.data
-  }
+  const res = await props.api.getCashbunnyAccounts()
+  data.value = res.accounts
 }
 
 onMounted(async () => {
-  const res = await store.getAccounts()
-  if (res.data.error === null) {
-    data.value = res.data.data
-  }
+  const res = await props.api.getCashbunnyAccounts()
+  data.value = res.accounts
 })
 </script>
 

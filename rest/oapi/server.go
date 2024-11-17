@@ -48,6 +48,18 @@ type ServerInterface interface {
 	// (DELETE /api/v1/secure/auth/token)
 	DeleteJWTToken(ctx echo.Context) error
 
+	// (GET /api/v1/secure/cashbunny/accounts)
+	GetCashbunnyAccounts(ctx echo.Context) error
+
+	// (POST /api/v1/secure/cashbunny/accounts)
+	CreateCashbunnyAccount(ctx echo.Context) error
+
+	// (DELETE /api/v1/secure/cashbunny/accounts/{accountId})
+	DeleteCashbunnyAccount(ctx echo.Context, accountId uint32) error
+
+	// (PUT /api/v1/secure/cashbunny/accounts/{accountId})
+	UpdateCashbunnyAccount(ctx echo.Context, accountId uint32) error
+
 	// (GET /api/v1/secure/cashbunny/currencies)
 	GetCashbunnySupportedCurrencies(ctx echo.Context) error
 
@@ -155,6 +167,64 @@ func (w *ServerInterfaceWrapper) DeleteJWTToken(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.DeleteJWTToken(ctx)
+	return err
+}
+
+// GetCashbunnyAccounts converts echo context to params.
+func (w *ServerInterfaceWrapper) GetCashbunnyAccounts(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetCashbunnyAccounts(ctx)
+	return err
+}
+
+// CreateCashbunnyAccount converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateCashbunnyAccount(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.CreateCashbunnyAccount(ctx)
+	return err
+}
+
+// DeleteCashbunnyAccount converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteCashbunnyAccount(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "accountId" -------------
+	var accountId uint32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "accountId", ctx.Param("accountId"), &accountId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteCashbunnyAccount(ctx, accountId)
+	return err
+}
+
+// UpdateCashbunnyAccount converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdateCashbunnyAccount(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "accountId" -------------
+	var accountId uint32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "accountId", ctx.Param("accountId"), &accountId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdateCashbunnyAccount(ctx, accountId)
 	return err
 }
 
@@ -298,6 +368,10 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.DeleteJWTRefreshToken)
 	router.POST(baseURL+"/api/v1/secure/auth/refresh_token", wrapper.CreateJWTRefreshToken)
 	router.DELETE(baseURL+"/api/v1/secure/auth/token", wrapper.DeleteJWTToken)
+	router.GET(baseURL+"/api/v1/secure/cashbunny/accounts", wrapper.GetCashbunnyAccounts)
+	router.POST(baseURL+"/api/v1/secure/cashbunny/accounts", wrapper.CreateCashbunnyAccount)
+	router.DELETE(baseURL+"/api/v1/secure/cashbunny/accounts/:accountId", wrapper.DeleteCashbunnyAccount)
+	router.PUT(baseURL+"/api/v1/secure/cashbunny/accounts/:accountId", wrapper.UpdateCashbunnyAccount)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/currencies", wrapper.GetCashbunnySupportedCurrencies)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/overview", wrapper.GetCashbunnyOverview)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/user_preferences", wrapper.GetCashbunnyUserPreference)
@@ -506,6 +580,91 @@ func (response DeleteJWTToken204Response) VisitDeleteJWTTokenResponse(w http.Res
 	return nil
 }
 
+type GetCashbunnyAccountsRequestObject struct {
+}
+
+type GetCashbunnyAccountsResponseObject interface {
+	VisitGetCashbunnyAccountsResponse(w http.ResponseWriter) error
+}
+
+type GetCashbunnyAccounts200JSONResponse struct {
+	Accounts []CashbunnyAccount `json:"accounts"`
+}
+
+func (response GetCashbunnyAccounts200JSONResponse) VisitGetCashbunnyAccountsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateCashbunnyAccountRequestObject struct {
+	Body *CreateCashbunnyAccountJSONRequestBody
+}
+
+type CreateCashbunnyAccountResponseObject interface {
+	VisitCreateCashbunnyAccountResponse(w http.ResponseWriter) error
+}
+
+type CreateCashbunnyAccount200Response struct {
+}
+
+func (response CreateCashbunnyAccount200Response) VisitCreateCashbunnyAccountResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type CreateCashbunnyAccount400JSONResponse Error
+
+func (response CreateCashbunnyAccount400JSONResponse) VisitCreateCashbunnyAccountResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCashbunnyAccountRequestObject struct {
+	AccountId uint32 `json:"accountId"`
+}
+
+type DeleteCashbunnyAccountResponseObject interface {
+	VisitDeleteCashbunnyAccountResponse(w http.ResponseWriter) error
+}
+
+type DeleteCashbunnyAccount200Response struct {
+}
+
+func (response DeleteCashbunnyAccount200Response) VisitDeleteCashbunnyAccountResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type UpdateCashbunnyAccountRequestObject struct {
+	AccountId uint32 `json:"accountId"`
+	Body      *UpdateCashbunnyAccountJSONRequestBody
+}
+
+type UpdateCashbunnyAccountResponseObject interface {
+	VisitUpdateCashbunnyAccountResponse(w http.ResponseWriter) error
+}
+
+type UpdateCashbunnyAccount200Response struct {
+}
+
+func (response UpdateCashbunnyAccount200Response) VisitUpdateCashbunnyAccountResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type UpdateCashbunnyAccount400JSONResponse Error
+
+func (response UpdateCashbunnyAccount400JSONResponse) VisitUpdateCashbunnyAccountResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetCashbunnySupportedCurrenciesRequestObject struct {
 }
 
@@ -697,6 +856,18 @@ type StrictServerInterface interface {
 
 	// (DELETE /api/v1/secure/auth/token)
 	DeleteJWTToken(ctx context.Context, request DeleteJWTTokenRequestObject) (DeleteJWTTokenResponseObject, error)
+
+	// (GET /api/v1/secure/cashbunny/accounts)
+	GetCashbunnyAccounts(ctx context.Context, request GetCashbunnyAccountsRequestObject) (GetCashbunnyAccountsResponseObject, error)
+
+	// (POST /api/v1/secure/cashbunny/accounts)
+	CreateCashbunnyAccount(ctx context.Context, request CreateCashbunnyAccountRequestObject) (CreateCashbunnyAccountResponseObject, error)
+
+	// (DELETE /api/v1/secure/cashbunny/accounts/{accountId})
+	DeleteCashbunnyAccount(ctx context.Context, request DeleteCashbunnyAccountRequestObject) (DeleteCashbunnyAccountResponseObject, error)
+
+	// (PUT /api/v1/secure/cashbunny/accounts/{accountId})
+	UpdateCashbunnyAccount(ctx context.Context, request UpdateCashbunnyAccountRequestObject) (UpdateCashbunnyAccountResponseObject, error)
 
 	// (GET /api/v1/secure/cashbunny/currencies)
 	GetCashbunnySupportedCurrencies(ctx context.Context, request GetCashbunnySupportedCurrenciesRequestObject) (GetCashbunnySupportedCurrenciesResponseObject, error)
@@ -937,6 +1108,114 @@ func (sh *strictHandler) DeleteJWTToken(ctx echo.Context) error {
 	return nil
 }
 
+// GetCashbunnyAccounts operation middleware
+func (sh *strictHandler) GetCashbunnyAccounts(ctx echo.Context) error {
+	var request GetCashbunnyAccountsRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCashbunnyAccounts(ctx.Request().Context(), request.(GetCashbunnyAccountsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCashbunnyAccounts")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetCashbunnyAccountsResponseObject); ok {
+		return validResponse.VisitGetCashbunnyAccountsResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// CreateCashbunnyAccount operation middleware
+func (sh *strictHandler) CreateCashbunnyAccount(ctx echo.Context) error {
+	var request CreateCashbunnyAccountRequestObject
+
+	var body CreateCashbunnyAccountJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateCashbunnyAccount(ctx.Request().Context(), request.(CreateCashbunnyAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateCashbunnyAccount")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(CreateCashbunnyAccountResponseObject); ok {
+		return validResponse.VisitCreateCashbunnyAccountResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// DeleteCashbunnyAccount operation middleware
+func (sh *strictHandler) DeleteCashbunnyAccount(ctx echo.Context, accountId uint32) error {
+	var request DeleteCashbunnyAccountRequestObject
+
+	request.AccountId = accountId
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCashbunnyAccount(ctx.Request().Context(), request.(DeleteCashbunnyAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCashbunnyAccount")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeleteCashbunnyAccountResponseObject); ok {
+		return validResponse.VisitDeleteCashbunnyAccountResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// UpdateCashbunnyAccount operation middleware
+func (sh *strictHandler) UpdateCashbunnyAccount(ctx echo.Context, accountId uint32) error {
+	var request UpdateCashbunnyAccountRequestObject
+
+	request.AccountId = accountId
+
+	var body UpdateCashbunnyAccountJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateCashbunnyAccount(ctx.Request().Context(), request.(UpdateCashbunnyAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateCashbunnyAccount")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(UpdateCashbunnyAccountResponseObject); ok {
+		return validResponse.VisitUpdateCashbunnyAccountResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // GetCashbunnySupportedCurrencies operation middleware
 func (sh *strictHandler) GetCashbunnySupportedCurrencies(ctx echo.Context) error {
 	var request GetCashbunnySupportedCurrenciesRequestObject
@@ -1132,46 +1411,51 @@ func (sh *strictHandler) GetUser(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"AP//VwxXtzAyAAA=",
+	"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",
+	"TqP1zfr/AQAA//+AT1BuHz0AAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
