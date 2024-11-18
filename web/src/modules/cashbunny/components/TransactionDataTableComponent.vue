@@ -27,6 +27,7 @@
     />
     <TransactionFormDialogComponent
       v-if="isCreate || rowToEdit"
+      :api="props.api"
       pos="center"
       :title="t('cashbunny.createTransaction')"
       :transaction="clickedData ?? undefined"
@@ -50,14 +51,16 @@ import DataTableComponent, {
   type DataTableRowEditEvent,
   type DataTableRowsDeleteEvent,
 } from '@/core/components/DataTableComponent.vue'
-import type { CashbunnyTransactionResponse } from '@/core/composables/useAPI'
-import { useCashbunnyStore } from '../stores'
+import type { API, CashbunnyTransactionResponse } from '@/core/composables/useAPI'
 import TransactionFormDialogComponent from './TransactionFormDialogComponent.vue'
+
+const props = defineProps<{
+  api: API
+}>()
 
 DataTable.use(DataTablesCore)
 
 const { t } = useI18n()
-const store = useCashbunnyStore()
 const data = ref<CashbunnyTransactionResponse[]>([])
 const clickedData = ref<CashbunnyTransactionResponse | null>(null)
 const isCreate = ref<boolean>(false)
@@ -70,7 +73,7 @@ const columns: ConfigColumns[] = [
     title: 'ID',
   },
   {
-    data: 'transacted_at',
+    data: 'transactedAt',
     title: 'Transacted at',
     render: function (data: string) {
       return new Date(data).toLocaleString(navigator.language)
@@ -78,47 +81,40 @@ const columns: ConfigColumns[] = [
   },
   {
     data: 'description',
-    title: t('cashbunny.transactionDescription'),
+    title: t('cashbunny.transaction.description'),
   },
   {
-    data: 'amount_display',
-    title: t('cashbunny.transactionAmount'),
+    data: 'amountDisplay',
+    title: t('cashbunny.transaction.amount'),
   },
   {
     data: 'currency',
-    title: t('cashbunny.transactionCurrency'),
+    title: t('cashbunny.transaction.currency'),
   },
   {
-    data: 'source_account_id',
-    title: t('cashbunny.transactionSourceAccount'),
+    data: 'sourceAccountId',
+    title: t('cashbunny.transaction.sourceAccount'),
     render: function (data: string, _, row: CashbunnyTransactionResponse) {
       return `${row.sourceAccountName} (${data})`
     },
   },
   {
-    data: 'destination_account_id',
-    title: t('cashbunny.transactionDestinationAccount'),
+    data: 'destinationAccountId',
+    title: t('cashbunny.transaction.destinationAccount'),
     render: function (data: string, _, row: CashbunnyTransactionResponse) {
       return `${row.destinationAccountName} (${data})`
     },
   },
   {
-    data: 'transacted_at',
-    title: t('cashbunny.transactionTransactedAt'),
+    data: 'createdAt',
+    title: t('cashbunny.transaction.createdAt'),
     render: function (data: string) {
       return new Date(data).toLocaleString(navigator.language)
     },
   },
   {
-    data: 'created_at',
-    title: t('cashbunny.transactionCreatedAt'),
-    render: function (data: string) {
-      return new Date(data).toLocaleString(navigator.language)
-    },
-  },
-  {
-    data: 'updated_at',
-    title: t('cashbunny.transactionUpdatedAt'),
+    data: 'updatedAt',
+    title: t('cashbunny.transaction.updatedAt'),
     render: function (data: string) {
       return new Date(data).toLocaleString(navigator.language)
     },
@@ -133,10 +129,8 @@ const onTransactionFormSuccess = async () => {
   isCreate.value = false
   rowToEdit.value = null
 
-  const res = await store.getTransactions()
-  if (res.data.error === null) {
-    data.value = res.data.data
-  }
+  const res = await props.api.getCashbunnyTransactions()
+  data.value = res.transactions
 }
 
 const onTransactionFormCancel = () => {
@@ -161,21 +155,19 @@ const onSuccessConfirmDeleteDialog = async () => {
     return
   }
 
-  await Promise.all([...rowsToDelete.value.map((info) => store.deleteTransaction(info.id))])
+  await Promise.all([
+    ...rowsToDelete.value.map((info) => props.api.deleteCashbunnyTransaction(info.id)),
+  ])
 
   rowsToDelete.value = null
 
-  const res = await store.getTransactions()
-  if (res.data.error === null) {
-    data.value = res.data.data
-  }
+  const res = await props.api.getCashbunnyTransactions()
+  data.value = res.transactions
 }
 
 onMounted(async () => {
-  const res = await store.getTransactions()
-  if (res.data.error === null) {
-    data.value = res.data.data
-  }
+  const res = await props.api.getCashbunnyTransactions()
+  data.value = res.transactions
 })
 </script>
 

@@ -473,79 +473,78 @@ paths:
       responses:
         200:
           description: OK
-  # /secure/cashbunny/transactions:
-  #   get:
-  #     tags: 
-  #       - v1
-  #     operationId: cashbunny/listTransactions
-  #     description: Retrieves all transactions
-  #     security:
-  #       - bearerAuth: []
-  #     responses:
-  #       200:
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               properties:
-  #                 error:
-  #                   $ref: '#/components/schemas/error'
-  #                 data:
-  #                   example: ""
-  #   post:
-  #     tags: 
-  #       - v1
-  #     operationId: cashbunny/createTransaction
-  #     description: Creates an transaction
-  #     security:
-  #       - bearerAuth: []
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               description:
-  #                 type: string
-  #                 example: Paid for groceries at Foo store
-  #               amount:
-  #                 type: number
-  #                 example: 5140
-  #                 description: unsigned floating number
-  #               currency:
-  #                 type: string
-  #                 example: JPY
-  #               source_account_id:
-  #                 type: number
-  #                 example: 1
-  #                 description: Money from
-  #               destination_account_id:
-  #                 type: number
-  #                 example: 2
-  #                 description: Money to
-  #               transacted_at:
-  #                 type: string
-  #                 example: "2006-01-02 15:04:05"
-  #                 description: Datetime of transaction
-  #             required:
-  #               - description
-  #               - amount
-  #               - currency
-  #               - source_account_id
-  #               - destination_account_id
-  #               - transacted_at
-  #     responses:
-  #       200:
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               properties:
-  #                 error:
-  #                   $ref: '#/components/schemas/error'
+  /api/v1/secure/cashbunny/transactions:
+    get:
+      operationId: GetCashbunnyTransactions
+      description: Retrieves all of user's cashbunny transaction records
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [transactions]
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/cashbunnyTransaction'
+    post:
+      operationId: CreateCashbunnyTransaction
+      description: Records a transaction in cashbunny
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [description, amount, currency, source_account_id, destination_account_id, transacted_at]
+              properties:
+                description:
+                  type: string
+                  x-oapi-codegen-extra-tags:
+                    validate: "required,max=100"
+                amount:
+                  type: number
+                  format: double
+                  x-oapi-codegen-extra-tags:
+                    validate: "required,min=0"
+                currency:
+                  type: string
+                  example: JPY
+                  x-oapi-codegen-extra-tags:
+                    validate: "required,_cashbunny_currency"
+                source_account_id:
+                  type: integer
+                  format: uint32
+                  description: Money from
+                  x-oapi-codegen-extra-tags:
+                    validate: "required"
+                destination_account_id:
+                  type: integer
+                  format: uint32
+                  description: Money from
+                  x-oapi-codegen-extra-tags:
+                    validate: "required"
+                transacted_at:
+                  type: string
+                  description: ISO8601 compatible time string for transaction datetime
+                  x-oapi-codegen-extra-tags:
+                    validate: "required,_datetime"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
 components:
   securitySchemes:
     bearerAuth:

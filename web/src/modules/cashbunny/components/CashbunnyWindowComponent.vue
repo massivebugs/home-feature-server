@@ -79,7 +79,10 @@
         <PlannerComponent v-else-if="currentTab === Tabs.planner" />
         <SchedulesComponent v-else-if="currentTab === Tabs.schedules" />
         <AccountDataTableComponent v-else-if="currentTab === Tabs.accounts" :api="props.api" />
-        <TransactionDataTableComponent v-else-if="currentTab === Tabs.transactions" />
+        <TransactionDataTableComponent
+          v-else-if="currentTab === Tabs.transactions"
+          :api="props.api"
+        />
       </div>
     </div>
     <FeaturesOverviewDialogComponent

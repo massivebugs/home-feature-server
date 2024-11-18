@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/Rhymond/go-money"
-	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
@@ -34,29 +33,6 @@ func NewTransactionFromQueries(data *queries.CashbunnyTransaction) *Transaction 
 		CreatedAt:     data.CreatedAt,
 		UpdatedAt:     data.UpdatedAt,
 	}
-}
-
-func (tr *Transaction) Validate() error {
-	return validation.ValidateStruct(
-		tr,
-		validation.Field(
-			&tr.ID,
-			validation.Required,
-		),
-		validation.Field(
-			&tr.Description,
-			validation.Required,
-		),
-		validation.Field(
-			&tr.Amount,
-			validation.Required,
-			validation.By(isMoneyNotNegative(tr.Amount)),
-		),
-		validation.Field(
-			&tr.TransactedAt,
-			validation.Required,
-		),
-	)
 }
 
 func (tr *Transaction) IsSourceAccount(a *Account) bool {

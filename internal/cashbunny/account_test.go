@@ -8,58 +8,6 @@ import (
 	"github.com/Rhymond/go-money"
 )
 
-func TestAccount_Validate(t *testing.T) {
-	type fields struct {
-		ID                   uint32
-		Category             AccountCategory
-		Name                 string
-		Description          string
-		Currency             string
-		CreatedAt            time.Time
-		UpdatedAt            time.Time
-		IncomingTransactions []*Transaction
-		OutgoingTransactions []*Transaction
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr bool
-	}{
-		{
-			name: "success - all fields exist",
-			fields: fields{
-				ID:                   1,
-				Category:             AccountCategoryAssets,
-				Name:                 "Foo",
-				Description:          "Bar",
-				Currency:             money.JPY,
-				CreatedAt:            time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
-				UpdatedAt:            time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC),
-				IncomingTransactions: []*Transaction{},
-				OutgoingTransactions: []*Transaction{},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			a := &Account{
-				ID:                   tt.fields.ID,
-				Category:             tt.fields.Category,
-				Name:                 tt.fields.Name,
-				Description:          tt.fields.Description,
-				Currency:             tt.fields.Currency,
-				CreatedAt:            tt.fields.CreatedAt,
-				UpdatedAt:            tt.fields.UpdatedAt,
-				IncomingTransactions: tt.fields.IncomingTransactions,
-				OutgoingTransactions: tt.fields.OutgoingTransactions,
-			}
-			if err := a.validate(); (err != nil) != tt.wantErr {
-				t.Errorf("Account.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestAccount_GetType(t *testing.T) {
 	type fields struct {
 		Category AccountCategory

@@ -58,18 +58,3 @@ export type TransactionCategoryDto = {
   id: number
   name: string
 }
-
-export type CreateTransactionDto = {
-  description: string
-  amount: number
-  currency: string
-  source_account_id: number
-  destination_account_id: number
-  transacted_at: string
-}
-
-export type UpdateTransactionDto = {
-  description?: string
-  amount?: number
-  transacted_at?: string
-}

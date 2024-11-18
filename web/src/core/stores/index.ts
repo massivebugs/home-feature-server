@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, shallowRef, triggerRef } from 'vue'
-import { type UserSystemPreferenceDto } from '@/core/models/dto'
+import type { UserSystemPreferenceResponse } from '../composables/useAPI'
 import { Process } from '../models/process'
 import type { Program } from '../models/program'
 import { User } from '../models/user'
 
 export const useCoreStore = defineStore('core', () => {
   const user = ref<User | null>(null)
-  const systemPreference = ref<UserSystemPreferenceDto>({ language: null })
+  const systemPreference = ref<UserSystemPreferenceResponse>({ language: null })
   const processes = shallowRef<Map<string, Process>>(new Map())
   const programs = shallowRef<Map<string, Program>>(new Map())
   const topLevelProcessId = ref<string | null>(null)

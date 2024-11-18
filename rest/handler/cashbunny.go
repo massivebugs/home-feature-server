@@ -188,6 +188,49 @@ func (h *CashbunnyHandler) UpdateCashbunnyAccount(ctx context.Context, request o
 	return oapi.UpdateCashbunnyAccount200Response{}, nil
 }
 
+func (h *CashbunnyHandler) GetCashbunnyTransactions(ctx context.Context, request oapi.GetCashbunnyTransactionsRequestObject) (oapi.GetCashbunnyTransactionsResponseObject, error) {
+	claims := h.GetClaims(ctx)
+
+	trs, err := h.cashbunny.ListTransactions(ctx, claims.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	res := oapi.GetCashbunnyTransactions200JSONResponse{
+		Transactions: make([]oapi.CashbunnyTransaction, len(trs)),
+	}
+
+	for idx, tr := range trs {
+		res.Transactions[idx] = h.transactionToResponse(tr)
+	}
+
+	return res, nil
+}
+
+func (h *CashbunnyHandler) CreateCashbunnyTransaction(ctx context.Context, request oapi.CreateCashbunnyTransactionRequestObject) (oapi.CreateCashbunnyTransactionResponseObject, error) {
+	claims := h.GetClaims(ctx)
+
+	if err := h.cashbunny.CreateTransaction(ctx, claims.UserID, struct {
+		Description          string
+		Amount               float64
+		Currency             string
+		SourceAccountID      uint32
+		DestinationAccountID uint32
+		TransactedAt         string
+	}{
+		Description:          request.Body.Description,
+		Amount:               request.Body.Amount,
+		Currency:             request.Body.Currency,
+		SourceAccountID:      request.Body.SourceAccountId,
+		DestinationAccountID: request.Body.DestinationAccountId,
+		TransactedAt:         request.Body.TransactedAt,
+	}); err != nil {
+		return nil, err
+	}
+
+	return oapi.CreateCashbunnyTransaction200Response{}, nil
+}
+
 // func (h *CashbunnyHandler) GetPlan(c echo.Context) error {
 // 	claims := h.GetTokenClaims(c)
 
@@ -227,27 +270,9 @@ func (h *CashbunnyHandler) UpdateCashbunnyAccount(ctx context.Context, request o
 // 	return h.CreateResponse(c, nil, result)
 // }
 
-// func (h *CashbunnyHandler) CreateTransaction(c echo.Context) error {
-// 	claims := h.GetTokenClaims(c)
-
-// 	req := new(cashbunny.CreateTransactionRequest)
-
-// 	err := h.Validate(c, req)
-// 	if err != nil {
-// 		return h.CreateErrorResponse(c, err)
-// 	}
-
 // 	err = h.cashbunny.CreateTransaction(c.Request().Context(), claims.UserID, req)
 
 // 	return h.CreateResponse(c, err, nil)
-// }
-
-// func (h *CashbunnyHandler) ListTransactions(c echo.Context) error {
-// 	claims := h.GetTokenClaims(c)
-
-// 	result, err := h.cashbunny.ListTransactions(c.Request().Context(), claims.UserID)
-
-// 	return h.CreateResponse(c, err, result)
 // }
 
 // func (h *CashbunnyHandler) DeleteTransaction(c echo.Context) error {

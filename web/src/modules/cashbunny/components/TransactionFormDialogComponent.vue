@@ -17,14 +17,14 @@
       </div>
       <TextInputComponent
         name="transactionDescription"
-        :label="t('cashbunny.transactionDescription')"
-        :placeholder="t('cashbunny.transactionDescriptionPlaceholder')"
+        :label="t('cashbunny.transaction.description')"
+        :placeholder="t('cashbunny.transaction.form.descriptionPlaceholder')"
         :error-message="validationErrors.description"
         v-model="formValues.description"
       />
       <NumberInputComponent
         name="transactionAmount"
-        :label="t('cashbunny.transactionAmount')"
+        :label="t('cashbunny.transaction.amount')"
         placeholder="0"
         :min="0"
         :units="store.userPreference?.userCurrencies"
@@ -34,22 +34,22 @@
       />
       <SelectInputComponent
         name="sourceAccount"
-        :label="t('cashbunny.transactionSourceAccount')"
+        :label="t('cashbunny.transaction.sourceAccount')"
         :options="accounts.map((a) => ({ label: a.name, value: a.id }))"
-        :error-message="validationErrors.source_account_id"
+        :error-message="validationErrors.sourceAccountId"
         v-model="formValues.sourceAccountId"
       />
       <SelectInputComponent
         name="destinationAccount"
-        :label="t('cashbunny.transactionDestinationAccount')"
+        :label="t('cashbunny.transaction.destinationAccount')"
         :options="accounts.map((a) => ({ label: a.name, value: a.id }))"
-        :error-message="validationErrors.destination_account_id"
+        :error-message="validationErrors.destinationAccountId"
         v-model="formValues.destinationAccountId"
       />
       <DateTimeInputComponent
         name="transactedAt"
-        :label="t('cashbunny.transactionTransactedAt')"
-        :error-message="validationErrors.transacted_at"
+        :label="t('cashbunny.transaction.transactedAt')"
+        :error-message="validationErrors.transactedAt"
         v-model="formValues.transactedAt"
       />
     </div>
@@ -57,8 +57,6 @@
 </template>
 
 <script setup lang="ts">
-import { AxiosError } from 'axios'
-import dayjs from 'dayjs'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DateTimeInputComponent from '@/core/components/DateTimeInputComponent.vue'
@@ -67,13 +65,13 @@ import NumberInputComponent from '@/core/components/NumberInputComponent.vue'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import TextInputComponent from '@/core/components/TextInputComponent.vue'
 import type {
+  API,
   CashbunnyAccountResponse,
   CashbunnyTransactionResponse,
+  CreateCashbunnyTransactionRequest,
 } from '@/core/composables/useAPI'
-import type { APIResponse } from '@/core/models/dto'
 import type { RelativePosition } from '@/core/models/relativePosition'
 import type { RelativeSize } from '@/core/models/relativeSize'
-import type { CreateTransactionDto } from '../models/dto'
 import { useCashbunnyStore } from '../stores'
 
 export type TransactionFormValues = {
@@ -90,6 +88,7 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps<{
+  api: API
   pos?: RelativePosition | 'center'
   size?: RelativeSize
   title: string
@@ -98,6 +97,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const store = useCashbunnyStore()
+const accounts = ref<CashbunnyAccountResponse[]>([])
 const formValues = ref<TransactionFormValues>(
   props.transaction
     ? {
@@ -118,49 +118,67 @@ const formValues = ref<TransactionFormValues>(
       },
 )
 const errorMessage = ref<string>('')
-const validationErrors = ref<{ [k in keyof CreateTransactionDto]: string }>({
+const validationErrors = ref<{ [k in keyof CreateCashbunnyTransactionRequest]: string }>({
   description: '',
   amount: '',
   currency: '',
-  source_account_id: '',
-  destination_account_id: '',
-  transacted_at: '',
+  sourceAccountId: '',
+  destinationAccountId: '',
+  transactedAt: '',
 })
-const accounts = ref<CashbunnyAccountResponse[]>([])
 
 const onClickSubmit = async () => {
   const request = props.transaction
-    ? store.updateTransaction(props.transaction.id, {
-        description: formValues.value.description,
-        amount: formValues.value.amount,
-        transacted_at: dayjs(formValues.value.transactedAt).toISOString(),
-      })
-    : store.createTransaction({
-        description: formValues.value.description,
-        amount: formValues.value.amount,
-        currency: formValues.value.currency,
-        source_account_id: formValues.value.sourceAccountId,
-        destination_account_id: formValues.value.destinationAccountId,
-        transacted_at: dayjs(formValues.value.transactedAt).toISOString(),
-      })
+    ? props.api.updateCashbunnyTransaction(
+        props.transaction.id,
+        {
+          description: formValues.value.description,
+          amount: formValues.value.amount,
+          transactedAt: formValues.value.transactedAt.toISOString(),
+        },
+        {
+          400: () => {
+            // Handle in catch below
+          },
+        },
+      )
+    : props.api.createCashbunnyTransaction(
+        {
+          description: formValues.value.description,
+          amount: formValues.value.amount,
+          currency: formValues.value.currency,
+          sourceAccountId: formValues.value.sourceAccountId,
+          destinationAccountId: formValues.value.destinationAccountId,
+          transactedAt: formValues.value.transactedAt.toISOString(),
+        },
+        {
+          400: () => {
+            // Handle in catch below
+          },
+        },
+      )
 
-  await request
-    .then(() => {
-      emit('success')
-    })
-    .catch((error: AxiosError) => {
-      if (error.code === AxiosError.ERR_BAD_REQUEST) {
-        const res = error.response?.data as APIResponse<null>
-        errorMessage.value = res.error?.message || ''
-        validationErrors.value = { ...validationErrors.value, ...res.error?.validation_errors }
-      }
-    })
+  try {
+    await request
+    emit('success')
+  } catch (error) {
+    if (props.api.isError(error) && error.status === 400) {
+      errorMessage.value = error.message
+      validationErrors.value = error.validationMessages as any
+    } else {
+      throw error
+    }
+  }
 }
 
 onMounted(async () => {
-  const res = await store.getAccounts()
-  if (res.data.error === null) {
-    accounts.value = res.data.data
+  const res = await props.api.getCashbunnyAccounts()
+  accounts.value = res.accounts
+
+  if (!props.transaction && accounts.value.length > 0) {
+    formValues.value.sourceAccountId = accounts.value[0].id
+    formValues.value.destinationAccountId = accounts.value[0].id
+    formValues.value.currency = accounts.value[0].currency
   }
 })
 </script>

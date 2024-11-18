@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/Rhymond/go-money"
-	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/massivebugs/home-feature-server/db/queries"
 )
 
@@ -53,34 +52,6 @@ func NewAccountFromQueries(account *queries.CashbunnyAccount, amount *float64) *
 	}
 
 	return a
-}
-
-func (a *Account) validate() error {
-	return validation.ValidateStruct(
-		a,
-		validation.Field(
-			&a.ID,
-			validation.Required,
-		),
-		validation.Field(
-			&a.Category,
-			validation.Required,
-			validation.In(
-				AccountCategoryAssets,
-				AccountCategoryLiabilities,
-				AccountCategoryRevenues,
-				AccountCategoryExpenses,
-			),
-		),
-		validation.Field(
-			&a.Name,
-			validation.Required,
-		),
-		validation.Field(
-			&a.Currency,
-			validation.Required,
-		),
-	)
 }
 
 func (a *Account) GetType() AccountType {

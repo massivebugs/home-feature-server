@@ -3,28 +3,24 @@ package rest
 import (
 	"testing"
 
-	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-playground/validator/v10"
 )
 
-type ValidatableStruct struct {
-	SomeRequiredField string
-}
+func TestIsValidDateTime(t *testing.T) {
+	type s struct {
+		DateTime string `validate:"_datetime"`
+	}
 
-func (s *ValidatableStruct) Validate() error {
-	return validation.ValidateStruct(
-		s,
-		validation.Field(
-			&s.SomeRequiredField,
-			validation.Required,
-		),
-	)
-}
+	validStruct := s{
+		DateTime: "2024-11-18T00:00:30.465Z",
+	}
 
-type StructWithoutValidation struct{}
+	invalidStruct := s{
+		DateTime: "2024-11-18 00:00:30",
+	}
 
-func TestRequestValidator_Validate(t *testing.T) {
 	type args struct {
-		i interface{}
+		s s
 	}
 	tests := []struct {
 		name    string
@@ -32,34 +28,27 @@ func TestRequestValidator_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "validation success",
+			name: "success when value is correct datetime format",
 			args: args{
-				i: &ValidatableStruct{
-					SomeRequiredField: "foo",
-				},
+				s: validStruct,
 			},
 			wantErr: false,
 		},
 		{
-			name: "validation error",
+			name: "error when value is not the correct datetime format",
 			args: args{
-				i: &ValidatableStruct{},
-			},
-			wantErr: true,
-		},
-		{
-			name: "error because struct does not implement validate.Validatable",
-			args: args{
-				i: &StructWithoutValidation{},
+				s: invalidStruct,
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &requestValidator{}
-			if err := r.Validate(tt.args.i); (err != nil) != tt.wantErr {
-				t.Errorf("RequestValidator.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			v := validator.New()
+			v.RegisterValidation("_datetime", IsValidDateTime)
+
+			if err := v.Struct(tt.args.s); (err != nil) != tt.wantErr {
+				t.Errorf("IsValidDateTime() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

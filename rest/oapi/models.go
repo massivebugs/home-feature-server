@@ -177,6 +177,22 @@ type GetCashbunnyOverviewParams struct {
 	To *int64 `form:"to,omitempty" json:"to,omitempty"`
 }
 
+// CreateCashbunnyTransactionJSONBody defines parameters for CreateCashbunnyTransaction.
+type CreateCashbunnyTransactionJSONBody struct {
+	Amount      float64 `json:"amount" validate:"required,min=0"`
+	Currency    string  `json:"currency" validate:"required,_cashbunny_currency"`
+	Description string  `json:"description" validate:"required,max=100"`
+
+	// DestinationAccountId Money from
+	DestinationAccountId uint32 `json:"destination_account_id" validate:"required"`
+
+	// SourceAccountId Money from
+	SourceAccountId uint32 `json:"source_account_id" validate:"required"`
+
+	// TransactedAt ISO8601 compatible time string for transaction datetime
+	TransactedAt string `json:"transacted_at" validate:"required,_datetime"`
+}
+
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
 type CreateUserJSONRequestBody CreateUserJSONBody
 
@@ -191,6 +207,9 @@ type CreateCashbunnyAccountJSONRequestBody CreateCashbunnyAccountJSONBody
 
 // UpdateCashbunnyAccountJSONRequestBody defines body for UpdateCashbunnyAccount for application/json ContentType.
 type UpdateCashbunnyAccountJSONRequestBody UpdateCashbunnyAccountJSONBody
+
+// CreateCashbunnyTransactionJSONRequestBody defines body for CreateCashbunnyTransaction for application/json ContentType.
+type CreateCashbunnyTransactionJSONRequestBody CreateCashbunnyTransactionJSONBody
 
 // UpdateUserSystemPreferenceJSONRequestBody defines body for UpdateUserSystemPreference for application/json ContentType.
 type UpdateUserSystemPreferenceJSONRequestBody = UserSystemPreference

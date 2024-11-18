@@ -3,7 +3,9 @@ package rest
 import (
 	"reflect"
 	"strings"
+	"time"
 
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/massivebugs/home-feature-server/internal/auth"
@@ -24,6 +26,7 @@ func NewRequestValidator() *requestValidator {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
 	v.RegisterValidation("_password", auth.IsValidPassword)
+	v.RegisterValidation("_datetime", IsValidDateTime)
 	v.RegisterValidation("_cashbunny_currency", cashbunny.IsValidCurrency)
 
 	// Copied straight from go-playground/validator documentation
@@ -66,4 +69,14 @@ func RequestValidatorStrictHandlerFunc(f oapi.StrictHandlerFunc, operationID str
 
 		return f(c, req)
 	}
+}
+
+func IsValidDateTime(fl validator.FieldLevel) bool {
+	if fl.Field().Kind() != reflect.String {
+		return false
+	}
+
+	value := fl.Field().String()
+
+	return validation.Validate(value, validation.Date(time.RFC3339Nano)) == nil
 }

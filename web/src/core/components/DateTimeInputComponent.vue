@@ -1,5 +1,5 @@
 <template>
-  <div class="input-group">
+  <div class="hfs-input-group">
     <label v-if="label" :for="name">{{ label }}</label>
     <input
       :name="name"
@@ -14,7 +14,7 @@
     <datalist v-if="list" :id="`${name}_suggestions`">
       <option v-for="value in list" :key="value" :value="value"></option>
     </datalist>
-    <p v-if="errorMessage" class="error-message">
+    <p v-if="errorMessage" class="hfs-input-group__error-message">
       {{ (name ? name + ' ' : 'value') + errorMessage }}
     </p>
   </div>
@@ -41,7 +41,7 @@ const model = defineModel({
 <style scoped lang="scss">
 @use '@/assets/colors';
 
-.input-group {
+.hfs-input-group {
   display: flex;
   flex-direction: column;
   align-items: stretch;

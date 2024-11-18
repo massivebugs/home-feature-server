@@ -137,6 +137,26 @@ export type UpdateCashbunnyAccountRequest = Pick<
   'name' | 'description' | 'orderIndex'
 >
 
+export type GetCashbunnyTransactionsResponse = {
+  transactions: CashbunnyTransactionResponse[]
+}
+
+export type CreateCashbunnyTransactionRequest = Pick<
+  CashbunnyTransactionResponse,
+  | 'description'
+  | 'amount'
+  | 'currency'
+  | 'sourceAccountId'
+  | 'destinationAccountId'
+  | 'transactedAt'
+> &
+  Partial<Pick<CashbunnyAccountResponse, 'orderIndex'>>
+
+export type UpdateCashbunnyTransactionRequest = Pick<
+  CashbunnyTransactionResponse,
+  'description' | 'amount' | 'transactedAt'
+>
+
 // A nested dictionary including all paths and their subpaths
 const Endpoints = {
   v1: {
@@ -370,6 +390,41 @@ export class API {
     )
   }
 
+  getCashbunnyTransactions() {
+    return this.wrapRequest(
+      this.ax.get<GetCashbunnyTransactionsResponse>(
+        APIEndpoints.v1.secure.cashbunny.transactions.path,
+      ),
+    )
+  }
+
+  createCashbunnyTransaction(
+    data: CreateCashbunnyTransactionRequest,
+    errorHandlers: APIErrorHandlers<[400]>,
+  ) {
+    return this.wrapRequest(
+      this.ax.post(APIEndpoints.v1.secure.cashbunny.transactions.path, data),
+      errorHandlers,
+    )
+  }
+
+  deleteCashbunnyTransaction(transactionId: number) {
+    return this.wrapRequest(
+      this.ax.delete(APIEndpoints.v1.secure.cashbunny.transactions.path + `/${transactionId}`),
+    )
+  }
+
+  updateCashbunnyTransaction(
+    transactionId: number,
+    data: UpdateCashbunnyTransactionRequest,
+    errorHandlers: APIErrorHandlers<[400]>,
+  ) {
+    return this.wrapRequest(
+      this.ax.put(APIEndpoints.v1.secure.cashbunny.transactions.path + `/${transactionId}`, data),
+      errorHandlers,
+    )
+  }
+
   // Enforces error handling of known error responses, and converts snake_case response to camelCase
   private async wrapRequest<T extends Object, K extends number[]>(
     promise: Promise<AxiosResponse<T, any>>,
@@ -385,13 +440,9 @@ export class API {
         errorHandlers &&
         error.status in errorHandlers
       ) {
-        const errorData = error.response?.data
-        if ('message' in errorData && 'validation_messages' in errorData) {
-          const apiErr = new APIError(
-            error.status,
-            errorData.message,
-            errorData.validation_messages,
-          )
+        const errorData = nestedSnakeToCamel(error.response?.data)
+        if ('message' in errorData && 'validationMessages' in errorData) {
+          const apiErr = new APIError(error.status, errorData.message, errorData.validationMessages)
           const handler = errorHandlers[error.status as K[number]]
           if (handler) {
             handler(apiErr)

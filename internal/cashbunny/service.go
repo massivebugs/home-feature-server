@@ -9,6 +9,7 @@ import (
 	"github.com/Rhymond/go-money"
 	"github.com/massivebugs/home-feature-server/db"
 	"github.com/massivebugs/home-feature-server/internal/app"
+	"github.com/massivebugs/home-feature-server/internal/util"
 )
 
 type Cashbunny struct {
@@ -253,6 +254,100 @@ func (s *Cashbunny) DeleteAccount(ctx context.Context, userID uint32, accountID 
 	})
 }
 
+func (s *Cashbunny) ListTransactions(ctx context.Context, userID uint32) ([]*Transaction, error) {
+	trs, err := s.trRepo.ListTransactions(ctx, s.db, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Preload accounts
+	accIds := util.NewSet[uint32]()
+	for _, tr := range trs {
+		accIds.Add(tr.SrcAccountID)
+		accIds.Add(tr.DestAccountID)
+	}
+
+	accs, err := s.accRepo.ListAccountsByIDs(ctx, s.db, ListAccountsByIDsParams{
+		UserID: userID,
+		IDs:    accIds.ToSlice(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Map preloaded Accounts to Transactions
+	for _, tr := range trs {
+		srcAcc := util.SliceFind(accs, func(a *Account) bool { return a.ID == tr.SrcAccountID })
+		if srcAcc == nil {
+			return nil, err
+		}
+
+		destAcc := util.SliceFind(accs, func(a *Account) bool { return a.ID == tr.DestAccountID })
+		if destAcc == nil {
+			return nil, err
+		}
+
+		tr.SourceAccount = *srcAcc
+		tr.DestinationAccount = *destAcc
+	}
+
+	return trs, nil
+}
+
+func (s *Cashbunny) CreateTransaction(
+	ctx context.Context,
+	userID uint32,
+	args struct {
+		Description          string
+		Amount               float64
+		Currency             string
+		SourceAccountID      uint32
+		DestinationAccountID uint32
+		TransactedAt         string
+	},
+) error {
+	// Check if source account belong to this user
+	sa, err := s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
+		UserID: userID,
+		ID:     args.SourceAccountID,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Check if destination account belong to this user
+	da, err := s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
+		UserID: userID,
+		ID:     args.DestinationAccountID,
+	})
+	if err != nil {
+		return err
+	}
+
+	if sa.Currency != args.Currency || da.Currency != args.Currency {
+		return app.NewAppError(app.CodeBadRequest, errors.New("currency does not match the currency of either account"))
+	}
+
+	// TODO: Validate 0 balance
+
+	transactedAt, err := time.Parse(time.RFC3339Nano, args.TransactedAt)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.trRepo.CreateTransaction(ctx, s.db, CreateTransactionParams{
+		UserID:        userID,
+		SrcAccountID:  args.SourceAccountID,
+		DestAccountID: args.DestinationAccountID,
+		Description:   args.Description,
+		Amount:        args.Amount,
+		Currency:      args.Currency,
+		TransactedAt:  transactedAt,
+	})
+
+	return err
+}
+
 // func (s *Cashbunny) GetPlan(ctx context.Context, userID uint32) (planResponse, error) {
 // 	return newPlanResponse(&Planner{}), nil
 // }
@@ -302,89 +397,6 @@ func (s *Cashbunny) DeleteAccount(ctx context.Context, userID uint32, accountID 
 
 // func (s *Cashbunny) SavePlannerParameters(ctx context.Context, userID uint32, p *SavePlannerParametersRequest) (planResponse, error) {
 // 	return newPlanResponse(&Planner{}), nil
-// }
-
-// func (s *Cashbunny) CreateTransaction(ctx context.Context, userID uint32, req *CreateTransactionRequest) error {
-// 	// Check if source account belong to this user
-// 	sa, err := s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
-// 		UserID: userID,
-// 		ID:     req.SourceAccountID,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// Check if destination account belong to this user
-// 	da, err := s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
-// 		UserID: userID,
-// 		ID:     req.DestinationAccountID,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	if sa.currency != req.Currency || da.currency != req.Currency {
-// 		return app.NewAppError(app.CodeBadRequest, errors.New("currency does not match the currency of either account"))
-// 	}
-
-// 	// TODO: Validate 0 balance
-
-// 	transactedAt, err := time.Parse(time.RFC3339Nano, req.TransactedAt)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	_, err = s.trRepo.CreateTransaction(ctx, s.db, CreateTransactionParams{
-// 		UserID:        userID,
-// 		SrcAccountID:  req.SourceAccountID,
-// 		DestAccountID: req.DestinationAccountID,
-// 		Description:   req.Description,
-// 		Amount:        req.Amount,
-// 		Currency:      req.Currency,
-// 		TransactedAt:  transactedAt,
-// 	})
-
-// 	return err
-// }
-
-// func (s *Cashbunny) ListTransactions(ctx context.Context, userID uint32) ([]transactionResponse, error) {
-// 	trs, err := s.trRepo.ListTransactions(ctx, s.db, userID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Preload accounts
-// 	accIds := mapset.NewSet[uint32]()
-// 	for _, tr := range trs {
-// 		accIds.Add(tr.srcAccountID)
-// 		accIds.Add(tr.destAccountID)
-// 	}
-
-// 	accs, err := s.accRepo.ListAccountsByIDs(ctx, s.db, ListAccountsByIDsParams{
-// 		UserID: userID,
-// 		IDs:    accIds.ToSlice(),
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Map preloaded Accounts to Transactions
-// 	for _, tr := range trs {
-// 		srcAcc := util.SliceFind(accs, func(a *Account) bool { return a.id == tr.srcAccountID })
-// 		if srcAcc == nil {
-// 			return nil, err
-// 		}
-
-// 		destAcc := util.SliceFind(accs, func(a *Account) bool { return a.id == tr.destAccountID })
-// 		if destAcc == nil {
-// 			return nil, err
-// 		}
-
-// 		tr.sourceAccount = *srcAcc
-// 		tr.destinationAccount = *destAcc
-// 	}
-
-// 	return newListTransactionsResponse(trs), nil
 // }
 
 // func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transactionID uint32) error {
