@@ -26,7 +26,7 @@ func NewRequestValidator() *requestValidator {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
 	v.RegisterValidation("_password", auth.IsValidPassword)
-	v.RegisterValidation("_datetime", IsValidDateTime)
+	v.RegisterValidation("_iso8601", IsValidDateTime)
 	v.RegisterValidation("_cashbunny_currency", cashbunny.IsValidCurrency)
 
 	// Copied straight from go-playground/validator documentation
@@ -71,6 +71,7 @@ func RequestValidatorStrictHandlerFunc(f oapi.StrictHandlerFunc, operationID str
 	}
 }
 
+// TODO: Comment on RFC3339Nano
 func IsValidDateTime(fl validator.FieldLevel) bool {
 	if fl.Field().Kind() != reflect.String {
 		return false

@@ -23,6 +23,7 @@
         v-model="formValues.name"
       />
       <SelectInputComponent
+        v-if="!props.account"
         name="accountCategory"
         :label="t('cashbunny.account.category')"
         :options="[
@@ -42,6 +43,7 @@
         v-model="formValues.description"
       />
       <SelectInputComponent
+        v-if="!props.account"
         name="accountCurrency"
         :label="t('cashbunny.transaction.currency')"
         :options="

@@ -8,7 +8,7 @@ import (
 
 func TestIsValidDateTime(t *testing.T) {
 	type s struct {
-		DateTime string `validate:"_datetime"`
+		DateTime string `validate:"_iso8601"`
 	}
 
 	validStruct := s{
@@ -45,7 +45,7 @@ func TestIsValidDateTime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			v := validator.New()
-			v.RegisterValidation("_datetime", IsValidDateTime)
+			v.RegisterValidation("_iso8601", IsValidDateTime)
 
 			if err := v.Struct(tt.args.s); (err != nil) != tt.wantErr {
 				t.Errorf("IsValidDateTime() error = %v, wantErr %v", err, tt.wantErr)

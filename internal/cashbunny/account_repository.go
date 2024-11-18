@@ -110,15 +110,7 @@ func (r *AccountRepository) CreateAccount(ctx context.Context, db db.DB, params 
 }
 
 func (r *AccountRepository) UpdateAccount(ctx context.Context, db db.DB, arg UpdateAccountParams) error {
-	p := queries.UpdateCashbunnyAccountParams{
-		UserID:      arg.UserID,
-		ID:          arg.ID,
-		Name:        arg.Name,
-		Description: arg.Description,
-		OrderIndex:  arg.OrderIndex,
-	}
-
-	return r.querier.UpdateCashbunnyAccount(ctx, db, p)
+	return r.querier.UpdateCashbunnyAccount(ctx, db, queries.UpdateCashbunnyAccountParams(arg))
 }
 
 func (r *AccountRepository) ListAccountsAndAmountBetweenDates(ctx context.Context, db db.DB, params ListAccountsAndAmountBetweenDatesParams) ([]*Account, error) {

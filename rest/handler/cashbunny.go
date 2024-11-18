@@ -210,25 +210,63 @@ func (h *CashbunnyHandler) GetCashbunnyTransactions(ctx context.Context, request
 func (h *CashbunnyHandler) CreateCashbunnyTransaction(ctx context.Context, request oapi.CreateCashbunnyTransactionRequestObject) (oapi.CreateCashbunnyTransactionResponseObject, error) {
 	claims := h.GetClaims(ctx)
 
+	transactedAt, err := time.Parse(time.RFC3339Nano, request.Body.TransactedAt)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := h.cashbunny.CreateTransaction(ctx, claims.UserID, struct {
 		Description          string
 		Amount               float64
 		Currency             string
 		SourceAccountID      uint32
 		DestinationAccountID uint32
-		TransactedAt         string
+		TransactedAt         time.Time
 	}{
 		Description:          request.Body.Description,
 		Amount:               request.Body.Amount,
 		Currency:             request.Body.Currency,
 		SourceAccountID:      request.Body.SourceAccountId,
 		DestinationAccountID: request.Body.DestinationAccountId,
-		TransactedAt:         request.Body.TransactedAt,
+		TransactedAt:         transactedAt,
 	}); err != nil {
 		return nil, err
 	}
 
 	return oapi.CreateCashbunnyTransaction200Response{}, nil
+}
+
+func (h *CashbunnyHandler) UpdateCashbunnyTransaction(ctx context.Context, request oapi.UpdateCashbunnyTransactionRequestObject) (oapi.UpdateCashbunnyTransactionResponseObject, error) {
+	claims := h.GetClaims(ctx)
+
+	transactedAt, err := time.Parse(time.RFC3339Nano, request.Body.TransactedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := h.cashbunny.UpdateTransaction(ctx, claims.UserID, request.TransactionId, struct {
+		Description  string
+		Amount       float64
+		TransactedAt time.Time
+	}{
+		Description:  request.Body.Description,
+		Amount:       request.Body.Amount,
+		TransactedAt: transactedAt,
+	}); err != nil {
+		return nil, err
+	}
+
+	return oapi.UpdateCashbunnyTransaction200Response{}, nil
+}
+
+func (h *CashbunnyHandler) DeleteCashbunnyTransaction(ctx context.Context, request oapi.DeleteCashbunnyTransactionRequestObject) (oapi.DeleteCashbunnyTransactionResponseObject, error) {
+	claims := h.GetClaims(ctx)
+
+	if err := h.cashbunny.DeleteTransaction(ctx, claims.UserID, request.TransactionId); err != nil {
+		return nil, err
+	}
+
+	return oapi.DeleteCashbunnyTransaction200Response{}, nil
 }
 
 // func (h *CashbunnyHandler) GetPlan(c echo.Context) error {
@@ -268,25 +306,6 @@ func (h *CashbunnyHandler) CreateCashbunnyTransaction(ctx context.Context, reque
 // 	}
 
 // 	return h.CreateResponse(c, nil, result)
-// }
-
-// 	err = h.cashbunny.CreateTransaction(c.Request().Context(), claims.UserID, req)
-
-// 	return h.CreateResponse(c, err, nil)
-// }
-
-// func (h *CashbunnyHandler) DeleteTransaction(c echo.Context) error {
-// 	claims := h.GetTokenClaims(c)
-
-// 	transactionId, err := strconv.ParseInt(c.Param("id"), 10, 32)
-// 	if err != nil {
-// 		return h.CreateErrorResponse(c, err)
-// 	}
-
-// 	err = h.cashbunny.DeleteTransaction(c.Request().Context(), claims.UserID, uint32(transactionId))
-
-// 	return h.CreateResponse(c, err, nil)
-
 // }
 
 func (h *CashbunnyHandler) accountToResponse(a *cashbunny.Account) oapi.CashbunnyAccount {

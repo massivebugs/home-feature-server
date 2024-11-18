@@ -72,6 +72,12 @@ type ServerInterface interface {
 	// (POST /api/v1/secure/cashbunny/transactions)
 	CreateCashbunnyTransaction(ctx echo.Context) error
 
+	// (DELETE /api/v1/secure/cashbunny/transactions/{transactionId})
+	DeleteCashbunnyTransaction(ctx echo.Context, transactionId uint32) error
+
+	// (PUT /api/v1/secure/cashbunny/transactions/{transactionId})
+	UpdateCashbunnyTransaction(ctx echo.Context, transactionId uint32) error
+
 	// (GET /api/v1/secure/cashbunny/user-preferences)
 	GetCashbunnyUserPreference(ctx echo.Context) error
 
@@ -294,6 +300,42 @@ func (w *ServerInterfaceWrapper) CreateCashbunnyTransaction(ctx echo.Context) er
 	return err
 }
 
+// DeleteCashbunnyTransaction converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteCashbunnyTransaction(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "transactionId" -------------
+	var transactionId uint32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "transactionId", ctx.Param("transactionId"), &transactionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter transactionId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteCashbunnyTransaction(ctx, transactionId)
+	return err
+}
+
+// UpdateCashbunnyTransaction converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdateCashbunnyTransaction(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "transactionId" -------------
+	var transactionId uint32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "transactionId", ctx.Param("transactionId"), &transactionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter transactionId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdateCashbunnyTransaction(ctx, transactionId)
+	return err
+}
+
 // GetCashbunnyUserPreference converts echo context to params.
 func (w *ServerInterfaceWrapper) GetCashbunnyUserPreference(ctx echo.Context) error {
 	var err error
@@ -404,6 +446,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/v1/secure/cashbunny/overview", wrapper.GetCashbunnyOverview)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/transactions", wrapper.GetCashbunnyTransactions)
 	router.POST(baseURL+"/api/v1/secure/cashbunny/transactions", wrapper.CreateCashbunnyTransaction)
+	router.DELETE(baseURL+"/api/v1/secure/cashbunny/transactions/:transactionId", wrapper.DeleteCashbunnyTransaction)
+	router.PUT(baseURL+"/api/v1/secure/cashbunny/transactions/:transactionId", wrapper.UpdateCashbunnyTransaction)
 	router.GET(baseURL+"/api/v1/secure/cashbunny/user-preferences", wrapper.GetCashbunnyUserPreference)
 	router.POST(baseURL+"/api/v1/secure/cashbunny/user-preferences", wrapper.CreateCashbunnyDefaultUserPreference)
 	router.GET(baseURL+"/api/v1/secure/system-preferences", wrapper.GetUserSystemPreference)
@@ -773,6 +817,48 @@ func (response CreateCashbunnyTransaction400JSONResponse) VisitCreateCashbunnyTr
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteCashbunnyTransactionRequestObject struct {
+	TransactionId uint32 `json:"transactionId"`
+}
+
+type DeleteCashbunnyTransactionResponseObject interface {
+	VisitDeleteCashbunnyTransactionResponse(w http.ResponseWriter) error
+}
+
+type DeleteCashbunnyTransaction200Response struct {
+}
+
+func (response DeleteCashbunnyTransaction200Response) VisitDeleteCashbunnyTransactionResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type UpdateCashbunnyTransactionRequestObject struct {
+	TransactionId uint32 `json:"transactionId"`
+	Body          *UpdateCashbunnyTransactionJSONRequestBody
+}
+
+type UpdateCashbunnyTransactionResponseObject interface {
+	VisitUpdateCashbunnyTransactionResponse(w http.ResponseWriter) error
+}
+
+type UpdateCashbunnyTransaction200Response struct {
+}
+
+func (response UpdateCashbunnyTransaction200Response) VisitUpdateCashbunnyTransactionResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type UpdateCashbunnyTransaction400JSONResponse Error
+
+func (response UpdateCashbunnyTransaction400JSONResponse) VisitUpdateCashbunnyTransactionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetCashbunnyUserPreferenceRequestObject struct {
 }
 
@@ -953,6 +1039,12 @@ type StrictServerInterface interface {
 
 	// (POST /api/v1/secure/cashbunny/transactions)
 	CreateCashbunnyTransaction(ctx context.Context, request CreateCashbunnyTransactionRequestObject) (CreateCashbunnyTransactionResponseObject, error)
+
+	// (DELETE /api/v1/secure/cashbunny/transactions/{transactionId})
+	DeleteCashbunnyTransaction(ctx context.Context, request DeleteCashbunnyTransactionRequestObject) (DeleteCashbunnyTransactionResponseObject, error)
+
+	// (PUT /api/v1/secure/cashbunny/transactions/{transactionId})
+	UpdateCashbunnyTransaction(ctx context.Context, request UpdateCashbunnyTransactionRequestObject) (UpdateCashbunnyTransactionResponseObject, error)
 
 	// (GET /api/v1/secure/cashbunny/user-preferences)
 	GetCashbunnyUserPreference(ctx context.Context, request GetCashbunnyUserPreferenceRequestObject) (GetCashbunnyUserPreferenceResponseObject, error)
@@ -1395,6 +1487,62 @@ func (sh *strictHandler) CreateCashbunnyTransaction(ctx echo.Context) error {
 	return nil
 }
 
+// DeleteCashbunnyTransaction operation middleware
+func (sh *strictHandler) DeleteCashbunnyTransaction(ctx echo.Context, transactionId uint32) error {
+	var request DeleteCashbunnyTransactionRequestObject
+
+	request.TransactionId = transactionId
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCashbunnyTransaction(ctx.Request().Context(), request.(DeleteCashbunnyTransactionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCashbunnyTransaction")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeleteCashbunnyTransactionResponseObject); ok {
+		return validResponse.VisitDeleteCashbunnyTransactionResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// UpdateCashbunnyTransaction operation middleware
+func (sh *strictHandler) UpdateCashbunnyTransaction(ctx echo.Context, transactionId uint32) error {
+	var request UpdateCashbunnyTransactionRequestObject
+
+	request.TransactionId = transactionId
+
+	var body UpdateCashbunnyTransactionJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateCashbunnyTransaction(ctx.Request().Context(), request.(UpdateCashbunnyTransactionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateCashbunnyTransaction")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(UpdateCashbunnyTransactionResponseObject); ok {
+		return validResponse.VisitUpdateCashbunnyTransactionResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // GetCashbunnyUserPreference operation middleware
 func (sh *strictHandler) GetCashbunnyUserPreference(ctx echo.Context) error {
 	var request GetCashbunnyUserPreferenceRequestObject
@@ -1542,53 +1690,54 @@ func (sh *strictHandler) GetUser(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

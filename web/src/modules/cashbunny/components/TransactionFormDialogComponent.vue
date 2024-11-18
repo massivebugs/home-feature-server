@@ -33,6 +33,7 @@
         v-model:unit="formValues.currency"
       />
       <SelectInputComponent
+        v-if="!props.transaction"
         name="sourceAccount"
         :label="t('cashbunny.transaction.sourceAccount')"
         :options="accounts.map((a) => ({ label: a.name, value: a.id }))"
@@ -40,6 +41,7 @@
         v-model="formValues.sourceAccountId"
       />
       <SelectInputComponent
+        v-if="!props.transaction"
         name="destinationAccount"
         :label="t('cashbunny.transaction.destinationAccount')"
         :options="accounts.map((a) => ({ label: a.name, value: a.id }))"

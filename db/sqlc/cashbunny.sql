@@ -237,6 +237,16 @@ INSERT INTO
 VALUES
   (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+-- name: UpdateCashbunnyTransaction :exec
+UPDATE cashbunny_transactions
+SET
+  description = ?,
+  amount = ?,
+  transacted_at = ?
+WHERE
+  user_id = ?
+  AND id = ?;
+
 -- name: ListTransactions :many
 SELECT
   *

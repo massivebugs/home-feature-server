@@ -24,6 +24,10 @@ func NewLedger(accounts []*Account, transactions []*Transaction) *Ledger {
 func (l *Ledger) mapAccountsAndTransactions() {
 	for _, a := range l.accounts {
 		for _, tr := range l.transactions {
+			// TODO: For transactions with the same source and destination accounts,
+			// only tr.IsSourceAccount(a) is called and Destination account isn't.
+			// Logically, there can't be a transaction between the same account.
+			// Disable the above possibility!
 			if tr.IsSourceAccount(a) {
 				tr.SourceAccount = a
 				a.addOutgoingTransaction(tr)

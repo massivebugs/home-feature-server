@@ -212,23 +212,13 @@ func (s *Cashbunny) UpdateAccount(
 		OrderIndex  uint32
 	}) error {
 	return s.db.WithTx(ctx, func(tx db.DB) error {
-		_, err := s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
-			UserID: userID,
-			ID:     accountID,
-		})
-		if err != nil {
-			return err
-		}
-
-		p := UpdateAccountParams{
+		return s.accRepo.UpdateAccount(ctx, tx, UpdateAccountParams{
 			UserID:      userID,
 			ID:          accountID,
 			Name:        args.Name,
 			Description: args.Description,
 			OrderIndex:  args.OrderIndex,
-		}
-
-		return s.accRepo.UpdateAccount(ctx, tx, p)
+		})
 	})
 }
 
@@ -303,7 +293,7 @@ func (s *Cashbunny) CreateTransaction(
 		Currency             string
 		SourceAccountID      uint32
 		DestinationAccountID uint32
-		TransactedAt         string
+		TransactedAt         time.Time
 	},
 ) error {
 	// Check if source account belong to this user
@@ -330,11 +320,6 @@ func (s *Cashbunny) CreateTransaction(
 
 	// TODO: Validate 0 balance
 
-	transactedAt, err := time.Parse(time.RFC3339Nano, args.TransactedAt)
-	if err != nil {
-		return err
-	}
-
 	_, err = s.trRepo.CreateTransaction(ctx, s.db, CreateTransactionParams{
 		UserID:        userID,
 		SrcAccountID:  args.SourceAccountID,
@@ -342,10 +327,39 @@ func (s *Cashbunny) CreateTransaction(
 		Description:   args.Description,
 		Amount:        args.Amount,
 		Currency:      args.Currency,
-		TransactedAt:  transactedAt,
+		TransactedAt:  args.TransactedAt,
 	})
 
 	return err
+}
+
+func (s *Cashbunny) UpdateTransaction(
+	ctx context.Context,
+	userID uint32,
+	transactionID uint32,
+	args struct {
+		Description  string
+		Amount       float64
+		TransactedAt time.Time
+	}) error {
+	return s.db.WithTx(ctx, func(tx db.DB) error {
+		return s.trRepo.UpdateTransaction(ctx, tx, UpdateTransactionParams{
+			UserID:       userID,
+			ID:           transactionID,
+			Description:  args.Description,
+			Amount:       args.Amount,
+			TransactedAt: args.TransactedAt,
+		})
+	})
+}
+
+func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transactionID uint32) error {
+	// TODO: Validate 0 balance
+
+	return s.trRepo.DeleteTransaction(ctx, s.db, DeleteTransactionParams{
+		UserID: userID,
+		ID:     transactionID,
+	})
 }
 
 // func (s *Cashbunny) GetPlan(ctx context.Context, userID uint32) (planResponse, error) {
@@ -397,39 +411,4 @@ func (s *Cashbunny) CreateTransaction(
 
 // func (s *Cashbunny) SavePlannerParameters(ctx context.Context, userID uint32, p *SavePlannerParametersRequest) (planResponse, error) {
 // 	return newPlanResponse(&Planner{}), nil
-// }
-
-// func (s *Cashbunny) DeleteTransaction(ctx context.Context, userID uint32, transactionID uint32) error {
-// 	tr, err := s.trRepo.GetTransactionByID(ctx, s.db, GetTransactionByIDParams{
-// 		UserID: userID,
-// 		ID:     transactionID,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// Check if source account belong to this user
-// 	_, err = s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
-// 		UserID: userID,
-// 		ID:     tr.srcAccountID,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// Check if destination account belong to this user
-// 	_, err = s.accRepo.GetAccountByID(ctx, s.db, GetAccountByIDParams{
-// 		UserID: userID,
-// 		ID:     tr.destAccountID,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// TODO: Validate 0 balance
-
-// 	return s.trRepo.DeleteTransaction(ctx, s.db, DeleteTransactionParams{
-// 		UserID: userID,
-// 		ID:     transactionID,
-// 	})
 // }

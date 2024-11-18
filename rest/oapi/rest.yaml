@@ -535,7 +535,7 @@ paths:
                   type: string
                   description: ISO8601 compatible time string for transaction datetime
                   x-oapi-codegen-extra-tags:
-                    validate: "required,_datetime"
+                    validate: "required,_iso8601"
       responses:
         200:
           description: OK
@@ -545,6 +545,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /api/v1/secure/cashbunny/transactions/{transactionId}:
+    put:
+      operationId: UpdateCashbunnyTransaction
+      description: Updates a transaction in cashbunny
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: transactionId
+          schema:
+            type: integer
+            format: uint32
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [description, amount, transacted_at]
+              properties:
+                description:
+                  type: string
+                  x-oapi-codegen-extra-tags:
+                    validate: "required,max=100"
+                amount:
+                  type: number
+                  format: double
+                  x-oapi-codegen-extra-tags:
+                    validate: "required,min=0"
+                transacted_at:
+                  type: string
+                  description: ISO8601 compatible time string for transaction datetime
+                  x-oapi-codegen-extra-tags:
+                    validate: "required,_iso8601"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    delete:
+      operationId: DeleteCashbunnyTransaction
+      description: Deletes a single cashbunny transaction
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: transactionId
+          schema:
+            type: integer
+            format: uint32
+          required: true
+      responses:
+        200:
+          description: OK
 components:
   securitySchemes:
     bearerAuth:

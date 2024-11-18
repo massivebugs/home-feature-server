@@ -1025,3 +1025,33 @@ func (q *Queries) UpdateCashbunnyAccount(ctx context.Context, db DBTX, arg Updat
 	)
 	return err
 }
+
+const updateCashbunnyTransaction = `-- name: UpdateCashbunnyTransaction :exec
+UPDATE cashbunny_transactions
+SET
+  description = ?,
+  amount = ?,
+  transacted_at = ?
+WHERE
+  user_id = ?
+  AND id = ?
+`
+
+type UpdateCashbunnyTransactionParams struct {
+	Description  string
+	Amount       float64
+	TransactedAt time.Time
+	UserID       uint32
+	ID           uint32
+}
+
+func (q *Queries) UpdateCashbunnyTransaction(ctx context.Context, db DBTX, arg UpdateCashbunnyTransactionParams) error {
+	_, err := db.ExecContext(ctx, updateCashbunnyTransaction,
+		arg.Description,
+		arg.Amount,
+		arg.TransactedAt,
+		arg.UserID,
+		arg.ID,
+	)
+	return err
+}

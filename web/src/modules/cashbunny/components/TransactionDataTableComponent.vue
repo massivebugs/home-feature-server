@@ -30,7 +30,7 @@
       :api="props.api"
       pos="center"
       :title="t('cashbunny.createTransaction')"
-      :transaction="clickedData ?? undefined"
+      :transaction="rowToEdit ?? undefined"
       @success="onTransactionFormSuccess"
       @click-cancel="onTransactionFormCancel"
       @click-close="onTransactionFormCancel"
@@ -62,7 +62,6 @@ DataTable.use(DataTablesCore)
 
 const { t } = useI18n()
 const data = ref<CashbunnyTransactionResponse[]>([])
-const clickedData = ref<CashbunnyTransactionResponse | null>(null)
 const isCreate = ref<boolean>(false)
 const rowsToDelete = ref<CashbunnyTransactionResponse[] | null>(null)
 const rowToEdit = ref<CashbunnyTransactionResponse | null>(null)

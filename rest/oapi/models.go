@@ -190,7 +190,16 @@ type CreateCashbunnyTransactionJSONBody struct {
 	SourceAccountId uint32 `json:"source_account_id" validate:"required"`
 
 	// TransactedAt ISO8601 compatible time string for transaction datetime
-	TransactedAt string `json:"transacted_at" validate:"required,_datetime"`
+	TransactedAt string `json:"transacted_at" validate:"required,_iso8601"`
+}
+
+// UpdateCashbunnyTransactionJSONBody defines parameters for UpdateCashbunnyTransaction.
+type UpdateCashbunnyTransactionJSONBody struct {
+	Amount      float64 `json:"amount" validate:"required,min=0"`
+	Description string  `json:"description" validate:"required,max=100"`
+
+	// TransactedAt ISO8601 compatible time string for transaction datetime
+	TransactedAt string `json:"transacted_at" validate:"required,_iso8601"`
 }
 
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
@@ -210,6 +219,9 @@ type UpdateCashbunnyAccountJSONRequestBody UpdateCashbunnyAccountJSONBody
 
 // CreateCashbunnyTransactionJSONRequestBody defines body for CreateCashbunnyTransaction for application/json ContentType.
 type CreateCashbunnyTransactionJSONRequestBody CreateCashbunnyTransactionJSONBody
+
+// UpdateCashbunnyTransactionJSONRequestBody defines body for UpdateCashbunnyTransaction for application/json ContentType.
+type UpdateCashbunnyTransactionJSONRequestBody UpdateCashbunnyTransactionJSONBody
 
 // UpdateUserSystemPreferenceJSONRequestBody defines body for UpdateUserSystemPreference for application/json ContentType.
 type UpdateUserSystemPreferenceJSONRequestBody = UserSystemPreference

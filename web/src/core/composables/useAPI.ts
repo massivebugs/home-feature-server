@@ -149,8 +149,7 @@ export type CreateCashbunnyTransactionRequest = Pick<
   | 'sourceAccountId'
   | 'destinationAccountId'
   | 'transactedAt'
-> &
-  Partial<Pick<CashbunnyAccountResponse, 'orderIndex'>>
+>
 
 export type UpdateCashbunnyTransactionRequest = Pick<
   CashbunnyTransactionResponse,

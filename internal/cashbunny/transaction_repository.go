@@ -2,7 +2,6 @@ package cashbunny
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/massivebugs/home-feature-server/db"
@@ -11,14 +10,22 @@ import (
 
 type CreateTransactionParams struct {
 	UserID                 uint32
-	ScheduledTransactionID sql.NullInt32
-	CategoryID             sql.NullInt32
+	ScheduledTransactionID *int32
+	CategoryID             *int32
 	SrcAccountID           uint32
 	DestAccountID          uint32
 	Description            string
 	Amount                 float64
 	Currency               string
 	TransactedAt           time.Time
+}
+
+type UpdateTransactionParams struct {
+	Description  string
+	Amount       float64
+	TransactedAt time.Time
+	UserID       uint32
+	ID           uint32
 }
 
 type DeleteTransactionParams struct {
@@ -44,6 +51,7 @@ type ListTransactionsBetweenDatesParams struct {
 
 type ITransactionRepository interface {
 	CreateTransaction(ctx context.Context, db db.DB, params CreateTransactionParams) (uint32, error)
+	UpdateTransaction(ctx context.Context, db db.DB, arg UpdateTransactionParams) error
 	DeleteTransaction(ctx context.Context, db db.DB, params DeleteTransactionParams) error
 	DeleteTransactionsByAccountID(ctx context.Context, db db.DB, params DeleteTransactionsByAccountIDParams) error
 	GetTransactionByID(ctx context.Context, db db.DB, params GetTransactionByIDParams) (*Transaction, error)
@@ -83,6 +91,10 @@ func (r *TransactionRepository) CreateTransaction(ctx context.Context, db db.DB,
 	}
 
 	return uint32(id), nil
+}
+
+func (r *TransactionRepository) UpdateTransaction(ctx context.Context, db db.DB, arg UpdateTransactionParams) error {
+	return r.querier.UpdateCashbunnyTransaction(ctx, db, queries.UpdateCashbunnyTransactionParams(arg))
 }
 
 func (r *TransactionRepository) DeleteTransaction(ctx context.Context, db db.DB, params DeleteTransactionParams) error {
