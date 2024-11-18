@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 	"time"
@@ -22,11 +23,11 @@ type requestValidator struct {
 	validator *validator.Validate
 }
 
-func NewRequestValidator() *requestValidator {
+func NewRequestValidator(cfg *Config) *requestValidator {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
 	v.RegisterValidation("_password", auth.IsValidPassword)
-	v.RegisterValidation("_iso8601", IsValidDateTime)
+	v.RegisterValidation("_iso8601", IsValidDateTime(cfg.APIDateTimeFormat))
 	v.RegisterValidation("_cashbunny_currency", cashbunny.IsValidCurrency)
 
 	// Copied straight from go-playground/validator documentation
@@ -71,13 +72,39 @@ func RequestValidatorStrictHandlerFunc(f oapi.StrictHandlerFunc, operationID str
 	}
 }
 
-// TODO: Comment on RFC3339Nano
-func IsValidDateTime(fl validator.FieldLevel) bool {
-	if fl.Field().Kind() != reflect.String {
-		return false
+// Custom validator for go-playground/validator
+// Checks if the field is a valid string time can parse
+func IsValidDateTime(formatStr string) func(fl validator.FieldLevel) bool {
+	return func(fl validator.FieldLevel) bool {
+		if fl.Field().Kind() != reflect.String {
+			return false
+		}
+
+		value := fl.Field().String()
+
+		return validation.Validate(value, validation.Date(formatStr)) == nil
+	}
+}
+
+// Custom rule for ozzo-validation
+// Checks if the value is a valid DateTime format which time can parse.
+// This rule does not check more than precision in seconds.
+func IsValidDateTimeFormat(v interface{}) error {
+	formatStr, ok := v.(string)
+	if !ok {
+		return errors.New("datetime format cannot be converted to string")
 	}
 
-	value := fl.Field().String()
+	testDate := time.Date(2024, 12, 25, 7, 7, 7, 0, time.UTC)
 
-	return validation.Validate(value, validation.Date(time.RFC3339Nano)) == nil
+	parsedTestDate, err := time.Parse(formatStr, testDate.Format(formatStr))
+	if err != nil {
+		return errors.New("unsupported or invalid datetime format")
+	}
+
+	if testDate.UnixNano() != parsedTestDate.UnixNano() {
+		return errors.New("unsupported or invalid datetime format")
+	}
+
+	return nil
 }

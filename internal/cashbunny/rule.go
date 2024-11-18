@@ -16,6 +16,8 @@ import (
 // 	}
 // }
 
+// Custom validator for go-playground/validator
+// Checks if the field is a valid string of a currency which is supported by Cashbunny
 func IsValidCurrency(fl validator.FieldLevel) bool {
 	if fl.Field().Kind() != reflect.String {
 		return false

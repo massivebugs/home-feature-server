@@ -25,6 +25,9 @@ type Config struct {
 	TLSCertificate string
 	TLSKey         string
 
+	// DateTime format used for all request/responses
+	APIDateTimeFormat string
+
 	AuthJWTCookieName       string
 	AuthJWTSigningMethod    *jwt.SigningMethodHMAC
 	AuthJWTSecret           string
@@ -54,6 +57,8 @@ func (c *Config) Load() error {
 
 	c.TLSCertificate = "devcerts/" + os.Getenv("TLS_CERTIFICATE")
 	c.TLSKey = "devcerts/" + os.Getenv("TLS_KEY")
+
+	c.APIDateTimeFormat = os.Getenv("API_DATETIME_FORMAT")
 
 	c.AuthJWTCookieName = os.Getenv("AUTH_JWT_COOKIE_NAME")
 	authTokenSigningMethod := os.Getenv("AUTH_JWT_SIGNING_METHOD_HMAC")
@@ -124,6 +129,11 @@ func (c *Config) validate() error {
 		validation.Field(
 			&c.TLSKey,
 			validation.Required,
+		),
+		validation.Field(
+			&c.APIDateTimeFormat,
+			validation.Required,
+			validation.By(IsValidDateTimeFormat),
 		),
 		validation.Field(
 			&c.AuthJWTCookieName,

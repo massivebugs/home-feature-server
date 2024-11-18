@@ -57,7 +57,7 @@ func main() {
 	e.Use(rest.NewJWTMiddleware(cfg))
 	e.Use(rest.NewJWTRefreshMiddleware(cfg))
 	e.HTTPErrorHandler = rest.NewHTTPErrorHandler(cfg)
-	e.Validator = rest.NewRequestValidator()
+	e.Validator = rest.NewRequestValidator(cfg)
 
 	// TODO: Move JWT validation from JWTMiddleware to OapiRequestValidator
 	// e.Use(echomiddleware.OapiRequestValidatorWithOptions(swagger, &echomiddleware.Options{

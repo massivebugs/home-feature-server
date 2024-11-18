@@ -62,6 +62,7 @@ Validates password based on the following conditions:
 // }
 
 /*
+Custom validator for go-playground/validator
 Validates password based on the following conditions:
 
   - length(byte) is between specified minLength and maxLength

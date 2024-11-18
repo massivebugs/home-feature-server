@@ -18,6 +18,7 @@ func TestConfig_Load(t *testing.T) {
 				t.Setenv("ALLOWED_ORIGINS", "https://localhost:5173")
 				t.Setenv("TLS_CERTIFICATE", "devcerts/localhost.pem")
 				t.Setenv("TLS_KEY", "devcerts/localhost-key.pem")
+				t.Setenv("API_DATETIME_FORMAT", "2006-01-02T15:04:05.999999999Z07:00")
 				t.Setenv("AUTH_JWT_COOKIE_NAME", "auth_token")
 				t.Setenv("AUTH_JWT_SIGNING_METHOD_HMAC", "HS256")
 				t.Setenv("AUTH_JWT_SECRET", "test_secret")

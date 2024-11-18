@@ -94,8 +94,8 @@ func (h *CashbunnyHandler) GetCashbunnyOverview(ctx context.Context, request oap
 	}
 
 	res := oapi.GetCashbunnyOverview200JSONResponse{
-		From:                      ov.From.Format(time.RFC3339Nano),
-		To:                        ov.To.Format(time.RFC3339Nano),
+		From:                      ov.From.Format(h.Config.APIDateTimeFormat),
+		To:                        ov.To.Format(h.Config.APIDateTimeFormat),
 		NetWorth:                  ov.NetWorth,
 		ProfitLossSummary:         ov.ProfitLossSummary,
 		AssetAccounts:             make([]oapi.CashbunnyAccount, len(ov.AssetAccounts)),
@@ -210,7 +210,7 @@ func (h *CashbunnyHandler) GetCashbunnyTransactions(ctx context.Context, request
 func (h *CashbunnyHandler) CreateCashbunnyTransaction(ctx context.Context, request oapi.CreateCashbunnyTransactionRequestObject) (oapi.CreateCashbunnyTransactionResponseObject, error) {
 	claims := h.GetClaims(ctx)
 
-	transactedAt, err := time.Parse(time.RFC3339Nano, request.Body.TransactedAt)
+	transactedAt, err := time.Parse(h.Config.APIDateTimeFormat, request.Body.TransactedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +239,7 @@ func (h *CashbunnyHandler) CreateCashbunnyTransaction(ctx context.Context, reque
 func (h *CashbunnyHandler) UpdateCashbunnyTransaction(ctx context.Context, request oapi.UpdateCashbunnyTransactionRequestObject) (oapi.UpdateCashbunnyTransactionResponseObject, error) {
 	claims := h.GetClaims(ctx)
 
-	transactedAt, err := time.Parse(time.RFC3339Nano, request.Body.TransactedAt)
+	transactedAt, err := time.Parse(h.Config.APIDateTimeFormat, request.Body.TransactedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -320,8 +320,8 @@ func (h *CashbunnyHandler) accountToResponse(a *cashbunny.Account) oapi.Cashbunn
 		Currency:      a.Currency,
 		Type:          string(a.GetType()),
 		OrderIndex:    a.OrderIndex,
-		CreatedAt:     a.CreatedAt.Format(time.RFC3339Nano),
-		UpdatedAt:     a.UpdatedAt.Format(time.RFC3339Nano),
+		CreatedAt:     a.CreatedAt.Format(h.Config.APIDateTimeFormat),
+		UpdatedAt:     a.UpdatedAt.Format(h.Config.APIDateTimeFormat),
 		Amount:        &amount,
 		AmountDisplay: &amountDisplay,
 	}
@@ -334,9 +334,9 @@ func (h *CashbunnyHandler) transactionToResponse(tr *cashbunny.Transaction) oapi
 		Amount:        tr.Amount.AsMajorUnits(),
 		Currency:      tr.Amount.Currency().Code,
 		AmountDisplay: tr.Amount.Display(),
-		TransactedAt:  tr.TransactedAt.Format(time.RFC3339Nano),
-		CreatedAt:     tr.CreatedAt.Format(time.RFC3339Nano),
-		UpdatedAt:     tr.UpdatedAt.Format(time.RFC3339Nano),
+		TransactedAt:  tr.TransactedAt.Format(h.Config.APIDateTimeFormat),
+		CreatedAt:     tr.CreatedAt.Format(h.Config.APIDateTimeFormat),
+		UpdatedAt:     tr.UpdatedAt.Format(h.Config.APIDateTimeFormat),
 
 		SourceAccountId:        tr.SourceAccount.ID,
 		SourceAccountName:      tr.SourceAccount.Name,
@@ -351,15 +351,15 @@ func (h *CashbunnyHandler) transactionToResponse(tr *cashbunny.Transaction) oapi
 			Amount:        tr.ScheduledTransaction.Amount.AsMajorUnits(),
 			Currency:      tr.ScheduledTransaction.Amount.Currency().Code,
 			AmountDisplay: tr.ScheduledTransaction.Amount.Display(),
-			CreatedAt:     tr.ScheduledTransaction.CreatedAt.Format(time.RFC3339Nano),
-			UpdatedAt:     tr.ScheduledTransaction.UpdatedAt.Format(time.RFC3339Nano),
+			CreatedAt:     tr.ScheduledTransaction.CreatedAt.Format(h.Config.APIDateTimeFormat),
+			UpdatedAt:     tr.ScheduledTransaction.UpdatedAt.Format(h.Config.APIDateTimeFormat),
 
 			RecurrenceRule: oapi.CashbunnyRecurrenceRule{
 				Freq:     tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Freq.String(),
-				Dtstart:  tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Dtstart.Format(time.RFC3339Nano),
+				Dtstart:  tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Dtstart.Format(h.Config.APIDateTimeFormat),
 				Count:    tr.ScheduledTransaction.RecurrenceRule.Rule.OrigOptions.Count,
 				Interval: tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Interval,
-				Until:    tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Until.Format(time.RFC3339Nano),
+				Until:    tr.ScheduledTransaction.RecurrenceRule.Rule.Options.Until.Format(h.Config.APIDateTimeFormat),
 			},
 
 			SourceAccountId:        tr.ScheduledTransaction.SourceAccount.ID,
