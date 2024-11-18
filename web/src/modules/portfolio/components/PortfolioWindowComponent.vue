@@ -107,7 +107,6 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import WindowComponent from '@/core/components/WindowComponent.vue'
 import type { WindowToolbarRow } from '@/core/components/WindowToolbarComponent.vue'
-import { RelativePosition } from '@/core/models/relativePosition'
 import { RelativeSize } from '@/core/models/relativeSize'
 import AboutDialogComponent from './AboutDialogComponent.vue'
 import ContactFormDialogComponent, {

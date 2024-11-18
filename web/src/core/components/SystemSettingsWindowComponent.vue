@@ -8,7 +8,7 @@
       close: true,
     }"
     :toolbar="toolbarOptions"
-    :statusBarInfo="['Something goes here...', 'Something else here']"
+    :statusBarInfo="[t('app.name') + ' v' + appVersion]"
     :resizable="true"
     @click-close="emit('clickClose')"
     v-slot="{ windowSizeQuery }"
@@ -35,11 +35,16 @@
         </form>
       </SystemSettingsSectionComponent>
     </div>
+    <SystemAboutDialogComponent
+      v-if="showAboutDialog"
+      pos="center"
+      @click-close="onClickCloseShowAboutDialog"
+    />
   </WindowComponent>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SelectInputComponent from '@/core/components/SelectInputComponent.vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
@@ -49,6 +54,7 @@ import { Locales } from '@/i18n'
 import type { API } from '../composables/useAPI'
 import { useCoreStore } from '../stores'
 import LanguageIconComponent from './LanguageIconComponent.vue'
+import SystemAboutDialogComponent from './SystemAboutDialogComponent.vue'
 import SystemSettingsItemComponent from './SystemSettingsItemComponent.vue'
 import SystemSettingsSectionComponent from './SystemSettingsSectionComponent.vue'
 
@@ -62,6 +68,8 @@ const props = defineProps<{
 
 const { t, locale } = useI18n()
 const store = useCoreStore()
+const appVersion = APP_VERSION
+const showAboutDialog = ref<boolean>(false)
 const localeOptions: { label: string; value: any }[] = [
   { label: t('systemSettings.locale.default'), value: null },
   ...Object.values(Locales).map((v) => ({ label: t(`systemSettings.locale.${v}`), value: v })),
@@ -77,7 +85,6 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
             [
               {
                 label: t('common.exit'),
-                shortcutKey: 'Alt+F4',
                 isDisabled: false,
                 onClick: () => {
                   emit('clickClose')
@@ -93,10 +100,10 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
           itemGroups: [
             [
               {
-                label: t('common.about'),
+                label: t('systemSettings.about.linkTitle'),
                 isDisabled: false,
                 onClick: () => {
-                  //
+                  showAboutDialog.value = true
                 },
               },
             ],
@@ -111,6 +118,10 @@ const onChangePreferences = async () => {
   // TODO: API Update preferences
   locale.value = store.systemPreference.language ?? navigator.language
   await props.api.updateUserSystemPreference(store.systemPreference)
+}
+
+const onClickCloseShowAboutDialog = () => {
+  showAboutDialog.value = false
 }
 </script>
 

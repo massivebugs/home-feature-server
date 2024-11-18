@@ -1,6 +1,6 @@
 <template>
   <main ref="desktopViewEl" class="hfs-desktop">
-    <h1 class="hfs-desktop__logo">{{ t('app.name') }} v.0.0.1</h1>
+    <h1 class="hfs-desktop__logo">{{ t('app.name') }} v{{ appVersion }}</h1>
     <FileListComponent class="hfs-desktop__file-list" :files="fileOptions" />
     <div class="hfs-desktop__taskbar-container">
       <TaskbarComponent
@@ -79,6 +79,7 @@ const contextMenuPos = ref<RelativePosition>(new RelativePosition(0, 0))
 const fileOptions = ref<FileShortcutIconOption[]>([])
 const showLogOutConfirmDialog = ref<boolean>(false)
 const hiddenWindowPIDs = ref<Set<string>>(new Set())
+const appVersion = APP_VERSION
 
 const setContextMenu: SetContextMenu = (
   options: ContextMenuOptions | null,

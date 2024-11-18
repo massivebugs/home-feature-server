@@ -53,6 +53,11 @@ export const i18nOptions: I18nOptions = {
       },
       systemSettings: {
         name: 'System Settings',
+        about: {
+          linkTitle: 'About @:app.name',
+          gitHubRepoDescription: 'Check out the repo here!',
+          disclaimer: "Disclaimer: it's still a mess but a work in progress :)",
+        },
         locale: {
           default: 'Use system defaults',
           en: 'English',
@@ -319,6 +324,12 @@ export const i18nOptions: I18nOptions = {
       },
       systemSettings: {
         name: 'システム設定',
+        about: {
+          linkTitle: '@:app.name について',
+          gitHubRepoDescription: 'GitHubでレポジトリーを見る',
+          disclaimer:
+            ' まだ進行中のプロジェクトで整理が必要ですが、\n温かい目で見守ってください :)',
+        },
         locale: {
           default: 'システムデフォルト',
           en: 'English',
