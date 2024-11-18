@@ -1,6 +1,6 @@
 {
   "name": "home-server-web",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -31,6 +31,7 @@
     "dayjs": "^1.11.12",
     "lodash": "^4.17.21",
     "modern-normalize": "^2.0.0",
+    "motion": "^11.11.17",
     "pinia": "^2.1.7",
     "rrule": "^2.8.1",
     "vue": "^3.4.29",

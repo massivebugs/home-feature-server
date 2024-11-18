@@ -6,8 +6,9 @@
       :key="file.name"
       :selected="selectedFiles.includes(file.name)"
       :option="file"
-      @click="onFileClick(file)"
-      @dblclick="onFileDblClick(file)"
+      @click.stop="onFileClick(file)"
+      @touchend.stop="onFileDblClick(file)"
+      @dblclick.stop="onFileDblClick(file)"
     />
   </div>
 </template>

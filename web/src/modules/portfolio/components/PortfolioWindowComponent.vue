@@ -7,189 +7,271 @@
       maximize: true,
       close: true,
     }"
-    :toolbar="toolbarOptions"
     title-bar-icon="/images/portfolio_icon_small.png"
-    :statusBarInfo="['Something goes here...', 'Something else here']"
     :resizable="true"
     @click-close="emit('clickClose')"
+    v-slot="windowProps"
   >
-    <div class="hfs-portfolio__container">
-      <h1>Portfolio</h1>
-      <p>A professional looking photo</p>
-      <p>Da Hyun Kim</p>
-      <p>dhkp443@gmail.com</p>
-      <p>https://github.com/massivebugs</p>
-      <p>
-        Hi, I'm Da Hyun. I'm a software engineer who loves making neat backend systems and unique
-        frontend experiences.
-      </p>
-      <h2>Professional Experiences</h2>
-      <div>
-        <p>...</p>
-        <p>full-stack engineer to develop and maintain features</p>
-        <p>Projects</p>
-        <ul>
-          <li>...</li>
-        </ul>
-        <p>...</p>
-        <p>Did various projects for clients, made company product</p>
-        <p>Projects</p>
-        <ul>
-          <li>...</li>
-          <li>internal system cms api</li>
-          <li>mobile app for car sharing</li>
-        </ul>
-      </div>
-      <h2>Personal Projects</h2>
-      <ul>
-        <li>
-          Home Feature Server / Portfolio website
-          <p>
-            Initially created for writing utility apps for home usage, I decided to expand it as a
-            personal website as well
-          </p>
-        </li>
-        <li>
-          Cashbunny Budget Planner
-          <p>
-            A simple accounting system with transaction scheduling and budget planning/visualization
-          </p>
-        </li>
-        <li>
-          TELEBYTE
-          <p>A desktop telepresence robot controlled via WebRTC</p>
-          <p>Made using ESP32 WROOM 32, servo controller module, servos, brushed dc motors etc</p>
-        </li>
-        <li>
-          Cirro Virtual assistant
-          <p>
-            A simple virtual assistant designed to provide support to various features and
-            applications for this server
-          </p>
-          <p>Made using a behavior tree and a knowledge graph</p>
-        </li>
-        <li>
-          Document Editor
-          <p>A simple document editor based on the TipTap API</p>
-        </li>
-        <li>
-          Blog writeups
-          <p>Check out this directory for writeups</p>
-        </li>
-        <li>
-          Video Conferencing
-          <p>So that I can call my parents who live far away</p>
-        </li>
-      </ul>
-      <h2>CTA</h2>
-      <div>
-        <div>Contact me via Email</div>
-        <div>Or Call me now! (available times -)</div>
-        <div>In the meantime, check out my GitHub!</div>
-      </div>
+    <div
+      ref="container"
+      :class="['portfolio__container', `portfolio__container-${windowProps.windowSize}`]"
+    >
+      <section ref="sectionIntro" id="portfolio__intro" class="portfolio__section">
+        <p class="portfolio__intro__title">Hi, I'm Da-Hyun.</p>
+        <p class="portfolio__intro__description">I'm a full-stack developer.</p>
+        <p class="portfolio__intro__links">
+          <ButtonComponent> Download Resume </ButtonComponent>
+          <a href="#portfolio__contact">
+            <ButtonComponent> Contact Me </ButtonComponent>
+          </a>
+        </p>
+        <p>or</p>
+        <p>
+          <ButtonComponent> Protect this Portfolio </ButtonComponent>
+        </p>
+      </section>
+      <section ref="sectionExperience" id="portfolio__experience" class="portfolio__section">
+        <h1>Experience</h1>
+        <div class="portfolio__company">
+          <p class="portfolio__company-name">LEAN BODY Inc.</p>
+          <p class="portfolio__company-title">Web Engineer | Nov 2023 - Oct 2024</p>
+          <ul>
+            <li>
+              Full-stack engineer for one of Japan’s largest online fitness platforms, developing
+              new features and fixes for hundreds of thousands of users.
+            </li>
+            <li>
+              Collaborated and brainstormed closely with cross-functional teams (product, design,
+              analytics, support, engineering) to enhance user experience, contributing to 7+ major
+              feature releases in under a year with minimal bugs.
+            </li>
+            <li>
+              Implemented test code generation, optimized test execution, and managed a major
+              database upgrade, reducing test writing time by 3 minutes per test and cutting
+              integration test time fivefold.
+            </li>
+          </ul>
+        </div>
+
+        <div class="portfolio__company">
+          <p class="portfolio__company-name">TERADOGA Co., Ltd</p>
+          <p class="portfolio__company-title">Software Engineer | Jul 2020 - Oct 2024</p>
+          <ul>
+            <li>
+              Led the development of TERADOGA, the company’s flagship product, adjusting goals to
+              align with a new business model that secured long-term agreements with three new
+              business clients within the first year of development.
+            </li>
+            <li>
+              Developed and deployed over five full-stack Laravel and Vue.js applications from the
+              ground up for various clients, each with unique business requirements, over a span of
+              2.5 years.
+            </li>
+            <li>
+              Acted as a bridge software engineer, effectively collaborating across three teams from
+              separate companies in both English and Japanese to successfully meet feature,
+              schedule, and deployment requirements.
+            </li>
+          </ul>
+        </div>
+      </section>
+      <section ref="sectionSkills" id="portfolio__skills" class="portfolio__section">
+        <h1>Technical Skills</h1>
+        <div class="portfolio__skill-list">
+          <div class="portfolio__skill">
+            <div class="portfolio__skill-type">Programming Languages</div>
+            <p>Go, PHP, Javascript, Typescript</p>
+          </div>
+          <div class="portfolio__skill">
+            <div class="portfolio__skill-type">Back-end Frameworks</div>
+            <p>Echo(PHP), Laravel(PHP),</p>
+          </div>
+          <div class="portfolio__skill">
+            <div class="portfolio__skill-type">Front-end Frameworks</div>
+            <p>Vue.js, React.js, Flutter, Bootstrap, Tailwind CSS</p>
+          </div>
+          <div class="portfolio__skill">
+            <div class="portfolio__skill-type">Cloud Platforms</div>
+            <p>Amazon Web Services (AWS), Google Cloud Platform (GCP)</p>
+          </div>
+          <div class="portfolio__skill">
+            <div class="portfolio__skill-type">Databases</div>
+            <p>MySQL, MariaDB</p>
+          </div>
+          <div class="portfolio__skill">
+            <div class="portfolio__skill-type">Containerization</div>
+            <p>Docker</p>
+          </div>
+          <div class="portfolio__skill">
+            <div class="portfolio__skill-type">Other</div>
+            <p>Attention to detail, strong work ethic, flexibility and adaptability</p>
+          </div>
+        </div>
+      </section>
+      <section ref="sectionProjects" id="portfolio__projects" class="portfolio__section">
+        <h1>Projects</h1>
+        <div class="portfolio__project-list">
+          <div class="portfolio__project-item">
+            <div>teradoga.jp</div>
+          </div>
+          <div class="portfolio__project-item">
+            <div>lean-body.jp</div>
+          </div>
+          <div class="portfolio__project-item">
+            <div>Home feature server (Portfolio site)</div>
+          </div>
+          <div class="portfolio__project-item">
+            <div>TELEBYTE</div>
+          </div>
+        </div>
+      </section>
+      <section ref="sectionContact" id="portfolio__contact" class="portfolio__section">
+        Contact Me
+      </section>
     </div>
-    <ContactFormDialogComponent
-      v-if="showContactFormDialog"
-      pos="center"
-      @submit="onClickSuccessContactFormDialog"
-      @click-close="onClickCloseContactFormDialog"
-    />
-    <AboutDialogComponent
-      v-if="showAboutDialog"
-      pos="center"
-      @click-close="onClickCloseAboutDialog"
-    />
   </WindowComponent>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { scroll } from 'motion'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ButtonComponent from '@/core/components/ButtonComponent.vue'
 import WindowComponent from '@/core/components/WindowComponent.vue'
-import type { WindowToolbarRow } from '@/core/components/WindowToolbarComponent.vue'
 import { RelativeSize } from '@/core/models/relativeSize'
-import AboutDialogComponent from './AboutDialogComponent.vue'
-import ContactFormDialogComponent, {
-  type ContactFormSuccessEvent,
-} from './ContactFormDialogComponent.vue'
 
 const emit = defineEmits<{
   (e: 'clickClose'): void
 }>()
 
 const { t } = useI18n()
-const showContactFormDialog = ref<boolean>(false)
-const showAboutDialog = ref<boolean>(false)
-const toolbarOptions = computed<WindowToolbarRow[]>(() => [
-  {
-    isMenu: true,
-    items: [
-      {
-        label: t('common.file'),
-        contextMenuOptions: {
-          itemGroups: [
-            [
-              {
-                label: t('common.exit'),
-                shortcutKey: 'Alt+F4',
-                isDisabled: false,
-                onClick: () => {
-                  emit('clickClose')
-                },
-              },
-            ],
-          ],
-        },
-      },
-      {
-        label: t('common.help'),
-        contextMenuOptions: {
-          itemGroups: [
-            [
-              {
-                label: t('portfolio.contact'),
-                isDisabled: false,
-                onClick: () => {
-                  showContactFormDialog.value = true
-                },
-              },
-            ],
-            [
-              {
-                label: t('common.about'),
-                isDisabled: false,
-                onClick: () => {
-                  showAboutDialog.value = true
-                },
-              },
-            ],
-          ],
-        },
-      },
-    ],
-  },
-])
+const container = ref<HTMLElement>()
+const sectionIntro = ref<HTMLElement>()
+const sectionExperience = ref<HTMLElement>()
+const sectionSkills = ref<HTMLElement>()
+const sectionProjects = ref<HTMLElement>()
+const sectionContact = ref<HTMLElement>()
 
-const onClickSuccessContactFormDialog = (payload: ContactFormSuccessEvent) => {
-  console.log('contact form success', payload)
-}
+onMounted(() => {
+  console.log(container.value?.textContent)
+  scroll(
+    (progress: number) => {
+      console.log(progress)
+    },
+    { container: container.value },
+  )
 
-const onClickCloseContactFormDialog = () => {
-  showContactFormDialog.value = false
-}
-
-const onClickCloseAboutDialog = () => {
-  showAboutDialog.value = false
-}
+  // document.querySelectorAll('section').forEach((section) => {
+  //   const header = section.querySelector('h2')
+  //   scroll(animat(header, { y: [-400, 400] }, { ease: 'linear' }), {
+  //     target: header,
+  //   })
+  // })
+})
 </script>
 
 <style scoped lang="scss">
 @use '@/assets/colors';
 
-.hfs-portfolio__container {
+.portfolio__container {
   width: 100%;
   height: 100%;
-  padding: 5px;
-  background-color: colors.$light-grey;
+  max-width: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
+  padding: 1em;
+  scroll-snap-type: y mandatory;
+}
+
+.portfolio__section {
+  scroll-snap-align: start;
+
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  > h1 {
+    margin-top: 0;
+  }
+}
+
+#portfolio__intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.portfolio__intro__title {
+  margin-bottom: 0;
+}
+
+.portfolio__intro__links {
+  display: flex;
+  gap: 0.7em;
+  a {
+    text-decoration: none;
+  }
+}
+
+.portfolio__container-xl #portfolio__experience {
+  padding: 0 30%;
+}
+
+.portfolio__container-lg #portfolio__experience {
+  padding: 0 15%;
+}
+
+.portfolio__container-md #portfolio__experience {
+  padding: 0 5%;
+}
+
+.portfolio__company {
+  margin-bottom: 2em;
+}
+
+.portfolio__company-name {
+  font-weight: 700;
+  margin-bottom: 0.3em;
+}
+
+.portfolio__company-title {
+  margin-top: 0;
+  font-style: italic;
+}
+
+.portfolio__company > ul > li {
+  margin-bottom: 0.7em;
+}
+
+.portfolio__container-xl #portfolio__skills {
+  padding: 0 30%;
+}
+
+.portfolio__container-lg #portfolio__skills {
+  padding: 0 15%;
+}
+
+.portfolio__container-md #portfolio__skills {
+  padding: 0 5%;
+}
+
+.portfolio__skill-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.portfolio__project-list {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.portfolio__project-item {
+  flex: 1;
+  min-width: 50%;
+  height: 50%;
 }
 </style>

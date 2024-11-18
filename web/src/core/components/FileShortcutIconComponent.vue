@@ -47,16 +47,19 @@ defineProps<{
   text-align: center;
 }
 
+.file-shortcut-icon__name {
+  padding: 0.2em;
+  max-width: 100%;
+  transition:
+    0.2s background-color,
+    0.2s color;
+}
+
 .file-shortcut-icon_selected .file-shortcut-icon__name {
   background-color: colors.$high-opacity-dark-grey;
   color: colors.$white;
   outline: 1px dotted colors.$white;
   outline-offset: -1px;
-}
-
-.file-shortcut-icon__name {
-  padding: 0.2em;
-  max-width: 100%;
 }
 
 .file-shortcut-icon__img {

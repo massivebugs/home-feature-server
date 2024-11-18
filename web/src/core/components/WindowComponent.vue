@@ -51,7 +51,7 @@
       <WindowToolbarComponent v-if="toolbar" :rows="toolbar" />
     </div>
     <div class="hfs-window__contents">
-      <slot :window-el="windowEl" :window-size-query="windowSizeQuery" />
+      <slot :window-el="windowEl" :window-size-query="windowSizeQuery" :window-size="windowSize" />
     </div>
     <div v-if="statusBarInfo" class="hfs-window__status-bar">
       <p v-for="info in statusBarInfo || []" :key="info">
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, provide, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, provide, reactive, ref } from 'vue'
 import { ResizeDirection, useDragResize } from '../composables/useDragResize'
 import { RelativePosition } from '../models/relativePosition'
 import type { RelativeSize } from '../models/relativeSize'
@@ -148,6 +148,16 @@ const windowSizeQuery = reactive<WindowSizeQuery>({
   md: false,
   lg: false,
   xl: false,
+})
+const windowSize = computed(() => {
+  if (windowSizeQuery.xl) {
+    return 'xl'
+  } else if (windowSizeQuery.lg) {
+    return 'lg'
+  } else if (windowSizeQuery.md) {
+    return 'md'
+  }
+  return 'sm'
 })
 let resizeObserver: ResizeObserver | null = null
 
