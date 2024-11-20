@@ -98,6 +98,7 @@ const TOGGLE_SIZE_SECONDS = 0.3
 const emit = defineEmits<{
   (e: 'clickClose'): void
   (e: 'clickMinimize'): void
+  (e: 'windowResize'): void
 }>()
 
 const props = defineProps<{
@@ -142,6 +143,7 @@ const {
   () => {
     const event = new CustomEvent('resize')
     windowEl.value?.dispatchEvent(event)
+    emit('windowResize')
   },
 )
 const windowSizeQuery = reactive<WindowSizeQuery>({
