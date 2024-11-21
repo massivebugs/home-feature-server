@@ -155,7 +155,6 @@ const toolbarOptions = computed<WindowToolbarRow[]>(() => [
             [
               {
                 label: t('common.close'),
-                shortcutKey: 'Alt+F4',
                 isDisabled: false,
                 onClick: () => {
                   emit('clickClose')

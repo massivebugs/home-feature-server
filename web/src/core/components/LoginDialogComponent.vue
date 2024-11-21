@@ -15,6 +15,7 @@
     :blocking="false"
     :resizable="false"
     :disabled="disabled"
+    form="hfs-login-form"
     @click-success="onClickSuccess"
   >
     <template #title>
@@ -27,25 +28,27 @@
         {{ t('createUser.message') }}
         <a href="#" @click="emit('createUser')">{{ t('createUser.linkTitle') }}</a>
       </p>
-      <TextInputComponent
-        :disabled="disabled"
-        name="username"
-        label="Username"
-        placeholder="Enter username"
-        v-model="username"
-        :error-message="validationErrors?.username"
-        autocomplete="off"
-      />
-      <TextInputComponent
-        :disabled="disabled"
-        type="password"
-        name="password"
-        label="Password"
-        placeholder="Enter password"
-        v-model="password"
-        :error-message="validationErrors?.password"
-        autocomplete="off"
-      />
+      <form id="hfs-login-form" @submit="onFormSubmit">
+        <TextInputComponent
+          :disabled="disabled"
+          name="username"
+          label="Username"
+          placeholder="Enter username"
+          v-model="username"
+          :error-message="validationErrors?.username"
+          autocomplete="off"
+        />
+        <TextInputComponent
+          :disabled="disabled"
+          type="password"
+          name="password"
+          label="Password"
+          placeholder="Enter password"
+          v-model="password"
+          :error-message="validationErrors?.password"
+          autocomplete="off"
+        />
+      </form>
     </div>
   </DialogComponent>
 </template>
@@ -83,6 +86,10 @@ const password = ref('')
 
 const onClickSuccess = () => {
   emit('submit', { username: username.value, password: password.value })
+}
+
+const onFormSubmit = () => {
+  console.log('foo')
 }
 </script>
 

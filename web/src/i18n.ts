@@ -280,6 +280,13 @@ export const i18nOptions: I18nOptions = {
         sendContactMessage: 'Send message',
         aboutDialogTitle: 'About',
       },
+      sandman: {
+        name: 'Sandman',
+        confirmDialog: {
+          title: 'Sandman',
+          message: 'Are you sure you want to release Sandman?',
+        },
+      },
     },
     ja: {
       common: {
@@ -546,6 +553,13 @@ export const i18nOptions: I18nOptions = {
         githubLinkTitle: 'GitHubを見てみる',
         sendContactMessage: 'メッセージを送信する',
         aboutDialogTitle: "ポートフォリオ - {'@'}massivebugs について",
+      },
+      sandman: {
+        name: 'Sandman',
+        confirmDialog: {
+          title: 'Sandman',
+          message: '本当にSandmanを開放しますか?',
+        },
       },
     },
   },

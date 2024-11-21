@@ -1,17 +1,16 @@
 import { type App, reactive } from 'vue'
 
 export type MediaQueryBreakpoints = {
-  sm: number
   md: number
   lg: number
   xl: number
 }
 
 export type MediaQuery = {
+  isSM: boolean
   isXL: boolean
   isLG: boolean
   isMD: boolean
-  isSM: boolean
 }
 
 export const mediaQueryPlugin = {

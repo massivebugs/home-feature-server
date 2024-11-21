@@ -31,10 +31,20 @@
         </p>
         <p>
           <button @click="sandman?.init()">Init</button>
-          <button @click="sandman?.drop(100)">Drop</button>
-          <button @click="sandman?.collect(1, 500)">Collect</button>
-          <button @click="sandman?.drop(100).then((s) => s.collect(1, 500))">Connect</button>
-          <button @click="onClickSetText">SetText</button>
+          <button @click="sandman?.drop(0.1)">Drop</button>
+          <button @click="sandman?.collect(1)">Collect</button>
+          <button
+            @click="
+              async () => {
+                await sandman?.spiralFill(0, 0, 0)
+                await onClickRestoreText()
+              }
+            "
+          >
+            Surround
+          </button>
+          <button @click="sandman?.drop(0.1).then((s) => s.collect(1))">Connect</button>
+          <button @click="onClickRestoreText">SetText</button>
           <button @click="sandman?.reset()">Reset</button>
         </p>
       </section>
@@ -181,20 +191,30 @@ const emit = defineEmits<{
   (e: 'clickClose'): void
 }>()
 
+const props = defineProps<{ initSandman?: boolean }>()
+
 const { t } = useI18n()
 const container = ref<HTMLElement>()
 let sandman: Sandman | null = null
 
 const onWindowResize = () => {
+  if (!props.initSandman) {
+    return
+  }
+
   sandman?.onContainerResize()
-  sandman?.drop(100)
+  sandman?.drop(0.1)
 }
 
 const onContainerScrollEnd = () => {
-  sandman?.drop(100)
+  if (!props.initSandman) {
+    return
+  }
+
+  sandman?.drop(0.1)
 }
 
-const onClickSetText = async () => {
+const onClickRestoreText = async () => {
   const texts = document
     .getElementById('portfolio__intro')
     ?.getElementsByClassName(SANDMAN_TEXT_CLASS)
@@ -204,14 +224,21 @@ const onClickSetText = async () => {
   }
 
   for (const text of texts) {
-    await sandman?.setText(text as HTMLElement, 0.05, 0.3, 0.1)
+    await sandman?.restoreText(text as HTMLElement, 0.05, 0.3, 0.1)
     await sleep(200)
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (container.value) {
     sandman = new Sandman(container.value)
+
+    await sleep(100)
+    sandman?.init()
+    sandman?.drop(0.1)
+    await sleep(10000)
+    container.value.scrollTop = 0
+    sandman?.collect()
   }
 })
 </script>

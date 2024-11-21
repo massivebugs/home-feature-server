@@ -32,6 +32,7 @@
         <ButtonComponent
           v-if="buttons.success"
           type="success"
+          :form="props.form"
           :disabled="disabled"
           :loading-spinner="loadingSpinner"
           @click="emit('clickSuccess')"
@@ -75,6 +76,7 @@ const props = defineProps<{
   controls?: WindowTitleBarControls
   resizable?: boolean
   loadingSpinner?: SpinnerType
+  form?: string
 }>()
 
 const { t } = useI18n()
